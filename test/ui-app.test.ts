@@ -45,6 +45,7 @@ import {
   buildFollowUpRequest,
   buildNewRunRequest,
   wantsDesignPipeline,
+  nextPackForWorkspaceFace,
   nextDesignSampleState,
   resolveDesignSampleChoice,
   annotateResolvedApprovals,
@@ -2226,6 +2227,7 @@ describe("AC6 无障碍语义 (R-05)", () => {
       workspace: "office",
       designId: "saas-landing",
       designTab: "Prototype",
+      pack: "design",
     });
     expect(buildNewRunRequest({ task: "修一处", workspace: "office" })).toMatchObject({
       workspace: "office",
@@ -2244,7 +2246,7 @@ describe("AC6 无障碍语义 (R-05)", () => {
       mode: "design",
       designId: "saas-landing",
       pack: "ts-coding",
-    })).not.toHaveProperty("pack");
+    })).toMatchObject({ pack: "design" });
     expect(buildNewRunRequest({
       task: "跨域任务",
       mode: "design",
@@ -2271,7 +2273,11 @@ describe("AC6 无障碍语义 (R-05)", () => {
       designId: "guizang-ppt",
       designTab: "Deck",
       designTemplate: "deck-basic",
+      pack: "design",
     });
+    expect(nextPackForWorkspaceFace("office", "ts-coding", ["design", "ts-coding"])).toBe("design");
+    expect(nextPackForWorkspaceFace("code", "design", ["design", "ts-coding"])).toBe("ts-coding");
+    expect(nextPackForWorkspaceFace("office", "brand-kit", ["design", "brand-kit"])).toBe("brand-kit");
   });
 
   // 29 已升级为真实 DOM 断言，见 test/ui-a11y.test.ts 的

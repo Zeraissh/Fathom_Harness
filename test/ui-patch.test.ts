@@ -59,6 +59,11 @@ import {
   resolveDesignSampleChoice,
   designSampleBlockedReason,
   harnessVisionConfigured,
+  suggestNextActions,
+  renderNextActionChips,
+  readNextActionChip,
+  nextActionCapabilities,
+  NEXT_ACTION_LIMIT,
   nextDesignSampleState,
   nextDesignLookState,
   composePromptWithLook,
@@ -4555,6 +4560,25 @@ describe("空态给的是能点的例子", () => {
     expect(html).toMatch(/designModeActive:\s*officeCatalogOpen/);
   });
 
+  it("空态有下一步建议，且是可点的按钮", () => {
+    paintWelcome({ workdir: "D:/proj" });
+    const chips = [...document.querySelectorAll(".empty-state [data-next-id]")];
+    expect(chips.length).toBeGreaterThanOrEqual(3);
+    expect(chips.length).toBeLessThanOrEqual(NEXT_ACTION_LIMIT);
+    expect(chips.every((el) => el.tagName === "BUTTON")).toBe(true);
+    const ids = chips.map((el) => el.getAttribute("data-next-id"));
+    expect(ids).toEqual(expect.arrayContaining(["plan", "mention", "files", "schedule"]));
+    const text = document.querySelector(".empty-state .next-actions")?.textContent ?? "";
+    expect(text).toContain("下一步");
+    expect(text).not.toMatch(/\/api\/|HTTP|describe_image|view_image|AGENT_|领域包/);
+  });
+
+  it("设计目录打开时不画下一步芯片", () => {
+    paintWelcome({ designModeActive: true, selectedDesignTab: "Deck" });
+    expect(document.querySelector(".empty-state [data-next-id]")).toBeNull();
+    expect(document.querySelector(".empty-state .next-actions")).toBeNull();
+  });
+
   it("更多稿件打开六页签；返回只回到办公四行", () => {
     paintWelcome({ workspaceFace: "office" });
     expect(document.querySelector("[data-office-more]")).toBeTruthy();
@@ -4899,6 +4923,116 @@ describe("空态给的是能点的例子", () => {
     expect(panel.classList.contains("is-welcome")).toBe(false);
     expect(gallery.hidden).toBe(true);
     expect(gallery.querySelector("[data-example]")).toBeNull();
+  });
+});
+
+describe("下一步芯片只列当前装配真有的能力", () => {
+  it("识图未武装不出现看图", () => {
+    const items = suggestNextActions({
+      surface: "empty",
+      workdir: "/w",
+      harness: { describeImageBacking: "none", roleModels: { vision: { configured: false } } },
+    });
+    expect(items.some((i) => i.id === "vision")).toBe(false);
+    expect(items.map((i) => i.label).join(" ")).not.toMatch(/看一张图/);
+    renderEmptyState(false, {
+      workdir: "/w",
+      harness: { describeImageBacking: "none", roleModels: { vision: { configured: false } } },
+    });
+    expect(document.querySelector("[data-next-id='vision']")).toBeNull();
+  });
+
+  it("识图已武装才出现看图", () => {
+    const items = suggestNextActions({
+      surface: "empty",
+      workdir: "/w",
+      harness: { describeImageBacking: "executor" },
+    });
+    expect(items.some((i) => i.id === "vision")).toBe(true);
+    expect(items.find((i) => i.id === "vision")?.fill).toContain("看这张图");
+    expect(items.find((i) => i.id === "vision")?.fill).not.toMatch(/describe_image|view_image/);
+  });
+
+  it("飞书入站未开不说在群里@", () => {
+    const off = suggestNextActions({ surface: "empty", workdir: "/w", im: { feishuInbound: false } });
+    expect(off.some((i) => i.id === "feishu")).toBe(false);
+    expect(off.map((i) => i.label).join("")).not.toContain("飞书");
+    const on = suggestNextActions({ surface: "empty", workdir: "/w", im: { feishuInbound: true } });
+    expect(on.some((i) => i.id === "feishu")).toBe(true);
+    expect(on.find((i) => i.id === "feishu")?.announce).toContain("飞书入站已开");
+  });
+
+  it("没令牌 / PR 未就绪不开 PR 芯片", () => {
+    const off = suggestNextActions({ surface: "empty", workdir: "/w", githubPr: { ready: false } });
+    expect(off.some((i) => i.id === "pr")).toBe(false);
+    const on = suggestNextActions({ surface: "empty", workdir: "/w", githubPr: { ready: true } });
+    expect(on.some((i) => i.id === "pr")).toBe(true);
+    expect(on.find((i) => i.id === "pr")?.action).toBe("pr");
+  });
+
+  it("刚结束可续跑才有接着说；没有产物就不说预览/点评", () => {
+    const bare = suggestNextActions({ surface: "done", canContinue: true, workdir: "/w" });
+    expect(bare.some((i) => i.id === "continue")).toBe(true);
+    expect(bare.some((i) => i.id === "preview")).toBe(false);
+    expect(bare.some((i) => i.id === "review")).toBe(false);
+    const withPage = suggestNextActions({
+      surface: "done",
+      canContinue: true,
+      workdir: "/w",
+      artifacts: [{ path: "index.html" }],
+    });
+    expect(withPage.some((i) => i.id === "preview")).toBe(true);
+    expect(withPage.some((i) => i.id === "review")).toBe(true);
+    expect(withPage.find((i) => i.id === "preview")?.path).toBe("index.html");
+  });
+
+  it("芯片条 HTML 带 data-next-id，readNextActionChip 能读回", () => {
+    const html = renderNextActionChips([
+      { id: "plan", label: "先对齐做法", fill: "先对齐", plan: true },
+    ]);
+    document.body.insertAdjacentHTML("beforeend", html);
+    const btn = document.querySelector("[data-next-id='plan']");
+    expect(btn?.tagName).toBe("BUTTON");
+    expect(readNextActionChip(btn)).toMatchObject({
+      id: "plan",
+      fill: "先对齐",
+      plan: true,
+    });
+    expect(nextActionCapabilities({
+      harness: { describeImageBacking: "none" },
+      im: { feishuInbound: false },
+      githubPr: { ready: false },
+    })).toMatchObject({
+      vision: false,
+      feishuInbound: false,
+      prReady: false,
+    });
+  });
+
+  it("没有工作目录就不说点名文件 / 看右边", () => {
+    const items = suggestNextActions({ surface: "empty" });
+    expect(items.some((i) => i.id === "mention" || i.id === "files")).toBe(false);
+    expect(items.length).toBeGreaterThanOrEqual(3);
+    expect(items.map((i) => i.id)).toEqual(expect.arrayContaining(["plan", "schedule"]));
+  });
+
+  it("刚结束的对话露出下一步；运行中藏起来", () => {
+    let s = createInitialState("run-next", "做一页", false);
+    s = { ...s, status: "done", stopReason: "completed" };
+    renderRunDetail(s, { canContinue: true, workdir: "/w" });
+    const host = document.querySelector(".conversation-stack .next-actions");
+    expect(host?.hasAttribute("hidden")).toBe(false);
+    const chips = [...document.querySelectorAll(".conversation-stack [data-next-id]")];
+    expect(chips.length).toBeGreaterThanOrEqual(3);
+    expect(chips.some((el) => el.getAttribute("data-next-id") === "continue")).toBe(true);
+    expect(chips.some((el) => el.getAttribute("data-next-id") === "vision")).toBe(false);
+    expect(chips.some((el) => el.getAttribute("data-next-id") === "pr")).toBe(false);
+    expect(chips.some((el) => el.getAttribute("data-next-id") === "feishu")).toBe(false);
+
+    s = { ...s, status: "running" };
+    renderRunDetail(s, { canContinue: true, workdir: "/w" });
+    expect(document.querySelector(".conversation-stack .next-actions")?.hasAttribute("hidden")).toBe(true);
+    expect(document.querySelector(".conversation-stack [data-next-id]")).toBeNull();
   });
 });
 

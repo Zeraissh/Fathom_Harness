@@ -3308,7 +3308,11 @@ export function buildNewRunRequest({
   return {
     task: String(task ?? ""),
     verify: Boolean(verify),
-    ...(pack && !autoPack && !wantDesign ? { pack } : {}),
+    ...(wantDesign
+      ? { pack: (designFilePack && String(designFilePack).trim()) || "design" }
+      : pack && !autoPack
+        ? { pack }
+        : {}),
     ...(autoPack && !wantDesign ? { autoPack: true } : {}),
     ...(effort ? { effort } : {}),
     ...(trimmedRubric ? { rubric: trimmedRubric } : {}),
@@ -3361,6 +3365,32 @@ export function wantsDesignPipeline({
   officeDesignChip,
 } = {}) {
   return Boolean(designId || designTemplate || designSample || designFilePack || officeDesignChip);
+}
+
+/** 工程包：切到 Work 脸时不要带着走，否则设计模式会落到 ts-coding。 */
+export const ENGINEERING_PACKS = new Set([
+  "ts-coding",
+  "python-coding",
+  "stm32-coding",
+  "stm32-debug",
+  "kicad",
+  "consult",
+]);
+
+/** 切脸时的默认包：Work → design；离开 design 包回 Code → ts-coding。文件包不抢。 */
+export function nextPackForWorkspaceFace(face, current, available = []) {
+  const names = new Set(available);
+  const cur = current == null ? "" : String(current);
+  if (face === "office" || face === "work") {
+    if (!cur || ENGINEERING_PACKS.has(cur)) {
+      return names.has("design") ? "design" : cur;
+    }
+    return cur;
+  }
+  if (cur === "design") {
+    return names.has("ts-coding") ? "ts-coding" : "";
+  }
+  return cur;
 }
 
 /** 逐 run 预算控件的区间下限（与 src/context-window.ts MIN_CONTEXT_TOKEN_LIMIT 同值；宿主 400 是最终裁判） */
@@ -5336,6 +5366,7 @@ export function renderRunDetail(state, callbacks) {
     { text: callbacks.liveText, thinking: callbacks.liveThinking },
     callbacks,
   );
+  patchNextActions(parts, state, callbacks);
   patchAgentOverlay(parts, state, callbacks, {
     text: callbacks.liveText,
     thinking: callbacks.liveThinking,
@@ -5446,6 +5477,16 @@ function ensureDetailSkeleton(mainEl, state, callbacks) {
       }
     }
     mainEl.__parts.campaignStrip = mainEl.querySelector(".campaign-strip");
+    if (!mainEl.querySelector(".next-actions")) {
+      const conv = mainEl.querySelector(".conversation");
+      if (conv) {
+        const next = document.createElement("div");
+        next.className = "next-actions";
+        next.hidden = true;
+        conv.after(next);
+      }
+    }
+    mainEl.__parts.nextActions = mainEl.querySelector(".next-actions");
     return mainEl.__parts;
   }
 
@@ -5491,6 +5532,7 @@ function ensureDetailSkeleton(mainEl, state, callbacks) {
     '<div class="conversation-stack">' +
     '<div class="campaign-strip" hidden></div>' +
     '<div class="conversation" id="conversation"></div>' +
+    '<div class="next-actions" hidden></div>' +
     '<div class="agent-overlay" id="agent-overlay" hidden></div>' +
     "</div>" +
     '<aside class="detail-rail" id="detail-rail" aria-label="会话侧栏">' +
@@ -5547,6 +5589,7 @@ function ensureDetailSkeleton(mainEl, state, callbacks) {
     liveStrip: mainEl.querySelector(".live-strip"),
     campaignStrip: mainEl.querySelector(".campaign-strip"),
     conversation: mainEl.querySelector(".conversation"),
+    nextActions: mainEl.querySelector(".next-actions"),
     agentOverlay: mainEl.querySelector("#agent-overlay"),
     rail: mainEl.querySelector(".detail-rail"),
     railBoard: mainEl.querySelector(".detail-rail .plan-board"),
@@ -7154,6 +7197,53 @@ function patchCampaignStrip(parts, state, callbacks) {
       if (cancelBtn) {
         cb.onCancelCampaignChild?.(cancelBtn.getAttribute("data-cancel-child"));
       }
+    });
+  }
+}
+
+/**
+ * 刚结束的对话末尾：只在不在跑时露出真能点的下一步。
+ * 运行中藏起来——那时候该看的是审批卡，不是建议条。
+ */
+function patchNextActions(parts, state, callbacks = {}) {
+  const host = parts.nextActions;
+  if (!host) return;
+  if (state.status === "running") {
+    setAttr(host, "hidden", "");
+    if (parts.sig.nextActions !== "running") {
+      parts.sig.nextActions = "running";
+      host.innerHTML = "";
+    }
+    return;
+  }
+  const artifacts = Array.isArray(callbacks.threadFiles) && callbacks.threadFiles.length
+    ? callbacks.threadFiles
+    : deriveArtifacts(state);
+  const items = suggestNextActions({
+    surface: "done",
+    workdir: callbacks.workdir ?? state.workdir,
+    harness: callbacks.harness,
+    im: callbacks.im,
+    githubPr: callbacks.githubPr,
+    canContinue: callbacks.canContinue === true,
+    artifacts,
+    planUsed: callbacks.planUsed === true
+      || state.runConfig?.mode === "plan"
+      || Boolean(state.plan?.nodes?.length),
+    unsigned: deliveryFace(state.stopReason, artifacts).kind === "unsigned",
+  });
+  const html = renderNextActionChips(items, { inner: true });
+  if (parts.sig.nextActions !== html) {
+    parts.sig.nextActions = html;
+    host.innerHTML = html;
+  }
+  setAttr(host, "hidden", items.length ? null : "");
+  host.__nextCallbacks = callbacks;
+  if (!host.__nextBound) {
+    host.__nextBound = true;
+    host.addEventListener("click", (e) => {
+      const btn = e.target instanceof Element ? e.target.closest("[data-next-id]") : null;
+      if (btn) host.__nextCallbacks?.onNextAction?.(btn);
     });
   }
 }
@@ -12018,6 +12108,15 @@ export function renderEmptyState(_hasRuns, _opts = {}) {
   const mainEl = document.getElementById("main-area");
   if (!mainEl) return;
   const designClass = _opts.designModeActive ? " empty-state--design" : "";
+  const nextHtml = _opts.designModeActive
+    ? ""
+    : renderNextActionChips(suggestNextActions({
+        surface: "empty",
+        workdir: _opts.workdir,
+        harness: _opts.harness,
+        im: _opts.im,
+        githubPr: _opts.githubPr,
+      }));
   mainEl.innerHTML =
     `<div class="empty-state empty-state--welcome${designClass}">` +
     '<p class="empty-eyebrow">Agent Console</p>' +
@@ -12036,6 +12135,7 @@ export function renderEmptyState(_hasRuns, _opts = {}) {
     '<p class="empty-tagline-cn">稿件、纪要、问答都可以从这里开始。</p>' +
     '<p class="empty-window-note">现在只能在这个窗口下指令。</p>' +
     '<p class="empty-cite-hint">输入 @ 可按文件名找这个文件夹里的文件。旧对话用「引用会话」。</p>' +
+    nextHtml +
     '<span class="empty-depthline" aria-hidden="true"></span>' +
     "</div>";
 }
@@ -12316,6 +12416,253 @@ export function harnessVisionConfigured(harness) {
   if (backing === "executor" || backing === "vision-role") return true;
   if (backing === "none") return false;
   return Boolean(harness?.roleModels?.vision?.configured);
+}
+
+/** 对话「下一步」最多露出几条。多了就不像建议，像目录。 */
+export const NEXT_ACTION_LIMIT = 6;
+
+export function artifactPathOf(item) {
+  if (typeof item === "string") return item.trim();
+  return String(item?.path ?? "").trim();
+}
+
+/** 点了真能打开预览坞 / 产物画布的扩展名（与现有预览分派对齐）。 */
+export function isPreviewablePath(p) {
+  const clean = String(p ?? "").split(/[?#]/)[0] ?? "";
+  if (isImagePath(clean)) return true;
+  return /\.(html?|md|txt|pdf|docx?|pptx?|csv)$/i.test(clean);
+}
+
+/** 预览坞上有「点评」键的种类：整站 HTML 与 Office。 */
+export function isReviewablePath(p) {
+  const clean = String(p ?? "").split(/[?#]/)[0] ?? "";
+  return /\.(html?|docx?|pptx?)$/i.test(clean);
+}
+
+/**
+ * 当前装配下哪些下一步是真的。只认已有快照，不猜。
+ * 飞书看入站（/api/im.feishuInbound），不是出站 webhook。
+ * 开 PR 看 githubPr.ready，没令牌 / 不在可开分支 → 假。
+ */
+export function nextActionCapabilities(ctx = {}) {
+  const harness = ctx.harness ?? null;
+  const im = ctx.im ?? harness?.im ?? null;
+  const artifacts = Array.isArray(ctx.artifacts) ? ctx.artifacts : [];
+  const paths = artifacts.map(artifactPathOf).filter(Boolean);
+  return {
+    surface: ctx.surface === "done" ? "done" : "empty",
+    workdir: Boolean(String(ctx.workdir ?? "").trim()),
+    vision: harnessVisionConfigured(harness) === true,
+    feishuInbound: im?.feishuInbound === true,
+    prReady: ctx.githubPr?.ready === true,
+    canContinue: ctx.canContinue === true,
+    previewPath: paths.find(isPreviewablePath) || "",
+    reviewPath: paths.find(isReviewablePath) || "",
+    imagePath: paths.find(isImagePath) || "",
+    planUsed: ctx.planUsed === true,
+    unsigned: ctx.unsigned === true,
+  };
+}
+
+/**
+ * 空态 / 刚结束的对话：3–6 条可点下一步。
+ * 每条要么写入输入框，要么触发已经存在的动作。未武装的能力不出现。
+ *
+ * @param {{
+ *   surface?: "empty"|"done",
+ *   workdir?: string|null,
+ *   harness?: object|null,
+ *   im?: {feishuInbound?: boolean}|null,
+ *   githubPr?: {ready?: boolean}|null,
+ *   canContinue?: boolean,
+ *   artifacts?: Array<{path?: string}|string>,
+ *   planUsed?: boolean,
+ *   unsigned?: boolean,
+ * }} [ctx]
+ * @returns {Array<{
+ *   id: string,
+ *   label: string,
+ *   hint?: string,
+ *   fill?: string,
+ *   plan?: boolean,
+ *   action?: string,
+ *   path?: string,
+ *   announce?: string,
+ * }>}
+ */
+export function suggestNextActions(ctx = {}) {
+  const cap = nextActionCapabilities(ctx);
+  /** @type {Array<{id:string,label:string,hint?:string,fill?:string,plan?:boolean,action?:string,path?:string,announce?:string}>} */
+  const picked = [];
+  const take = (item) => {
+    if (!item || picked.some((x) => x.id === item.id)) return;
+    if (picked.length >= NEXT_ACTION_LIMIT) return;
+    picked.push(item);
+  };
+
+  const plan = {
+    id: "plan",
+    label: "先对齐做法",
+    hint: "先列出改什么、怎么验收，等你同意再动手",
+    fill: "先对齐做法再动手：看清现状后列出你打算改什么、怎么验收，等我同意再动手。",
+    plan: true,
+  };
+  const mention = cap.workdir
+    ? {
+        id: "mention",
+        label: "点名一个文件",
+        hint: "输入 @ 按文件名找这个文件夹里的文件",
+        action: "mention",
+      }
+    : null;
+  const files = cap.workdir
+    ? {
+        id: "files",
+        label: "看右边的文件",
+        hint: "展开右侧文件栏",
+        action: "files",
+      }
+    : null;
+  const vision = cap.vision
+    ? {
+        id: "vision",
+        label: "看一张图",
+        hint: "把图里的内容说清楚",
+        fill: cap.imagePath
+          ? `看 @${cap.imagePath}，告诉我里面有什么。`
+          : "看这张图，告诉我里面有什么。",
+      }
+    : null;
+  const pr = cap.prReady
+    ? {
+        id: "pr",
+        label: "开成 PR",
+        hint: "用已配好的 GitHub 令牌开到远程",
+        action: "pr",
+      }
+    : null;
+  const feishu = cap.feishuInbound
+    ? {
+        id: "feishu",
+        label: "到飞书群里 @ 我",
+        hint: "入站已开，到群里发指令即可",
+        action: "announce",
+        announce: "飞书入站已开。到群里 @ 我就能下指令。",
+      }
+    : null;
+  const schedule = {
+    id: "schedule",
+    label: "设个定时",
+    hint: "打开已有的定时任务页",
+    action: "schedules",
+  };
+  const focus = {
+    id: "focus",
+    label: "先说要做什么",
+    hint: "点一下回到输入框",
+    action: "focus",
+  };
+  const cont = cap.unsigned
+    ? {
+        id: "continue",
+        label: "接着改已有页面",
+        hint: "这一轮已经停了，产物还在",
+        fill: "接着改已有页面。",
+        action: "focus",
+      }
+    : {
+        id: "continue",
+        label: "接着说",
+        hint: "在下面继续写下一句",
+        action: "focus",
+      };
+  const preview = cap.previewPath
+    ? {
+        id: "preview",
+        label: "预览刚才那页",
+        hint: "在预览坞打开已写出的文件",
+        action: "preview",
+        path: cap.previewPath,
+      }
+    : null;
+  const review = cap.reviewPath
+    ? {
+        id: "review",
+        label: "点评这一页",
+        hint: "打开预览并进入点评",
+        action: "review",
+        path: cap.reviewPath,
+      }
+    : null;
+
+  if (cap.surface === "done") {
+    if (cap.canContinue) take(cont);
+    take(preview);
+    take(review);
+    take(vision);
+    if (!cap.planUsed) take(plan);
+    take(pr);
+    take(mention);
+    take(files);
+    take(schedule);
+    take(feishu);
+    if (picked.length < 3) take(focus);
+    return picked.slice(0, NEXT_ACTION_LIMIT);
+  }
+
+  take(plan);
+  take(mention);
+  take(files);
+  take(vision);
+  take(pr);
+  take(feishu);
+  take(schedule);
+  if (picked.length < 3) take(focus);
+  return picked.slice(0, NEXT_ACTION_LIMIT);
+}
+
+/**
+ * 芯片条 HTML。空数组 → 空串（调用方据此隐藏）。
+ * @param {ReturnType<typeof suggestNextActions>} actions
+ * @param {{ inner?: boolean }} [opts]
+ */
+export function renderNextActionChips(actions, opts = {}) {
+  const items = Array.isArray(actions) ? actions : [];
+  if (!items.length) return "";
+  const buttons = items.map((a) => {
+    const attrs = [
+      `type="button"`,
+      `class="next-action-chip"`,
+      `data-next-id="${esc(a.id)}"`,
+    ];
+    if (a.fill) attrs.push(`data-next-fill="${esc(a.fill)}"`);
+    if (a.plan) attrs.push(`data-next-plan="1"`);
+    if (a.action) attrs.push(`data-next-action="${esc(a.action)}"`);
+    if (a.path) attrs.push(`data-next-path="${esc(a.path)}"`);
+    if (a.announce) attrs.push(`data-next-announce="${esc(a.announce)}"`);
+    if (a.hint) attrs.push(`title="${esc(a.hint)}"`);
+    return `<li><button ${attrs.join(" ")}>${esc(a.label)}</button></li>`;
+  });
+  const inner =
+    `<p class="next-actions-kicker">下一步</p>` +
+    `<ul class="next-actions-list">${buttons.join("")}</ul>`;
+  if (opts.inner) return inner;
+  return `<div class="next-actions" role="group" aria-label="下一步">${inner}</div>`;
+}
+
+/** 从芯片按钮读出动作。控制器只执行已有入口，不在这里发明能力。 */
+export function readNextActionChip(btn) {
+  if (!btn || typeof btn.getAttribute !== "function") return null;
+  const id = btn.getAttribute("data-next-id") || "";
+  if (!id) return null;
+  return {
+    id,
+    fill: btn.getAttribute("data-next-fill") || "",
+    action: btn.getAttribute("data-next-action") || "",
+    path: btn.getAttribute("data-next-path") || "",
+    announce: btn.getAttribute("data-next-announce") || "",
+    plan: btn.hasAttribute("data-next-plan"),
+  };
 }
 
 export function designSampleBlockedReason(sample, visionConfigured) {

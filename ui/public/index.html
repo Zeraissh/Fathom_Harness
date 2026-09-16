@@ -537,11 +537,13 @@ import {
   nextDesignSampleState,
   nextDesignLookState,
   harnessVisionConfigured,
+  readNextActionChip,
   deriveComposerMode,
   composerSubmitPlan,
   suggestPlainModeInsteadOfPlan,
   buildNewRunRequest,
   wantsDesignPipeline,
+  nextPackForWorkspaceFace,
   buildFollowUpRequest,
   mergeForkedFollowUp,
   askRewindChoice,
@@ -1060,6 +1062,76 @@ function syncScrollNav() {
   });
 })();
 
+/**
+ * 下一步芯片：写入输入框，或点开已经存在的入口。
+ * 不在这里发明能力——识图 / 飞书 / 开 PR 没武装时 suggestNextActions 根本不会画出对应键。
+ */
+function applyNextActionChip(btn) {
+  const spec = readNextActionChip(btn);
+  if (!spec) return;
+  if (spec.plan && planModeToggle) {
+    planModeToggle.checked = true;
+    writePref(PREF_PLAN, true);
+    syncPlanHint();
+  }
+  if (spec.fill) {
+    taskInput.value = spec.fill;
+    taskInput.focus();
+    taskInput.setSelectionRange(spec.fill.length, spec.fill.length);
+    syncWelcomeComposerField();
+    syncComposer();
+  }
+  if (spec.action === "mention") {
+    if (!spec.fill) {
+      const pad = taskInput.value && !/\s$/.test(taskInput.value) ? " " : "";
+      taskInput.value = `${taskInput.value}${pad}@`;
+      syncWelcomeComposerField();
+      syncComposer();
+    }
+    onComposerCiteInput();
+    taskInput.focus();
+    const v = taskInput.value;
+    if (typeof taskInput.setSelectionRange === "function") {
+      taskInput.setSelectionRange(v.length, v.length);
+    }
+  } else if (spec.action === "files") {
+    fileTreeApi?.setCollapsed(false);
+    announceStatus("右侧是这个文件夹里的文件。");
+  } else if (spec.action === "schedules") {
+    location.hash = SCHEDULES_HASH;
+    schedulesApi?.open();
+  } else if (spec.action === "pr") {
+    const trigger = document.getElementById("workspace-git-trigger");
+    const host = document.getElementById("workspace-git-chip");
+    if (trigger && !trigger.disabled && host && !host.hidden) trigger.click();
+    else announceStatus("现在还不能开 PR。");
+  } else if (spec.action === "preview" && spec.path) {
+    if (selectedRunId) openArtifactByPath(selectedRunId, spec.path);
+    else {
+      const wd = composerWorkdir();
+      if (wd) filePreviewApi?.open({ path: spec.path, url: buildFilePreviewUrl({ path: spec.path, workdir: wd }) });
+    }
+  } else if (spec.action === "review" && spec.path) {
+    if (selectedRunId) openArtifactByPath(selectedRunId, spec.path);
+    else {
+      const wd = composerWorkdir();
+      if (wd) filePreviewApi?.open({ path: spec.path, url: buildFilePreviewUrl({ path: spec.path, workdir: wd }) });
+    }
+    requestAnimationFrame(() => {
+      const inspect = document.getElementById("ac-inspect");
+      if (inspect && !inspect.hidden && inspect.getAttribute("aria-pressed") !== "true") inspect.click();
+    });
+  } else if (spec.action === "focus") {
+    taskInput.focus();
+  }
+  if (spec.announce) announceStatus(spec.announce);
+}
+
+document.addEventListener("click", (e) => {
+  const btn = e.target instanceof Element ? e.target.closest(".empty-state [data-next-id]") : null;
+  if (btn) applyNextActionChip(btn);
+});
+
 (function bindScrollNav() {
   const scroller = document.getElementById("main-area");
   const nav = document.getElementById("scroll-nav");
@@ -1321,6 +1393,15 @@ function applyWorkspaceFace(next, { persist = true, refresh = true } = {}) {
     designModeActive = false;
     if (prev === "office" && verifyToggle) verifyToggle.checked = codeVerifyPref;
   }
+  if (packSelect && prev !== face) {
+    const available = [...packSelect.options].map((o) => o.value);
+    const nextPack = nextPackForWorkspaceFace(face, packSelect.value, available);
+    if (nextPack !== packSelect.value) {
+      packSelect.value = nextPack;
+      if (face === "office" && autoPackToggle) autoPackToggle.checked = false;
+      updatePackHint();
+    }
+  }
   syncWorkspaceFaceChrome();
   if (refresh) {
     refreshRunListView();
@@ -1338,6 +1419,10 @@ function paintEmptyState() {
     workspaceFace,
     // 只有点开「更多稿件」才进设计目录；日常 Work 空态要看得见「说要做什么」。
     designModeActive: officeCatalogOpen,
+    workdir: composerWorkdir(),
+    harness: harnessSnapshot,
+    im: imSnapshot,
+    githubPr: githubPrReady,
   });
   renderStarterGallery({
     selectedTemplate: selectedDesignTemplate,
@@ -2010,6 +2095,7 @@ function handleToggleEntry(seq) {
 function renderDetailWithState(state) {
   leaveWelcomeLayout();
   const runId = state.runId;
+  const info = runs.find((r) => r.runId === runId);
   const activeTab = normalizeTab(activeTabs.get(runId));
   const live = currentLiveBuffers(runId);
 
@@ -2079,6 +2165,13 @@ function renderDetailWithState(state) {
     threadFiles: conversationArtifactFiles(runId),
     runs,
     runStates,
+    workdir: info?.workdir || composerWorkdir(),
+    im: imSnapshot,
+    githubPr: githubPrReady,
+    canContinue: info?.canContinue === true,
+    planUsed: state.runConfig?.mode === "plan",
+    workspaceFace,
+    onNextAction: applyNextActionChip,
   });
   // T8 变更审查：详情骨架换 run 会整体重建，把分区节点搬回新的 rail-body
   // 并指向当前 run（同一节点 re-parent，加载态与展开态不丢）
@@ -2526,6 +2619,10 @@ async function inspectRunPaths(runId, paths) {
 // ---- 宿主真相快照（Tools/Context/Loop 面的数据源）----
 // 拉一次即可：它描述的是本次进程的装配，run 与 run 之间不变
 let harnessSnapshot = null;
+/** GET /api/im 公开快照。只认 feishuInbound，不含密钥。 */
+let imSnapshot = /** @type {{feishuInbound?: boolean}|null} */ (null);
+/** GET /api/workspace/git/pr 的 ready。没令牌 / 不可开 → 不画「开成 PR」。 */
+let githubPrReady = /** @type {{ready?: boolean}|null} */ (null);
 /** @type {{models: any[], roles: any, context?: any}|null} */
 let modelsSnapshot = null;
 let executorModelSwitchBusy = false;
@@ -2583,6 +2680,36 @@ async function loadModelsForComposer() {
   }
 }
 
+async function refreshImSnapshot() {
+  try {
+    const res = await fetch("/api/im");
+    if (!res.ok) {
+      imSnapshot = { feishuInbound: false };
+      return imSnapshot;
+    }
+    const body = await res.json().catch(() => null);
+    imSnapshot = body && typeof body === "object"
+      ? { feishuInbound: body.feishuInbound === true }
+      : { feishuInbound: false };
+  } catch {
+    imSnapshot = { feishuInbound: false };
+  }
+  return imSnapshot;
+}
+
+async function refreshGithubPrReady() {
+  if (!workspaceGitChipApi?.refreshPrReady) {
+    githubPrReady = null;
+    return null;
+  }
+  try {
+    githubPrReady = await workspaceGitChipApi.refreshPrReady();
+  } catch {
+    githubPrReady = null;
+  }
+  return githubPrReady;
+}
+
 async function loadHarness() {
   try {
     const res = await fetch("/api/harness");
@@ -2598,6 +2725,8 @@ async function loadHarness() {
     }
     populateKnobs(harnessSnapshot);
     maybeRepaintWorkdirsForFace();
+    await refreshImSnapshot();
+    await refreshGithubPrReady();
     if (mainPanel.classList.contains("is-welcome")) paintEmptyState();
     // 快照到达前渲染过的详情要补一次——四决定因素的护栏/工具面全靠它
     if (selectedRunId) {
@@ -3452,6 +3581,9 @@ function composerWorkdir() {
 
 function syncFileTreeToComposer() {
   void fileTreeApi?.reload?.();
+  void workspaceGitChipApi?.refresh()?.then(() => refreshGithubPrReady().then(() => {
+    if (mainPanel.classList.contains("is-welcome")) paintEmptyState();
+  }));
 }
 
 async function refreshGateChip() {
@@ -4871,7 +5003,9 @@ if (workdirSelect) {
         getMcp: () => harnessSnapshot?.mcp ?? null,
         onAnnounce: (msg) => announceStatus(msg),
       });
-      void workspaceGitChipApi?.refresh();
+      void workspaceGitChipApi?.refresh()?.then(() => refreshGithubPrReady().then(() => {
+        if (mainPanel.classList.contains("is-welcome")) paintEmptyState();
+      }));
     }
   } catch { /* 目录选择器是增强项，初始化失败静默降级 */ }
 }
