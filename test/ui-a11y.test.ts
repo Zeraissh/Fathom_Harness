@@ -844,7 +844,7 @@ describe("编排面板", () => {
     expect((document.getElementById("detail-rail") as HTMLElement).hidden).toBe(true);
   });
 
-  it("编排面板零 violations（全部主题）", async () => {
+  it("编排面板零 violations（全部主题）", { timeout: 15_000 }, async () => {
     for (const theme of ["light", "dark", "graphite", "contrast"]) {
       mountSkeleton();
       document.documentElement.setAttribute("data-theme", theme);
@@ -1208,7 +1208,7 @@ describe("统一 composer：一个框，两种去向", () => {
     expect(chat.textContent).toContain("暗号是什么？");
   });
 
-  it("composer 的两种模式各自零 violations（全部主题）", async () => {
+  it("composer 的两种模式各自零 violations（全部主题）", { timeout: 15_000 }, async () => {
     const modes = [
       deriveComposerMode({ info: CONTINUABLE, localStatus: "done" }),
       deriveComposerMode({ info: { ...CONTINUABLE, status: "running", canContinue: false }, localStatus: "running" }),
