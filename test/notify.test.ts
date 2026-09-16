@@ -12,7 +12,11 @@ import { createProjectStatusTool } from "../src/project-status.js";
 import { createServer } from "node:http";
 import { createCipheriv, createHash, randomBytes } from "node:crypto";
 import {
+  FEISHU_APP_ID_ENV,
+  FEISHU_APP_SECRET_ENV,
+  FEISHU_BOT_OPEN_ID_ENV,
   FEISHU_ENCRYPT_KEY_ENV,
+  FEISHU_OPEN_API_BASE,
   FEISHU_VERIFICATION_TOKEN_ENV,
   FEISHU_WEBHOOK_ENV,
   IM_FEISHU_PATH,
@@ -23,7 +27,10 @@ import {
   NOTIFY_WEBHOOK_ENV,
   WECOM_WEBHOOK_ENV,
   attachImInbound,
+  createFeishuAppReply,
   createOfficeNotifier,
+  extractFeishuMessageText,
+  feishuMentionsBot,
   feishuSignatureHex,
   formatFeishuGateCard,
   formatGateCardText,
@@ -35,6 +42,7 @@ import {
   notifyArmedHint,
   officeNotifySnapshot,
   parseFeishuInboundEvent,
+  resolveFeishuAppFromEnv,
   resolveFeishuInboundFromEnv,
   resolveImHostStatus,
   resolveImPublicBase,
@@ -204,12 +212,17 @@ describe("sanitizeNotifyUrlForLog / hint / env", () => {
     const hint = formatImHostHint(resolveImHostStatus({}));
     expect(hint).toBe("飞书/微信宿主未开");
     expect(hint).not.toContain("ENCRYPT");
-    expect(formatImHostHint(resolveImHostStatus({
+    const webhookOnly = formatImHostHint(resolveImHostStatus({
       [FEISHU_WEBHOOK_ENV]: LEAK,
       [FEISHU_ENCRYPT_KEY_ENV]: ENCRYPT_KEY,
-    }))).toContain("入站收消息");
+    }));
+    expect(webhookOnly).toContain("入站收消息");
+    expect(webhookOnly).toContain("未配应用，不能回同一会话");
+    expect(webhookOnly).not.toContain("NOTIFY-LEAK");
     expect(JSON.stringify(resolveImHostStatus({ [FEISHU_ENCRYPT_KEY_ENV]: ENCRYPT_KEY })))
       .not.toContain(ENCRYPT_KEY);
+    expect(resolveFeishuAppFromEnv({})).toBeNull();
+    expect(resolveFeishuAppFromEnv({ [FEISHU_APP_ID_ENV]: "cli_x" })).toBeNull();
   });
 
   it("未配 public base 不炸；armed 文案含回调路径；密钥不进 banner", () => {
@@ -291,6 +304,17 @@ describe("sanitizeNotifyUrlForLog / hint / env", () => {
     expect(text).not.toContain(ENCRYPT_KEY);
     expect(text).not.toContain("NOTIFY-LEAK");
     expect(text).not.toContain(LEAK);
+    const appSecret = "feishu-app-secret-MUST-NOT-LEAK";
+    const appBanner = formatImStartupBanner({
+      [FEISHU_ENCRYPT_KEY_ENV]: ENCRYPT_KEY,
+      [FEISHU_APP_ID_ENV]: "cli_test_app",
+      [FEISHU_APP_SECRET_ENV]: appSecret,
+    });
+    expect(appBanner).toContain("应用回同一会话");
+    expect(appBanner).not.toContain(appSecret);
+    expect(appBanner).not.toContain("cli_test_app");
+    expect(appBanner).not.toContain(ENCRYPT_KEY);
+
     expect(formatImTunnelInstructions({ port: 0 })).toContain("127.0.0.1:4173");
     const script = readFileSync(join(process.cwd(), "scripts", "im-tunnel.ts"), "utf8");
     expect(script).toContain("formatImTunnelInstructions");
@@ -604,6 +628,102 @@ describe("飞书入站签名与开 run", () => {
       header: { event_type: "im.message.receive_v1" },
       event: { message: { message_id: "om", message_type: "text", content: "{\"text\":\"@_user_1 开工\"}" } },
     })).toEqual({ kind: "message", task: "开工", messageId: "om" });
+    expect(extractFeishuMessageText("{\"text\":\"<at user_id=\\\"ou_bot\\\">Bot</at> 写周报\"}")).toBe("写周报");
+    expect(extractFeishuMessageText({
+      title: "",
+      content: [[{ tag: "at", user_id: "ou_bot", user_name: "Bot" }, { tag: "text", text: " 列三个风险" }]],
+    })).toBe("列三个风险");
+    expect(feishuMentionsBot({
+      mentions: [{ key: "@_user_1", openId: "ou_bot" }],
+      rawText: "@_user_1 开工",
+      botOpenId: "ou_bot",
+    })).toBe(true);
+    expect(feishuMentionsBot({
+      mentions: [{ key: "@_user_1", openId: "ou_other" }],
+      rawText: "@_user_1 开工",
+      botOpenId: "ou_bot",
+    })).toBe(false);
+    expect(parseFeishuInboundEvent({
+      header: { event_type: "im.message.receive_v1" },
+      event: {
+        sender: { sender_type: "user" },
+        message: {
+          message_id: "om_at",
+          chat_id: "oc_group",
+          chat_type: "group",
+          message_type: "text",
+          content: "{\"text\":\"@_user_1 写一份周报\"}",
+          mentions: [{ key: "@_user_1", id: { open_id: "ou_bot" }, name: "Bot" }],
+        },
+      },
+    })).toEqual({
+      kind: "message",
+      task: "写一份周报",
+      messageId: "om_at",
+      chatId: "oc_group",
+      chatType: "group",
+    });
+    expect(parseFeishuInboundEvent({
+      header: { event_type: "im.message.receive_v1" },
+      event: {
+        sender: { sender_type: "user" },
+        message: {
+          message_id: "om_plain",
+          chat_id: "oc_group",
+          chat_type: "group",
+          message_type: "text",
+          content: "{\"text\":\"群里闲聊\"}",
+        },
+      },
+    })).toEqual({ kind: "ignored", reason: "not_mentioned" });
+    expect(parseFeishuInboundEvent({
+      header: { event_type: "im.message.receive_v1" },
+      event: {
+        sender: { sender_id: { open_id: "ou_bot" }, sender_type: "user" },
+        message: {
+          message_id: "om_self",
+          chat_type: "p2p",
+          message_type: "text",
+          content: "{\"text\":\"回声\"}",
+        },
+      },
+    }, { botOpenId: "ou_bot" }).kind).toBe("ignored");
+    expect(parseFeishuInboundEvent({
+      header: { event_type: "im.message.receive_v1" },
+      event: {
+        sender: { sender_type: "user" },
+        message: {
+          message_id: "om_other",
+          chat_id: "oc_group",
+          chat_type: "group",
+          message_type: "text",
+          content: "{\"text\":\"@_user_1 不是叫你\"}",
+          mentions: [{ key: "@_user_1", id: { open_id: "ou_other" } }],
+        },
+      },
+    }, { botOpenId: "ou_bot" })).toEqual({ kind: "ignored", reason: "not_mentioned" });
+    expect(parseFeishuInboundEvent({
+      header: { event_type: "im.message.receive_v1" },
+      event: {
+        sender: { sender_type: "user" },
+        message: {
+          message_id: "om_post",
+          chat_id: "oc_group",
+          chat_type: "group",
+          message_type: "post",
+          content: JSON.stringify({
+            title: "",
+            content: [[{ tag: "at", user_id: "ou_bot" }, { tag: "text", text: " 审一下方案" }]],
+          }),
+        },
+      },
+    }, { botOpenId: "ou_bot" })).toEqual({
+      kind: "message",
+      task: "审一下方案",
+      messageId: "om_post",
+      chatId: "oc_group",
+      chatType: "group",
+    });
     expect(formatImRunResultText({
       task: "t",
       runId: "r",
@@ -612,6 +732,305 @@ describe("飞书入站签名与开 run", () => {
       summary: "ok",
     })).toContain("打开本 run：r");
     expect(encryptFeishuBody("{\"type\":\"url_verification\",\"challenge\":\"x\"}").length).toBeGreaterThan(16);
+  });
+
+  it("群 @ 开跑；无 mention 忽略；无应用仍走 webhook", async () => {
+    const started: Array<{ task: string }> = [];
+    const replies: string[] = [];
+    const now = 1_700_000_000_000;
+    const env = { [FEISHU_ENCRYPT_KEY_ENV]: ENCRYPT_KEY };
+    const notifier = createOfficeNotifier({
+      kind: "feishu",
+      webhookUrl: LEAK,
+      fetchFn: async (_url, init) => {
+        replies.push(String(init?.body ?? ""));
+        return new Response("ok", { status: 200 });
+      },
+    });
+    const { port, close } = await startImServer({
+      env,
+      nowMs: () => now,
+      notifier,
+      startRun: async (input) => {
+        started.push({ task: input.task });
+        return { runId: "run_at" };
+      },
+      waitForRun: async (runId) => ({
+        task: "写一份周报",
+        runId,
+        status: "done",
+        stopReason: "completed",
+        summary: "周报已写好",
+      }),
+    });
+    const base = `http://127.0.0.1:${port}`;
+    const ts = String(Math.floor(now / 1000));
+    const post = async (event: unknown, nonce: string) => {
+      const body = JSON.stringify(event);
+      return fetch(`${base}${IM_FEISHU_PATH}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Lark-Request-Timestamp": ts,
+          "X-Lark-Request-Nonce": nonce,
+          "X-Lark-Signature": signFeishu(ts, nonce, body),
+        },
+        body,
+      });
+    };
+    try {
+      const ignored = await post({
+        schema: "2.0",
+        header: { event_type: "im.message.receive_v1" },
+        event: {
+          sender: { sender_type: "user" },
+          message: {
+            message_id: "om_chat",
+            chat_id: "oc_group",
+            chat_type: "group",
+            message_type: "text",
+            content: "{\"text\":\"没点名\"}",
+          },
+        },
+      }, "n-plain");
+      expect(ignored.status).toBe(200);
+      expect(await ignored.json()).toEqual({ ok: true, ignored: "not_mentioned" });
+      expect(started).toHaveLength(0);
+
+      const at = await post({
+        schema: "2.0",
+        header: { event_type: "im.message.receive_v1" },
+        event: {
+          sender: { sender_type: "user" },
+          message: {
+            message_id: "om_mention",
+            chat_id: "oc_group",
+            chat_type: "group",
+            message_type: "text",
+            content: "{\"text\":\"@_user_1 写一份周报\"}",
+            mentions: [{ key: "@_user_1", id: { open_id: "ou_bot" }, name: "Bot" }],
+          },
+        },
+      }, "n-at");
+      expect(at.status).toBe(200);
+      expect(await at.json()).toEqual({ ok: true, runId: "run_at" });
+      expect(started).toEqual([{ task: "写一份周报" }]);
+      const deadline = Date.now() + 1000;
+      while (replies.length === 0 && Date.now() < deadline) {
+        await new Promise((r) => setTimeout(r, 20));
+      }
+      expect(replies).toHaveLength(1);
+      expect(replies[0]).toContain("周报已写好");
+      expect(replies[0]).not.toContain("NOTIFY-LEAK");
+    } finally {
+      await close();
+    }
+  });
+
+  it("配了应用回同一会话；webhook 不重复；密钥不进响应", async () => {
+    const apiCalls: Array<{ url: string; body: string; auth?: string }> = [];
+    const webhookCalls: string[] = [];
+    const now = 1_700_000_000_000;
+    const appSecret = "feishu-app-secret-MUST-NOT-LEAK";
+    const env = {
+      [FEISHU_ENCRYPT_KEY_ENV]: ENCRYPT_KEY,
+      [FEISHU_APP_ID_ENV]: "cli_test_app",
+      [FEISHU_APP_SECRET_ENV]: appSecret,
+      [FEISHU_BOT_OPEN_ID_ENV]: "ou_bot",
+      [FEISHU_WEBHOOK_ENV]: LEAK,
+    };
+    const appReply = createFeishuAppReply({
+      appId: "cli_test_app",
+      appSecret,
+      botOpenId: "ou_bot",
+      fetchFn: async (url, init) => {
+        const href = String(url);
+        apiCalls.push({
+          url: href,
+          body: String(init?.body ?? ""),
+          auth: String((init?.headers as Record<string, string> | undefined)?.Authorization ?? ""),
+        });
+        if (href.includes("/auth/v3/tenant_access_token/internal")) {
+          return Response.json({ code: 0, tenant_access_token: "t-test-token", expire: 7200 });
+        }
+        if (href.includes("/im/v1/messages")) {
+          return Response.json({ code: 0, data: { message_id: "om_out" } });
+        }
+        return Response.json({ code: 1, msg: "unexpected" }, { status: 500 });
+      },
+    });
+    const notifier = createOfficeNotifier({
+      kind: "feishu",
+      webhookUrl: LEAK,
+      fetchFn: async (_url, init) => {
+        webhookCalls.push(String(init?.body ?? ""));
+        return new Response("ok", { status: 200 });
+      },
+    });
+    const { port, close } = await startImServer({
+      env,
+      nowMs: () => now,
+      appReply,
+      notifier,
+      startRun: async () => ({ runId: "run_app" }),
+      waitForRun: async (runId) => ({
+        task: "写一份周报",
+        runId,
+        status: "done",
+        summary: "周报已写好",
+      }),
+    });
+    const base = `http://127.0.0.1:${port}`;
+    try {
+      const event = {
+        schema: "2.0",
+        header: { event_type: "im.message.receive_v1" },
+        event: {
+          sender: { sender_type: "user" },
+          message: {
+            message_id: "om_app",
+            chat_id: "oc_same",
+            chat_type: "group",
+            message_type: "text",
+            content: "{\"text\":\"@_user_1 写一份周报\"}",
+            mentions: [{ key: "@_user_1", id: { open_id: "ou_bot" } }],
+          },
+        },
+      };
+      const body = JSON.stringify(event);
+      const ts = String(Math.floor(now / 1000));
+      const nonce = "n-app";
+      const run = await fetch(`${base}${IM_FEISHU_PATH}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Lark-Request-Timestamp": ts,
+          "X-Lark-Request-Nonce": nonce,
+          "X-Lark-Signature": signFeishu(ts, nonce, body),
+        },
+        body,
+      });
+      expect(run.status).toBe(200);
+      expect(await run.json()).toEqual({ ok: true, runId: "run_app" });
+      const deadline = Date.now() + 1000;
+      while (!apiCalls.some((c) => c.url.includes("/im/v1/messages")) && Date.now() < deadline) {
+        await new Promise((r) => setTimeout(r, 20));
+      }
+      expect(apiCalls.some((c) => c.url.startsWith(`${FEISHU_OPEN_API_BASE}/open-apis/im/v1/messages`))).toBe(true);
+      const sent = apiCalls.find((c) => c.url.includes("/im/v1/messages"));
+      expect(sent?.body).toContain("oc_same");
+      expect(sent?.body).toContain("周报已写好");
+      expect(sent?.auth).toBe("Bearer t-test-token");
+      expect(webhookCalls).toHaveLength(0);
+      const snap = await (await fetch(`${base}${IM_STATUS_PATH}`)).json() as Record<string, unknown>;
+      expect(snap.feishuAppReply).toBe(true);
+      expect(JSON.stringify(snap)).not.toContain(appSecret);
+      expect(JSON.stringify(snap)).not.toContain("t-test-token");
+      expect(JSON.stringify(snap)).not.toContain("cli_test_app");
+    } finally {
+      await close();
+    }
+  });
+
+  it("伪造 token 拒；同会话忙则 429", async () => {
+    const started: string[] = [];
+    let releaseFirst: (() => void) | undefined;
+    const firstHold = new Promise<void>((resolve) => {
+      releaseFirst = resolve;
+    });
+    const now = 1_700_000_000_000;
+    const env = {
+      [FEISHU_ENCRYPT_KEY_ENV]: ENCRYPT_KEY,
+      [FEISHU_VERIFICATION_TOKEN_ENV]: "verify-tok",
+    };
+    const { port, close } = await startImServer({
+      env,
+      nowMs: () => now,
+      startRun: async (input) => {
+        started.push(input.task);
+        await firstHold;
+        return { runId: `run_${started.length}` };
+      },
+    });
+    const base = `http://127.0.0.1:${port}`;
+    const ts = String(Math.floor(now / 1000));
+    const post = async (event: unknown, nonce: string) => {
+      const body = JSON.stringify(event);
+      return fetch(`${base}${IM_FEISHU_PATH}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Lark-Request-Timestamp": ts,
+          "X-Lark-Request-Nonce": nonce,
+          "X-Lark-Signature": signFeishu(ts, nonce, body),
+        },
+        body,
+      });
+    };
+    try {
+      const forged = await post({
+        schema: "2.0",
+        header: { event_type: "im.message.receive_v1", token: "wrong-token" },
+        event: {
+          sender: { sender_type: "user" },
+          message: {
+            message_id: "om_forged",
+            chat_type: "p2p",
+            message_type: "text",
+            content: "{\"text\":\"伪造\"}",
+          },
+        },
+      }, "n-forged");
+      expect(forged.status).toBe(401);
+      expect(await forged.json()).toEqual({ error: "事件无效" });
+      expect(started).toHaveLength(0);
+
+      const firstBody = {
+        schema: "2.0",
+        header: { event_type: "im.message.receive_v1", token: "verify-tok" },
+        event: {
+          sender: { sender_type: "user" },
+          message: {
+            message_id: "om_busy1",
+            chat_id: "oc_busy",
+            chat_type: "p2p",
+            message_type: "text",
+            content: "{\"text\":\"第一轮\"}",
+          },
+        },
+      };
+      const firstP = post(firstBody, "n-busy1");
+      const deadline = Date.now() + 1000;
+      while (started.length === 0 && Date.now() < deadline) {
+        await new Promise((r) => setTimeout(r, 20));
+      }
+      expect(started).toEqual(["第一轮"]);
+
+      const busy = await post({
+        schema: "2.0",
+        header: { event_type: "im.message.receive_v1", token: "verify-tok" },
+        event: {
+          sender: { sender_type: "user" },
+          message: {
+            message_id: "om_busy2",
+            chat_id: "oc_busy",
+            chat_type: "p2p",
+            message_type: "text",
+            content: "{\"text\":\"第二轮\"}",
+          },
+        },
+      }, "n-busy2");
+      expect(busy.status).toBe(429);
+      expect(busy.headers.get("retry-after")).toBe("5");
+      expect(await busy.json()).toEqual({ error: "同一会话上一轮还在跑" });
+      expect(started).toEqual(["第一轮"]);
+
+      releaseFirst?.();
+      expect((await firstP).status).toBe(200);
+    } finally {
+      releaseFirst?.();
+      await close();
+    }
   });
 });
 

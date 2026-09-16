@@ -4,11 +4,15 @@
  * 出站：看板（project_status）变更，或入站开的 run 收尾，POST 飞书自定义机器人 /
  * 企业微信群机器人 / 通用 JSON webhook。
  *
- * 入站（仅飞书事件订阅）：校验 X-Lark-Signature，把文本消息变成一次 run，
- * 结果走同一条出站 webhook。无 ENCRYPT_KEY 不启入站，启动行写「未开」。
- * 飞书云到不了 127.0.0.1：武装入站时启动行印回调路径 /api/im/feishu，
- * 以及「需要公网 HTTPS」。操作员自己的隧道写 AGENT_IM_PUBLIC_BASE（可印
- * 拼好的回调，不印 encrypt key / webhook）。签名不因隧道关掉。
+ * 入站（仅飞书事件订阅）：校验 X-Lark-Signature，把 im.message.receive_v1
+ * 里用户 @机器人 的文本变成一次 run（不是机器人自己的回声）。群消息必须
+ * 带 mention；私聊文本照收。同一 chat 同时只开一轮，忙则 429。
+ * 回写：配了 APP_ID + APP_SECRET 用 tenant_access_token 回同一会话；
+ * 没配应用则走原出站 webhook，启动行照实说。密钥不进 stdout。
+ * 无 ENCRYPT_KEY 不启入站。飞书云到不了 127.0.0.1：武装入站时启动行
+ * 印回调路径 /api/im/feishu 以及「需要公网 HTTPS」。隧道写
+ * AGENT_IM_PUBLIC_BASE（可印拼好的回调，不印 encrypt key / webhook /
+ * app secret）。签名不因隧道关掉。多维表格 / 审批 / 云文档不是这条切片。
  *
  * 企业微信：本仓只做群机器人出站。个微 / 公众号入站需要调用方自己的 App
  * 凭证与公网回调，这里不伪造、不假装能收私聊。
@@ -24,8 +28,13 @@ export const NOTIFY_WEBHOOK_ENV = "AGENT_NOTIFY_WEBHOOK";
 export const WECOM_WEBHOOK_ENV = "AGENT_WECOM_WEBHOOK";
 export const FEISHU_ENCRYPT_KEY_ENV = "AGENT_FEISHU_ENCRYPT_KEY";
 export const FEISHU_VERIFICATION_TOKEN_ENV = "AGENT_FEISHU_VERIFICATION_TOKEN";
+export const FEISHU_APP_ID_ENV = "AGENT_FEISHU_APP_ID";
+export const FEISHU_APP_SECRET_ENV = "AGENT_FEISHU_APP_SECRET";
+/** 可选。群 @ 核对是不是本机器人；不设则有 mention 即开跑（请在开放平台只推 @机器人）。 */
+export const FEISHU_BOT_OPEN_ID_ENV = "AGENT_FEISHU_BOT_OPEN_ID";
 /** 操作员自己的公网 HTTPS 根（隧道/反代）。只用于启动行拼回调，不启入站。 */
 export const IM_PUBLIC_BASE_ENV = "AGENT_IM_PUBLIC_BASE";
+export const FEISHU_OPEN_API_BASE = "https://open.feishu.cn";
 
 export const IM_STATUS_PATH = "/api/im";
 export const IM_FEISHU_PATH = "/api/im/feishu";
@@ -90,6 +99,8 @@ export type WecomTextBody = {
 export type ImHostStatus = {
   feishuOutbound: boolean;
   feishuInbound: boolean;
+  /** APP_ID + APP_SECRET 齐了才能用开放平台回同一会话。 */
+  feishuAppReply: boolean;
   wecomOutbound: boolean;
   genericOutbound: boolean;
 };
@@ -103,18 +114,45 @@ export type ImStartRunRequest = {
 export type ImStartRunFn = (input: ImStartRunRequest) => Promise<{ runId: string }>;
 export type ImWaitRunFn = (runId: string) => Promise<ImRunResultPayload>;
 
+export type FeishuAppCredentials = {
+  appId: string;
+  appSecret: string;
+  botOpenId: string;
+};
+
+export type FeishuAppReply = {
+  armed: boolean;
+  sendToChat(input: { chatId: string; text: string }): Promise<void>;
+  getBotOpenId(): Promise<string>;
+};
+
+export type ImChatGate = {
+  tryEnter(chatId: string): boolean;
+  leave(chatId: string): void;
+};
+
 export type ImInboundAttachOptions = {
   env?: NodeJS.ProcessEnv;
   startRun?: ImStartRunFn;
   waitForRun?: ImWaitRunFn;
   notifier?: OfficeNotifier;
+  appReply?: FeishuAppReply;
+  chatGate?: ImChatGate;
+  botOpenId?: string;
+  fetchFn?: typeof fetch;
   nowMs?: () => number;
   seen?: Set<string>;
 };
 
+export type FeishuMention = {
+  key?: string;
+  openId?: string;
+  name?: string;
+};
+
 export type FeishuInboundParse =
   | { kind: "challenge"; challenge: string }
-  | { kind: "message"; task: string; messageId?: string }
+  | { kind: "message"; task: string; messageId?: string; chatId?: string; chatType?: "p2p" | "group" }
   | { kind: "ignored"; reason: string };
 
 export function resolveOfficeNotifyFromEnv(
@@ -140,6 +178,19 @@ export function resolveFeishuInboundFromEnv(
   };
 }
 
+export function resolveFeishuAppFromEnv(
+  env: NodeJS.ProcessEnv = process.env,
+): FeishuAppCredentials | null {
+  const appId = env[FEISHU_APP_ID_ENV]?.trim() ?? "";
+  const appSecret = env[FEISHU_APP_SECRET_ENV]?.trim() ?? "";
+  if (!appId || !appSecret) return null;
+  return {
+    appId,
+    appSecret,
+    botOpenId: env[FEISHU_BOT_OPEN_ID_ENV]?.trim() ?? "",
+  };
+}
+
 export function resolveImHostStatus(env: NodeJS.ProcessEnv = process.env): ImHostStatus {
   const feishu = Boolean(env[FEISHU_WEBHOOK_ENV]?.trim());
   const wecom = Boolean(env[WECOM_WEBHOOK_ENV]?.trim());
@@ -147,6 +198,7 @@ export function resolveImHostStatus(env: NodeJS.ProcessEnv = process.env): ImHos
   return {
     feishuOutbound: feishu,
     feishuInbound: Boolean(resolveFeishuInboundFromEnv(env)),
+    feishuAppReply: Boolean(resolveFeishuAppFromEnv(env)),
     wecomOutbound: wecom,
     genericOutbound: generic && !feishu && !wecom,
   };
@@ -205,8 +257,15 @@ export function formatImInboundReachHint(publicBase?: string | null): string {
 
 export function formatImHostHint(status: ImHostStatus, env?: NodeJS.ProcessEnv): string {
   const bits: string[] = [];
-  if (status.feishuInbound && (status.feishuOutbound || status.genericOutbound)) {
-    bits.push("飞书宿主已开（入站收消息 + 出站回结果）");
+  const webhookReply = status.feishuOutbound || status.genericOutbound;
+  if (status.feishuInbound && (webhookReply || status.feishuAppReply)) {
+    if (status.feishuAppReply) {
+      bits.push(webhookReply
+        ? "飞书宿主已开（入站收消息 + 应用回同一会话；看板仍走 webhook）"
+        : "飞书宿主已开（入站收消息 + 应用回同一会话）");
+    } else {
+      bits.push("飞书宿主已开（入站收消息 + 出站 webhook 回结果；未配应用，不能回同一会话）");
+    }
   } else if (status.feishuInbound) {
     bits.push("飞书入站已开（出站未配，结果只在本机 UI）");
   } else if (status.feishuOutbound) {
@@ -277,18 +336,26 @@ export function formatImTunnelInstructions(opts?: {
 export function imHostStatusSnapshot(status: ImHostStatus): {
   feishuInbound: boolean;
   feishuOutbound: boolean;
+  feishuAppReply: boolean;
   wecomOutbound: boolean;
   wechatPersonalInbound: false;
   note: string;
 } {
+  const bits: string[] = [];
+  if (status.feishuInbound) {
+    bits.push("群 @ → 本仓 run → 回消息。多维表格 / 审批 / 云文档要另开、管理员授权。");
+  }
+  if (status.feishuInbound || status.feishuOutbound || status.wecomOutbound) {
+    bits.push("企业微信只做群机器人出站；个微/公众号入站需要你们自己的 App 凭证，本仓不伪造。");
+  }
+  if (bits.length === 0) bits.push("飞书/微信宿主未开。");
   return {
     feishuInbound: status.feishuInbound,
     feishuOutbound: status.feishuOutbound,
+    feishuAppReply: status.feishuAppReply,
     wecomOutbound: status.wecomOutbound,
     wechatPersonalInbound: false,
-    note: status.feishuInbound || status.feishuOutbound || status.wecomOutbound
-      ? "企业微信只做群机器人出站；个微/公众号入站需要你们自己的 App 凭证，本仓不伪造。"
-      : "飞书/微信宿主未开。",
+    note: bits.join(" "),
   };
 }
 
@@ -421,6 +488,105 @@ export function createOfficeNotifier(opts: OfficeNotifyConfig = {}): OfficeNotif
   };
 }
 
+export function createImChatGate(): ImChatGate {
+  const busy = new Set<string>();
+  return {
+    tryEnter(chatId: string): boolean {
+      const key = chatId.trim();
+      if (!key) return true;
+      if (busy.has(key)) return false;
+      busy.add(key);
+      return true;
+    },
+    leave(chatId: string): void {
+      const key = chatId.trim();
+      if (key) busy.delete(key);
+    },
+  };
+}
+
+/**
+ * 用 tenant_access_token 回同一会话。密钥只进这次 POST，不写日志、不进 snapshot。
+ * 没配齐 APP_ID/SECRET 时 armed=false，调用空操作。
+ */
+export function createFeishuAppReply(opts: {
+  appId: string;
+  appSecret: string;
+  botOpenId?: string;
+  fetchFn?: typeof fetch;
+  nowMs?: () => number;
+  apiBase?: string;
+}): FeishuAppReply {
+  const appId = opts.appId.trim();
+  const appSecret = opts.appSecret.trim();
+  const armed = appId.length > 0 && appSecret.length > 0;
+  const fetchFn = opts.fetchFn ?? globalThis.fetch.bind(globalThis);
+  const nowMs = opts.nowMs ?? Date.now;
+  const apiBase = (opts.apiBase ?? FEISHU_OPEN_API_BASE).replace(/\/+$/, "");
+  let cachedToken: { token: string; expMs: number } | null = null;
+  let cachedBotOpenId = opts.botOpenId?.trim() ?? "";
+
+  const getToken = async (): Promise<string> => {
+    if (!armed) throw new Error("feishu_app_unarmed");
+    if (cachedToken && nowMs() < cachedToken.expMs) return cachedToken.token;
+    const res = await fetchFn(`${apiBase}/open-apis/auth/v3/tenant_access_token/internal`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json; charset=utf-8" },
+      body: JSON.stringify({ app_id: appId, app_secret: appSecret }),
+    });
+    const json = await res.json() as {
+      code?: unknown;
+      tenant_access_token?: unknown;
+      expire?: unknown;
+    };
+    if (json.code !== 0 || typeof json.tenant_access_token !== "string" || !json.tenant_access_token) {
+      throw new Error("feishu_tenant_token_failed");
+    }
+    const expireSec = typeof json.expire === "number" && json.expire > 120 ? json.expire : 7200;
+    cachedToken = {
+      token: json.tenant_access_token,
+      expMs: nowMs() + (expireSec - 60) * 1000,
+    };
+    return cachedToken.token;
+  };
+
+  return {
+    armed,
+    async getBotOpenId(): Promise<string> {
+      if (!armed) return "";
+      if (cachedBotOpenId) return cachedBotOpenId;
+      const token = await getToken();
+      const res = await fetchFn(`${apiBase}/open-apis/bot/v3/info`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const json = await res.json() as { bot?: { open_id?: unknown } };
+      const id = typeof json.bot?.open_id === "string" ? json.bot.open_id.trim() : "";
+      if (id) cachedBotOpenId = id;
+      return cachedBotOpenId;
+    },
+    async sendToChat(input: { chatId: string; text: string }): Promise<void> {
+      if (!armed) return;
+      const chatId = input.chatId.trim();
+      if (!chatId || !input.text) return;
+      const token = await getToken();
+      const res = await fetchFn(`${apiBase}/open-apis/im/v1/messages?receive_id_type=chat_id`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json; charset=utf-8",
+        },
+        body: JSON.stringify({
+          receive_id: chatId,
+          msg_type: "text",
+          content: JSON.stringify({ text: input.text }),
+        }),
+      });
+      const json = await res.json() as { code?: unknown };
+      if (json.code !== 0) throw new Error("feishu_send_failed");
+    },
+  };
+}
+
 export function feishuSignatureHex(
   timestamp: string,
   nonce: string,
@@ -485,34 +651,137 @@ export function stripFeishuMentions(text: string): string {
     .trim();
 }
 
-export function extractFeishuMessageText(content: unknown): string {
-  if (typeof content === "string") {
-    const trimmed = content.trim();
-    if (trimmed.startsWith("{")) {
-      try {
-        const parsed = JSON.parse(trimmed) as { text?: unknown };
-        if (typeof parsed.text === "string") return stripFeishuMentions(parsed.text);
-      } catch {
-        return stripFeishuMentions(trimmed);
-      }
-    }
-    return stripFeishuMentions(trimmed);
-  }
-  if (content && typeof content === "object" && typeof (content as { text?: unknown }).text === "string") {
-    return stripFeishuMentions((content as { text: string }).text);
-  }
-  return "";
-}
-
 function asRecord(value: unknown): Record<string, unknown> | null {
   return value && typeof value === "object" && !Array.isArray(value)
     ? value as Record<string, unknown>
     : null;
 }
 
+function tryParseJson(text: string): unknown {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+}
+
+function postBodyOf(content: unknown): Record<string, unknown> | null {
+  const rec = asRecord(content);
+  if (!rec) return null;
+  if (Array.isArray(rec.content)) return rec;
+  const zh = asRecord(rec.zh_cn);
+  if (zh && Array.isArray(zh.content)) return zh;
+  return null;
+}
+
+/** 开放平台 post 富文本：抽出用户可见字，丢掉 at / 图片。 */
+export function extractFeishuPostText(content: unknown): string {
+  const parsed = typeof content === "string" ? tryParseJson(content) : content;
+  const body = postBodyOf(parsed);
+  if (!body) return "";
+  const parts: string[] = [];
+  if (typeof body.title === "string" && body.title.trim()) parts.push(body.title);
+  const rows = body.content;
+  if (Array.isArray(rows)) {
+    for (const row of rows) {
+      if (!Array.isArray(row)) continue;
+      for (const cell of row) {
+        const item = asRecord(cell);
+        if (!item) continue;
+        const tag = typeof item.tag === "string" ? item.tag : "";
+        if ((tag === "text" || tag === "a") && typeof item.text === "string") {
+          parts.push(item.text);
+        }
+      }
+    }
+  }
+  return stripFeishuMentions(parts.join(" "));
+}
+
+export function collectFeishuAtUserIds(content: unknown): string[] {
+  const parsed = typeof content === "string" ? tryParseJson(content) : content;
+  const body = postBodyOf(parsed);
+  if (!body || !Array.isArray(body.content)) return [];
+  const ids: string[] = [];
+  for (const row of body.content) {
+    if (!Array.isArray(row)) continue;
+    for (const cell of row) {
+      const item = asRecord(cell);
+      if (!item || item.tag !== "at") continue;
+      if (typeof item.user_id === "string" && item.user_id && item.user_id !== "all") {
+        ids.push(item.user_id);
+      }
+    }
+  }
+  return ids;
+}
+
+export function extractFeishuMessageText(content: unknown): string {
+  if (typeof content === "string") {
+    const trimmed = content.trim();
+    if (trimmed.startsWith("{")) {
+      const parsed = tryParseJson(trimmed);
+      const rec = asRecord(parsed);
+      if (rec && typeof rec.text === "string") return stripFeishuMentions(rec.text);
+      const post = extractFeishuPostText(parsed);
+      if (post) return post;
+      if (parsed == null) return stripFeishuMentions(trimmed);
+      return "";
+    }
+    return stripFeishuMentions(trimmed);
+  }
+  if (content && typeof content === "object") {
+    const rec = content as { text?: unknown };
+    if (typeof rec.text === "string") return stripFeishuMentions(rec.text);
+    return extractFeishuPostText(content);
+  }
+  return "";
+}
+
+export function extractFeishuMentions(message: unknown): FeishuMention[] {
+  const rec = asRecord(message);
+  const raw = rec?.mentions;
+  if (!Array.isArray(raw)) return [];
+  const out: FeishuMention[] = [];
+  for (const item of raw) {
+    const mention = asRecord(item);
+    if (!mention) continue;
+    const id = asRecord(mention.id);
+    const openId = typeof id?.open_id === "string"
+      ? id.open_id
+      : typeof mention.open_id === "string"
+        ? mention.open_id
+        : "";
+    const key = typeof mention.key === "string" ? mention.key : undefined;
+    const name = typeof mention.name === "string" ? mention.name : undefined;
+    out.push({
+      ...(key ? { key } : {}),
+      ...(openId ? { openId } : {}),
+      ...(name ? { name } : {}),
+    });
+  }
+  return out;
+}
+
+/** 群消息：有 botOpenId 必须点名本机器人；否则有 mention / at 标记即可。 */
+export function feishuMentionsBot(opts: {
+  mentions: FeishuMention[];
+  rawText: string;
+  postAtUserIds?: string[];
+  botOpenId?: string;
+}): boolean {
+  const bot = opts.botOpenId?.trim() ?? "";
+  const atIds = opts.postAtUserIds ?? [];
+  if (bot) {
+    return opts.mentions.some((m) => m.openId === bot) || atIds.includes(bot);
+  }
+  if (opts.mentions.length > 0 || atIds.length > 0) return true;
+  return /<at\b|@_user_\d+/i.test(opts.rawText);
+}
+
 export function parseFeishuInboundEvent(
   raw: unknown,
-  opts: { verificationToken?: string } = {},
+  opts: { verificationToken?: string; botOpenId?: string } = {},
 ): FeishuInboundParse {
   const root = asRecord(raw);
   if (!root) return { kind: "ignored", reason: "not_object" };
@@ -542,7 +811,13 @@ export function parseFeishuInboundEvent(
 
   const event = asRecord(root.event) ?? root;
   const sender = asRecord(event.sender);
+  const senderId = asRecord(sender?.sender_id);
+  const senderOpenId = typeof senderId?.open_id === "string" ? senderId.open_id : "";
+  const botOpenId = opts.botOpenId?.trim() ?? "";
   if (sender?.sender_type === "app") return { kind: "ignored", reason: "bot_echo" };
+  if (botOpenId && senderOpenId && senderOpenId === botOpenId) {
+    return { kind: "ignored", reason: "bot_echo" };
+  }
 
   const message = asRecord(event.message) ?? event;
   const messageType = typeof message.message_type === "string"
@@ -550,9 +825,31 @@ export function parseFeishuInboundEvent(
     : typeof message.msg_type === "string"
       ? message.msg_type
       : "text";
-  if (messageType !== "text") return { kind: "ignored", reason: "not_text" };
+  if (messageType !== "text" && messageType !== "post") {
+    return { kind: "ignored", reason: "not_text" };
+  }
 
-  const task = extractFeishuMessageText(message.content ?? message.text);
+  const rawContent = message.content ?? message.text;
+  const rawText = typeof rawContent === "string"
+    ? rawContent
+    : rawContent == null
+      ? ""
+      : JSON.stringify(rawContent);
+  const mentions = extractFeishuMentions(message);
+  const postAtUserIds = messageType === "post" ? collectFeishuAtUserIds(rawContent) : [];
+  const rawChatType = typeof message.chat_type === "string" ? message.chat_type : "";
+  const chatType = rawChatType === "group"
+    ? "group"
+    : rawChatType === "p2p" || rawChatType === "private"
+      ? "p2p"
+      : undefined;
+  if (chatType === "group") {
+    if (!feishuMentionsBot({ mentions, rawText, postAtUserIds, botOpenId })) {
+      return { kind: "ignored", reason: "not_mentioned" };
+    }
+  }
+
+  const task = extractFeishuMessageText(rawContent);
   if (!task) return { kind: "ignored", reason: "empty" };
 
   const messageId = typeof message.message_id === "string"
@@ -560,7 +857,16 @@ export function parseFeishuInboundEvent(
     : typeof header?.event_id === "string"
       ? header.event_id
       : undefined;
-  return { kind: "message", task, ...(messageId ? { messageId } : {}) };
+  const chatId = typeof message.chat_id === "string" && message.chat_id
+    ? message.chat_id
+    : undefined;
+  return {
+    kind: "message",
+    task,
+    ...(messageId ? { messageId } : {}),
+    ...(chatId ? { chatId } : {}),
+    ...(chatType ? { chatType } : {}),
+  };
 }
 
 export function unwrapFeishuInboundBody(
@@ -602,13 +908,58 @@ export function isImInboundPath(url: string | undefined): boolean {
   return path === IM_STATUS_PATH || path === IM_FEISHU_PATH || path === IM_WECOM_PATH;
 }
 
-function writeJson(res: ServerResponse, status: number, body: unknown): void {
+function writeJson(
+  res: ServerResponse,
+  status: number,
+  body: unknown,
+  extraHeaders?: Record<string, string>,
+): void {
   const json = JSON.stringify(body);
   res.writeHead(status, {
     "Content-Type": "application/json; charset=utf-8",
     "Cache-Control": "no-store",
+    ...extraHeaders,
   });
   res.end(json);
+}
+
+async function deliverImRunResult(opts: {
+  text: string;
+  chatId?: string;
+  appReply?: FeishuAppReply;
+  notifier?: OfficeNotifier;
+}): Promise<void> {
+  if (opts.appReply?.armed && opts.chatId) {
+    try {
+      await opts.appReply.sendToChat({ chatId: opts.chatId, text: opts.text });
+      return;
+    } catch {
+      /* 应用回写失败再走 webhook；两边都没有则只留本机 UI */
+    }
+  }
+  if (opts.notifier?.armed) {
+    await opts.notifier.notifyText(opts.text);
+  }
+}
+
+function bindImInbound(opts: ImInboundAttachOptions): ImInboundAttachOptions {
+  const env = opts.env ?? process.env;
+  const creds = resolveFeishuAppFromEnv(env);
+  return {
+    ...opts,
+    env,
+    seen: opts.seen ?? new Set<string>(),
+    chatGate: opts.chatGate ?? createImChatGate(),
+    appReply: opts.appReply ?? (creds
+      ? createFeishuAppReply({
+          appId: creds.appId,
+          appSecret: creds.appSecret,
+          botOpenId: creds.botOpenId || undefined,
+          fetchFn: opts.fetchFn,
+          nowMs: opts.nowMs,
+        })
+      : undefined),
+  };
 }
 
 function readIncomingBody(req: IncomingMessage, maxBytes: number): Promise<string> {
@@ -710,8 +1061,18 @@ export async function handleImInboundRequest(
     return;
   }
 
+  let botOpenId = opts.botOpenId?.trim() || env[FEISHU_BOT_OPEN_ID_ENV]?.trim() || "";
+  if (!botOpenId && opts.appReply?.armed) {
+    try {
+      botOpenId = (await opts.appReply.getBotOpenId()).trim();
+    } catch {
+      botOpenId = "";
+    }
+  }
+
   const parsed = parseFeishuInboundEvent(unwrapped.value, {
     verificationToken: inbound.verificationToken,
+    botOpenId,
   });
 
   if (parsed.kind === "challenge") {
@@ -719,6 +1080,10 @@ export async function handleImInboundRequest(
     return;
   }
   if (parsed.kind === "ignored") {
+    if (parsed.reason === "token_mismatch") {
+      writeJson(res, 401, { error: "事件无效" });
+      return;
+    }
     writeJson(res, 200, { ok: true, ignored: parsed.reason });
     return;
   }
@@ -728,6 +1093,14 @@ export async function handleImInboundRequest(
     writeJson(res, 200, { ok: true, ignored: "duplicate" });
     return;
   }
+
+  const chatId = parsed.chatId;
+  const chatGate = opts.chatGate;
+  if (chatId && chatGate && !chatGate.tryEnter(chatId)) {
+    writeJson(res, 429, { error: "同一会话上一轮还在跑" }, { "Retry-After": "5" });
+    return;
+  }
+
   if (parsed.messageId && seen) {
     seen.add(parsed.messageId);
     if (seen.size > SEEN_EVENT_CAP) {
@@ -736,7 +1109,12 @@ export async function handleImInboundRequest(
     }
   }
 
+  const releaseChat = (): void => {
+    if (chatId && chatGate) chatGate.leave(chatId);
+  };
+
   if (!opts.startRun) {
+    releaseChat();
     writeJson(res, 503, { error: "飞书入站已开但未接线" });
     return;
   }
@@ -750,6 +1128,7 @@ export async function handleImInboundRequest(
     });
     runId = started.runId;
   } catch {
+    releaseChat();
     writeJson(res, 500, { error: "未能开跑" });
     return;
   }
@@ -757,13 +1136,21 @@ export async function handleImInboundRequest(
   writeJson(res, 200, { ok: true, runId });
 
   const wait = opts.waitForRun;
-  const notifier = opts.notifier;
-  if (!wait || !notifier?.armed) return;
+  if (!wait) {
+    releaseChat();
+    return;
+  }
   void wait(runId)
-    .then((result) => notifier.notifyText(formatImRunResultText(result)))
+    .then((result) => deliverImRunResult({
+      text: formatImRunResultText(result),
+      chatId,
+      appReply: opts.appReply,
+      notifier: opts.notifier,
+    }))
     .catch(() => {
       /* 出站失败不回打飞书；结果仍在本机 UI */
-    });
+    })
+    .finally(releaseChat);
 }
 
 /**
@@ -775,10 +1162,10 @@ export function attachImInbound(server: Server, opts: ImInboundAttachOptions = {
     (req: IncomingMessage, res: ServerResponse) => void
   >;
   server.removeAllListeners("request");
-  const seen = opts.seen ?? new Set<string>();
+  const bound = bindImInbound(opts);
   const wrapped = (req: IncomingMessage, res: ServerResponse): void => {
     if (isImInboundPath(req.url)) {
-      void handleImInboundRequest(req, res, { ...opts, seen }).catch(() => {
+      void handleImInboundRequest(req, res, bound).catch(() => {
         if (!res.headersSent) writeJson(res, 500, { error: "Internal server error" });
       });
       return;

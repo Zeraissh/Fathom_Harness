@@ -91,12 +91,14 @@
  *   AGENT_HOOKS_CONFIG  可选，指向 hooks JSON。不设 = 机制不存在。设了但文件缺失/非法则 exit 1。
  *                       只认 PreToolUse / PostToolUse / Stop 的 command handler；退出码 2 阻断、1 不阻断。
  *   AGENT_FEISHU_WEBHOOK 可选，飞书自定义机器人 webhook。project_status 写入/清除时
- *                       出站推一门卡片；飞书入站开的 run 收尾也走这条。勿把地址打进日志。
+ *                       出站推一门卡片；没配飞书应用时入站 run 收尾也走这条。勿把地址打进日志。
  *                       与 AGENT_WECOM_WEBHOOK / AGENT_NOTIFY_WEBHOOK 三选一，飞书优先。
  *   AGENT_WECOM_WEBHOOK 可选，企业微信群机器人出站（同一段卡片正文）。不收个微/公众号。
  *   AGENT_NOTIFY_WEBHOOK 可选，通用 JSON webhook（同一卡片正文）。
  *   AGENT_FEISHU_ENCRYPT_KEY 可选，飞书事件订阅入站签名。无此密钥不启入站。
  *   AGENT_FEISHU_VERIFICATION_TOKEN 可选，入站 url_verification / header.token 对账。
+ *   AGENT_FEISHU_APP_ID / AGENT_FEISHU_APP_SECRET 可选。齐了才用 tenant_access_token
+ *                       回同一会话。不印。没配则 webhook。表格/审批另开。
  *   AGENT_IM_PUBLIC_BASE 可选，操作员自己的公网 HTTPS 根。入站已武装时启动行
  *                       印 /api/im/feishu +「飞书云到不了 127.0.0.1」。不印密钥。
  *   AGENT_MD_MAX_CHARS  可选，AGENT.md 加载总量上限（默认 16000，≥1000）。非法值 exit 1。

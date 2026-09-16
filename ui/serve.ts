@@ -31,16 +31,21 @@
  *                          密钥只在服务端解析,不下发浏览器
  *   AGENT_PACK / AGENT_PRESET  领域包
  *   AGENT_FEISHU_WEBHOOK / AGENT_WECOM_WEBHOOK / AGENT_NOTIFY_WEBHOOK
- *                          可选出站：看板变更 + 飞书入站开的 run 收尾回结果。
+ *                          可选出站：看板变更；没配飞书应用时入站 run 收尾也走这条。
  *                          飞书优先于企微、再才是通用 webhook。不印 URL。
  *   AGENT_FEISHU_ENCRYPT_KEY  可选，飞书事件订阅入站签名。无此密钥不启入站。
  *   AGENT_FEISHU_VERIFICATION_TOKEN  可选，入站 url_verification / header.token 对账
+ *   AGENT_FEISHU_APP_ID / AGENT_FEISHU_APP_SECRET
+ *                          可选，tenant_access_token 回同一会话。只写变量名。
+ *                          没配则保持 webhook，启动行写「未配应用，不能回同一会话」。
+ *                          密钥不进 stdout。多维表格 / 审批不是这条路径。
  *   AGENT_IM_PUBLIC_BASE  可选，操作员自己的公网 HTTPS 根（隧道/反代）。
  *                          入站已武装时启动行印「回调路径 /api/im/feishu」+
  *                          「飞书云到不了 127.0.0.1，需要公网 HTTPS」，并拼此根。
- *                          未配不炸。不印 encrypt key / webhook。签名不关。
+ *                          未配不炸。不印 encrypt key / webhook / app secret。签名不关。
  *   入站路径 POST /api/im/feishu（签名即凭证，不走 ACCESS_TOKEN）。
- *   企业微信只出站；个微/公众号入站本仓不提供。无配置启动行写「飞书/微信宿主未开」。
+ *   群 @ → 本仓 run → 回消息。企业微信只出站；个微/公众号入站本仓不提供。
+ *   无配置启动行写「飞书/微信宿主未开」。
  *   npm run im:tunnel 只打印 cloudflared 命令，不拉起隧道、不裸开整站。
  *   其余 AGENT_* 旋钮见 src/cli.ts 头部注释
  *
