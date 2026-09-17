@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:4199/",
+  "verdict_flash_noWorkdir": true,
+  "verdict_two_states_seen": true,
+  "saw_noWorkdir_frames": [],
+  "saw_confirming_frames": [
+    {
+      "ms": 127,
+      "text": "正在确认目录…"
+    }
+  ],
+  "confirming_disappeared_at_ms": 127,
+  "first_real_frame": {
+    "ms": 148,
+    "text": "正在列出文件…"
+  },
+  "final_tree_text": "文件文件 ⟩hello.txt@",
+  "all_frames": [
+    {
+      "ms": 27,
+      "text": ""
+    },
+    {
+      "ms": 127,
+      "text": "正在确认目录…"
+    },
+    {
+      "ms": 148,
+      "text": "正在列出文件…"
+    },
+    {
+      "ms": 157,
+      "text": "文件文件 ⟩hello.txt@"
+    }
+  ]
+}
