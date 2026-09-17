@@ -4665,7 +4665,7 @@ export function pickWelcomeWorkdir({
 /**
  * 侧栏会话可见性。
  *
- * 旧谓词（会把多目录项目看空）：`sameWorkdirPath(run.workdir, composerWorkdir)`。
+ * 旧谓词（会把多目录项目看空）：`sameWorkdirPath(run.workdir, currentWorkdir)`。
  * 选项目会把作曲栏 cwd 设成 primaryWorkdir，于是兄弟目录的对话全部消失。
  *
  * 新谓词：
