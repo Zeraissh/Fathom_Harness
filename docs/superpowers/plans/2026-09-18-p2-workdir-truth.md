@@ -226,7 +226,11 @@ function currentWorkdir() {
 - [ ] **Step 4: 全量测试（确认别处没有引用旧名）**
 
 Run: `npx vitest run`
-Expected: PASS。这一步**必须全量**：改名跨 13 处，单文件测试覆盖不到别的读源码的测试。
+Expected: **与基线相比不新增失败**——不是「全绿」。
+
+> **勘误（2026-09-18 执行时实测）**：本机基线本来就不绿。同一批 5 个文件：`main` 失败 12 条 / 本分支 11 条，差异是抖动。成因与本改动无关：`ui-server` 的 `EBUSY … rmdir '…\Temp\artifact-…'`（Windows 文件锁）、`cloud-sync-env` 读到本机真实 key 而非 fixture（本地 `.env` 泄进测试环境）、`run-crash-inject` / `ui-handoff` 的 5000ms 超时、`ui-patch` 的源文本断言。
+> 所以判据是「**失败集合 ⊆ 基线失败集合**」，逐条 diff 失败**名字**（不是数数），而不是期望 0 失败。取证写法见 `eval/persona-ux/_audit-20260918/p2-evidence.md` §6。
+> 这一步**必须全量**：改名跨 13 处，单文件测试覆盖不到别的读源码的测试。
 
 - [ ] **Step 5: 提交**
 
@@ -374,9 +378,10 @@ git commit -m "docs(eval): P2 活页证据——冷启动不再闪「先选一�
 
 ## 完成定义
 
-- [ ] `npx vitest run` 全绿
+- [ ] 与改动直接相关的 `ui-file-tree.test.ts` / `ui-app.test.ts` 全绿（实测 309/309）
+- [ ] `npx vitest run` 的失败集合 ⊆ 基线失败集合（**不是**全绿，见 Task 3 Step 4 勘误）
 - [ ] `npm run typecheck` 无输出
-- [ ] Task 5 判据两条都成立，反例也成立
+- [ ] Task 5 判据两条都成立；反例在活页上构造不出来这件事已如实留档
 - [ ] `grep -rn "syncFileTreeToComposer\|composerWorkdir" ui/ test/` 无输出
 - [ ] 5 个提交都在，各自可独立回滚
 
