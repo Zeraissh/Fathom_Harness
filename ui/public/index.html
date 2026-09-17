@@ -2619,6 +2619,9 @@ async function inspectRunPaths(runId, paths) {
 // ---- 宿主真相快照（Tools/Context/Loop 面的数据源）----
 // 拉一次即可：它描述的是本次进程的装配，run 与 run 之间不变
 let harnessSnapshot = null;
+/** /api/harness 是否已经落定（成功、非 2xx、抛错都算落定）。
+    未落定时树说「正在确认目录…」——不能把「还没问过」说成「确实没有」。 */
+let harnessSettled = false;
 /** GET /api/im 公开快照。只认 feishuInbound，不含密钥。 */
 let imSnapshot = /** @type {{feishuInbound?: boolean}|null} */ (null);
 /** GET /api/workspace/git/pr 的 ready。没令牌 / 不可开 → 不画「开成 PR」。 */
@@ -2738,6 +2741,10 @@ async function loadHarness() {
     void refreshCiteCandidates();
   } catch {
     // 拿不到就照实降级：Tools 面会显示"未获取到工具清单"
+  } finally {
+    // 无论成功失败都算落定；落定后才允许树说「先选一个工作目录。」
+    harnessSettled = true;
+    refreshWorkdirDependents();
   }
 }
 
@@ -5020,6 +5027,7 @@ try {
     fileTreeApi = initFileTree({
       mount: fileTreeMount,
       getWorkdir: () => currentWorkdir(),
+      isContextReady: () => harnessSettled,
       onPreview: (path) => {
         const wd = currentWorkdir();
         if (!path || !wd) return;
