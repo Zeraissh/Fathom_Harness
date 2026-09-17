@@ -506,6 +506,7 @@ import {
   clampRailFraction,
   readRailPref,
   writeRailPref,
+  CENTER_MIN_PX,
 } from "/core/rail-policy.js";
 import {
   createBatcher,
@@ -5118,9 +5119,14 @@ function paintRightRail() {
   rail.style.setProperty("--rail-width", `${p.railWidth}px`);
   rail.style.setProperty("--rail-tree-w", `${p.tree}px`);
   rail.style.setProperty("--rail-preview-w", `${p.preview}px`);
-  // 对话下限只在右列真占位时生效；覆盖档不该再往下压对话
-  const floor = p.mode === "side" ? Math.round(p.centerWidth) : 0;
-  rail.style.setProperty("--center-min", floor > 0 ? `${floor}px` : "0px");
+  // 对话地板设在 #center-row 上——**不能设在 rail 上**：rail 与 #main-area 是兄弟，
+  // CSS 变量只向下继承，横向传不过去（第一版就错在这里，活页量出 computed=0px）。
+  // 值取 CENTER_MIN_PX（地板本身，不是对话的实际宽）：side 档才需要地板，
+  // 覆盖档右列不占位，地板撤掉。
+  document.getElementById("center-row")?.style.setProperty(
+    "--center-min",
+    p.mode === "side" ? `${CENTER_MIN_PX}px` : "0px",
+  );
   for (const tab of rail.querySelectorAll("[data-rail-panel]")) {
     tab.setAttribute("aria-pressed", String(tab.dataset.railPanel === pref.panel));
   }
