@@ -198,9 +198,28 @@
         <span class="empty-depthline" aria-hidden="true"></span>
       </div>
     </div>
-    <!-- 右侧工作区文件：Work/Code 都有。展开走 /api/workspace/files?q=dir/。
-         不用 role=tree——空态没有 treeitem 会撞 aria-required-children（与 run-list 同族）。 -->
-    <aside id="workspace-file-tree" class="files-rail workspace-file-tree" aria-label="工作区文件"></aside>
+    <!-- 右列：**唯一 owner**（P1 空间契约）。
+         此前文件树与预览坞是 #center-row 的两个平行 flex 子项，各写各的宽度契约
+         （树 clamp(200,22vw,280) 且零 @media；坞 38% 自带 900 断点），
+         谁都不负责「对话至少得多宽」。现在两者都是 #right-rail 的面板，
+         宽度/折叠/选哪个面板只有一份记忆，边界由 core/rail-policy.js 按预算算。 -->
+    <div id="right-rail" class="right-rail" data-mode="side" data-layout="tabbed" data-panel="tree" data-collapsed="false">
+      <div class="right-rail-tabs" role="group" aria-label="右列面板">
+        <button type="button" class="right-rail-tab" data-rail-panel="tree"
+          id="rail-tab-tree" aria-pressed="true" aria-controls="workspace-file-tree">文件</button>
+        <button type="button" class="right-rail-tab" data-rail-panel="preview"
+          id="rail-tab-preview" aria-pressed="false" aria-controls="right-rail-preview">预览</button>
+        <button type="button" class="right-rail-collapse" id="right-rail-collapse"
+          aria-label="收起右列" title="收起右列" aria-expanded="true"><i class="ph ph-caret-right" aria-hidden="true"></i></button>
+      </div>
+      <div class="right-rail-drag" id="right-rail-drag" role="separator" aria-orientation="vertical"
+        aria-label="拖动调整右列宽度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="25" tabindex="0"></div>
+      <!-- 右侧工作区文件：Work/Code 都有。展开走 /api/workspace/files?q=dir/。
+           不用 role=tree——空态没有 treeitem 会撞 aria-required-children（与 run-list 同族）。 -->
+      <aside id="workspace-file-tree" class="files-rail workspace-file-tree" aria-label="工作区文件"></aside>
+      <!-- 预览坞占位：preview-dock.js 把自己挂进来（原先是 #center-row，见其 host 解析） -->
+      <div id="right-rail-preview" class="right-rail-preview"></div>
+    </div>
   </div>
   <!-- 跳转箭头：**在滚动容器之外**，所以它自己不会被滚走。
        ↓ 回到底部（流式时往上翻过之后用），↑ 回到四决定因素（读进下钻面之后用）。 -->
@@ -482,6 +501,12 @@
  * 连接 DOM 渲染与纯 reducer，管理 SSE 订阅与 HTTP 调用。
  * 阶段二新增：标签页切换、日志折叠、筛选器、无障碍语义。
  */
+import {
+  railPolicy,
+  clampRailFraction,
+  readRailPref,
+  writeRailPref,
+} from "/core/rail-policy.js";
 import {
   createBatcher,
   normalizeTab,
@@ -1251,6 +1276,8 @@ function sidebarIsHidden() {
 
 function syncSidebarChrome() {
   const hidden = sidebarIsHidden();
+  // 左栏宽度是右列预算的一项：收起/展开后右列必须重算（否则边界停在旧值）
+  paintRightRail();
   if (sidebarExpandBtn) {
     sidebarExpandBtn.hidden = !hidden;
     sidebarExpandBtn.setAttribute("aria-expanded", String(!hidden));
@@ -5046,6 +5073,138 @@ try {
     refreshWorkdirDependents();
   }
 } catch { /* 文件树是增强项，初始化失败静默降级 */ }
+
+// ---- P1 右列空间契约 ----
+/**
+ * 右列是唯一 owner：文件树与预览坞都是它的面板。
+ *
+ * 这里只做三件事：读一份记忆 → 把 railPolicy 算出来的结果落在 data-* 与 CSS 变量上
+ * → 在用户动作（切面板/收起/拖宽）后写回记忆。**没有断点常量**：边界由
+ * railPolicy 按预算算（见 core/rail-policy.js 与 spec §4.1.3）。
+ *
+ * 顺带解掉两个老问题：文件树此前零 @media（永远不响应），预览坞另有一套 900 断点。
+ *
+ * 写成自包含（不闭包任何后声明的模块变量）：侧栏初始化在本文件很靠前的位置就会
+ * 调用它，若闭包了后面声明的 const 会撞 TDZ。
+ */
+function railElement() {
+  return document.getElementById("right-rail");
+}
+
+/** 左栏占用：收起了就是 0，否则量真宽度（不硬编码 280，主题/缩放下会变） */
+function railSidebarWidth() {
+  const el = document.querySelector(".sidebar");
+  if (sidebarIsHidden() || !el) return 0;
+  return Math.round(el.getBoundingClientRect?.().width ?? 0);
+}
+
+/** 把算出来的契约落在 DOM 上。纯应用，不含判断。 */
+function paintRightRail() {
+  const rail = railElement();
+  if (!rail) return;
+  const pref = readRailPref(window.localStorage);
+  const p = railPolicy({
+    viewportWidth: window.innerWidth,
+    sidebarWidth: railSidebarWidth(),
+    preferredFraction: pref.fraction,
+    splitRatio: pref.splitRatio,
+    panel: pref.panel,
+    collapsed: pref.collapsed,
+  });
+  rail.dataset.mode = p.mode;
+  rail.dataset.layout = p.layout;
+  rail.dataset.panel = pref.panel;
+  rail.dataset.collapsed = String(p.collapsed);
+  rail.style.setProperty("--rail-width", `${p.railWidth}px`);
+  rail.style.setProperty("--rail-tree-w", `${p.tree}px`);
+  rail.style.setProperty("--rail-preview-w", `${p.preview}px`);
+  // 对话下限只在右列真占位时生效；覆盖档不该再往下压对话
+  const floor = p.mode === "side" ? Math.round(p.centerWidth) : 0;
+  rail.style.setProperty("--center-min", floor > 0 ? `${floor}px` : "0px");
+  for (const tab of rail.querySelectorAll("[data-rail-panel]")) {
+    tab.setAttribute("aria-pressed", String(tab.dataset.railPanel === pref.panel));
+  }
+  const btn = rail.querySelector("#right-rail-collapse");
+  if (btn) {
+    btn.setAttribute("aria-expanded", String(!p.collapsed));
+    const label = p.collapsed ? "展开右列" : "收起右列";
+    btn.setAttribute("aria-label", label);
+    btn.setAttribute("title", label);
+  }
+  // 可聚焦的 separator 是 window splitter：必须报当前值，否则 axe 判 critical。
+  // 顺带让读屏用户听得到宽度（键盘 ±2% 改的就是它）。
+  const dragEl = rail.querySelector("#right-rail-drag");
+  if (dragEl) {
+    dragEl.setAttribute("aria-valuenow", String(Math.round(pref.fraction * 100)));
+    dragEl.setAttribute("aria-valuetext", `右列占主区 ${Math.round(pref.fraction * 100)}%`);
+  }
+}
+
+/** 合并一份补丁进记忆并重绘。 */
+function saveRailPref(patch) {
+  const pref = readRailPref(window.localStorage);
+  writeRailPref(window.localStorage, { ...pref, ...patch });
+  paintRightRail();
+}
+
+/** 切到某个面板。覆盖档下切面板等于把抽屉拉出来。 */
+function showRailPanel(panel) {
+  saveRailPref({ panel, collapsed: false });
+}
+
+(function bindRightRail() {
+  const rail = railElement();
+  if (!rail) return;
+  const pref0 = readRailPref(window.localStorage);
+  rail.dataset.panel = pref0.panel;
+
+  rail.addEventListener("click", (event) => {
+    const tab = event.target.closest?.("[data-rail-panel]");
+    if (tab) showRailPanel(tab.dataset.railPanel);
+  });
+
+  const drag = rail.querySelector("#right-rail-drag");
+  // 拖宽：宽度归右列管（坞自己那套在同宿主下已让位，见 preview-dock.js 的 railHosted）
+  drag?.addEventListener("mousedown", (event) => {
+    if (readRailPref(window.localStorage).collapsed) return;
+    event.preventDefault();
+    const available = Math.max(0, window.innerWidth - railSidebarWidth());
+    if (available <= 0) return;
+    const startX = event.clientX;
+    const startWidth = Math.round(rail.getBoundingClientRect().width);
+    let fraction = readRailPref(window.localStorage).fraction;
+    rail.classList.add("right-rail--dragging");
+    const onMove = (ev) => {
+      fraction = clampRailFraction((startWidth + (startX - ev.clientX)) / available);
+      rail.style.setProperty("--rail-width", `${Math.round(available * fraction)}px`);
+    };
+    const onUp = () => {
+      rail.classList.remove("right-rail--dragging");
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseup", onUp);
+      saveRailPref({ fraction });
+    };
+    document.addEventListener("mousemove", onMove);
+    document.addEventListener("mouseup", onUp);
+  });
+  // 键盘也能调：聚焦柄之后左右箭头各 ±2%
+  drag?.addEventListener("keydown", (event) => {
+    const step = event.key === "ArrowLeft" ? 0.02 : event.key === "ArrowRight" ? -0.02 : 0;
+    if (!step) return;
+    event.preventDefault();
+    saveRailPref({ fraction: clampRailFraction(readRailPref(window.localStorage).fraction + step), collapsed: false });
+  });
+
+  paintRightRail();
+  let raf = 0;
+  window.addEventListener("resize", () => {
+    if (raf) return;
+    raf = requestAnimationFrame(() => {
+      raf = 0;
+      paintRightRail();
+    });
+  });
+})();
 
 if (projectSelect) {
   projectSelect.addEventListener("change", () => {

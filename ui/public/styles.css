@@ -1506,8 +1506,161 @@ body.sidebar-collapsed .sidebar {
 }
 .center-row > .content-area {
   flex: 1 1 22rem;
-  min-width: min(20rem, 42%);
+  /* 对话列的不可侵犯下限：与 rail-policy.js 的 CENTER_MIN_PX 同源（26rem）。
+     此前是 min(20rem, 42%)——那个 42% 会让地板在窄屏上跟着容器一起塌。 */
+  min-width: var(--center-min, 26rem);
 }
+
+/* ===== P1 右列空间契约 =====
+
+   右列是**唯一 owner**：文件树与预览坞都是它的面板，宽度/折叠/选哪个面板只有
+   一份记忆。边界由 core/rail-policy.js 按预算算出（左栏 280 展开时为 936，
+   不是当初 preview-dock 单独写的 900），所以这里不写任何 @media 断点——
+   JS 把算出来的结果落在 data-* 与 CSS 变量上。
+
+   形态（data-mode / data-layout / data-collapsed / data-panel）：
+     side + tabbed   中档：单列，tab 互斥
+     side + split    宽档（≥1440）：树与预览并排两列
+     overlay         窄档：不占位，退成覆盖抽屉，默认收起
+*/
+
+/* 右列变量的默认值。运行时由 index.html 的 paintRightRail() 用 inline style 覆盖；
+   这里必须有定义，一是给无 JS 的兜底，二是本仓库那条常驻测试要求同文件内
+   每个 CSS 变量引用都能找到定义（它扫原始文本，所以这条注释里也不能写出
+   变量引用的字面形状）。数值与 core/rail-policy.js 的常量同源。 */
+:root {
+  --center-min: 26rem;      /* = CENTER_MIN_PX 416 */
+  --rail-width: 288px;      /* 中档默认（RAIL_MIN 240 ~ RAIL_MAX 360 之间） */
+  --rail-tree-w: 144px;     /* split 档只在 ≥1440 生效 */
+  --rail-preview-w: 144px;
+}
+
+.right-rail {
+  flex: 0 0 auto;
+  width: var(--rail-width, 288px);
+  min-width: 0;
+  min-height: 0;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid var(--border-1);
+  background: var(--surface-1);
+  position: relative;
+  z-index: 30;
+}
+.right-rail[data-collapsed="true"] { width: 40px; overflow: hidden; }
+
+.right-rail-tabs {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 6px 2px;
+}
+.right-rail[data-layout="split"] .right-rail-tabs { display: none; }
+.right-rail[data-collapsed="true"] .right-rail-tabs { display: none; }
+
+.right-rail-tab {
+  flex: 0 0 auto;
+  padding: 2px 8px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-3);
+  font: inherit;
+  font-size: var(--font-xs);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+}
+.right-rail-tab:hover { color: var(--text-1); background: var(--surface-2); }
+.right-rail-tab[aria-pressed="true"] { color: var(--text-1); background: var(--surface-2); }
+.right-rail-tab:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 1px; }
+
+.right-rail-collapse {
+  flex: 0 0 auto;
+  margin-left: auto;
+  padding: 2px 4px;
+  border: 0;
+  background: transparent;
+  color: var(--text-2);
+  font: inherit;
+  cursor: pointer;
+}
+.right-rail-collapse:hover { color: var(--text-1); }
+.right-rail-collapse:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 1px; }
+
+/* 拖拽柄：右列左缘的一条热区（覆盖与收起形态下不出现） */
+.right-rail-drag {
+  position: absolute;
+  left: -3px;
+  top: 0;
+  bottom: 0;
+  width: 7px;
+  cursor: col-resize;
+  z-index: 5;
+}
+.right-rail-drag:hover,
+.right-rail--dragging .right-rail-drag {
+  background: color-mix(in srgb, var(--accent) 35%, transparent);
+}
+.right-rail--dragging { user-select: none; }
+.right-rail--dragging iframe { pointer-events: none; }
+.right-rail[data-collapsed="true"] .right-rail-drag,
+.right-rail[data-mode="overlay"] .right-rail-drag { display: none; }
+
+/* 两个面板：tabbed 下互斥占满；split 下按算出的像素并排 */
+.right-rail > .workspace-file-tree,
+.right-rail > .right-rail-preview {
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+}
+.right-rail > .workspace-file-tree { width: auto; }
+.right-rail[data-panel="tree"] > .right-rail-preview,
+.right-rail[data-layout="split"] > .right-rail-preview { display: none; }
+.right-rail[data-panel="preview"] > .workspace-file-tree,
+.right-rail[data-layout="split"] > .workspace-file-tree { display: none; }
+.right-rail[data-panel="preview"] > .right-rail-preview,
+.right-rail[data-layout="split"] > .right-rail-preview {
+  display: flex;
+  flex-direction: column;
+}
+.right-rail[data-panel="tree"] > .workspace-file-tree { display: flex; }
+
+.right-rail[data-layout="split"] > .workspace-file-tree {
+  display: flex;
+  flex: 0 0 var(--rail-tree-w, 144px);
+}
+.right-rail[data-layout="split"] > .right-rail-preview { flex: 0 0 var(--rail-preview-w, 144px); }
+
+/* 覆盖形态：不占 flex 位，钉在主区右侧（窄档用；absolute 相对 #main-panel） */
+.right-rail[data-mode="overlay"] {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 60;
+  border-left: 1px solid var(--border-1);
+  box-shadow: -18px 0 48px color-mix(in srgb, var(--text-1) 18%, transparent);
+}
+.right-rail[data-mode="overlay"][data-collapsed="true"] { display: none; }
+
+/* 坞进了右列之后不再自己写宽度（preview-dock.js 的 railHosted 分支），
+   这里把它的兜底 38% 让会给右列 */
+.right-rail-preview > .preview-dock {
+  width: auto;
+  flex: 1 1 auto;
+  min-width: 0;
+  border-left: 0;
+}
+
+/* 右列自己管收起（键在 tab 行右侧）。树自带的收起键让位——否则两个收起键
+   各写一份偏好，"一份记忆"就不成立了。树模块内部的折叠逻辑保留不动，
+   它只是不再有用户入口，也因此不再写旧键。 */
+.right-rail .files-rail-toggle { display: none; }
+/* 树的标题行在有了 tab 之后是重复信息 */
+.right-rail .files-rail-title { display: none; }
 
 /* ===== 窄屏返回栏 ===== */
 

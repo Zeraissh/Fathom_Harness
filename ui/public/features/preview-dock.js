@@ -197,10 +197,12 @@ export function createPreviewDock(opts = {}, env = {}) {
   root.appendChild(handle);
   root.appendChild(head);
   root.appendChild(body);
-  // 停靠位是 #center-row（对话主列的横向容器）；测试/降级环境一路回退到 body
+  // 停靠位：P1 起优先挂进 #right-rail 的预览槽（右列唯一 owner，与文件树共用宽度契约）。
+  // 回退链保留 #center-row → #main-panel → body，供未升级的宿主与测试环境用。
   const mount =
-    doc.getElementById("center-row") ?? doc.getElementById("main-panel") ?? doc.body;
-  mount?.appendChild(root);
+    doc.getElementById("right-rail") ?? doc.getElementById("center-row") ?? doc.getElementById("main-panel") ?? doc.body;
+  const slot = doc.getElementById("right-rail-preview");
+  (slot ?? mount)?.appendChild(root);
 
   const revealBtn = doc.createElement("button");
   revealBtn.type = "button";
@@ -215,7 +217,16 @@ export function createPreviewDock(opts = {}, env = {}) {
   (doc.body ?? mount)?.appendChild(revealBtn);
 
   // ---- 宽度 ----
+  // P1：右列成为唯一 owner 之后，坞不再自己写宽度、不再自己拖——宽度由
+  // #right-rail 的仲裁器（core/rail-policy.js）决定，拖拽柄在右列左缘。
+  // 坞自带的 handle、比例记忆与格式化函数保留给"未升级宿主"（回退链）用，
+  // 也供右列复用同一套拖拽数学（DRY）。
+  const railHosted = () => root.parentElement?.id === "right-rail-preview";
   function applyWidth() {
+    if (railHosted()) {
+      root.style.width = "";
+      return;
+    }
     root.style.width = formatDockWidth(fraction);
   }
   applyWidth();
@@ -332,6 +343,8 @@ export function createPreviewDock(opts = {}, env = {}) {
 
   // ---- 拖拽调宽 ----
   handle.addEventListener("mousedown", (event) => {
+    // 挂在 #right-rail 里时宽度归右列管，坞自己的柄让位（否则两个 owner 打架）
+    if (railHosted()) return;
     if (!open || collapsed || expanded || isNarrow()) return;
     event.preventDefault();
     const container = root.parentElement;
