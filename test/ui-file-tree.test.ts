@@ -184,6 +184,25 @@ describe("initFileTree DOM", () => {
     expect(root.querySelector(".ft-empty")?.textContent).toBe(FILE_TREE_COPY.emptyRoot);
   });
 
+  it("上下文没落定时说「正在确认目录…」，不说「先选一个工作目录。」", async () => {
+    const pending = mountTree({ getWorkdir: () => "", isContextReady: () => false }, { fetch: vi.fn() });
+    await pending.api.reload();
+    expect(pending.root.querySelector(".ft-empty")?.textContent).toBe(FILE_TREE_COPY.confirming);
+    expect(pending.root.textContent).not.toContain(FILE_TREE_COPY.noWorkdir);
+  });
+
+  it("上下文落定且确实没目录，才说「先选一个工作目录。」", async () => {
+    const settled = mountTree({ getWorkdir: () => "", isContextReady: () => true }, { fetch: vi.fn() });
+    await settled.api.reload();
+    expect(settled.root.querySelector(".ft-empty")?.textContent).toBe(FILE_TREE_COPY.noWorkdir);
+  });
+
+  it("宿主不提供 isContextReady 时保持旧行为（向后兼容）", async () => {
+    const legacy = mountTree({ getWorkdir: () => "" }, { fetch: vi.fn() });
+    await legacy.api.reload();
+    expect(legacy.root.querySelector(".ft-empty")?.textContent).toBe(FILE_TREE_COPY.noWorkdir);
+  });
+
   it("折叠栏：默认展开，点开关收起并记偏好", () => {
     const store = new Map();
     const storage = {

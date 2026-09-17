@@ -19,6 +19,7 @@ export const FILE_TREE_COPY = {
   expand: "显示文件",
   empty: "这个文件夹是空的。",
   emptyRoot: "这个工作目录里还没有可列出的文件。",
+  confirming: "正在确认目录…",
   noWorkdir: "先选一个工作目录。",
   loading: "正在列出文件…",
   cite: "插入 @ 引用",
@@ -203,7 +204,10 @@ export function initFileTree(host = {}, env = {}) {
     if (!wd) {
       const empty = doc.createElement("p");
       empty.className = "ft-empty";
-      empty.textContent = FILE_TREE_COPY.noWorkdir;
+      // 三态：还没问完（上下文未落定）≠ 确实没有。
+      // host 不提供 isContextReady 时按旧行为视为已落定 —— 独立用法与老测试不受影响。
+      const settled = host.isContextReady?.() !== false;
+      empty.textContent = settled ? FILE_TREE_COPY.noWorkdir : FILE_TREE_COPY.confirming;
       body.appendChild(empty);
       return;
     }
