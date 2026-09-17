@@ -3829,7 +3829,9 @@ export function deriveLogEntries(state, live) {
       : {}),
     collapsed: defaultCollapsed(e),
   }));
-  return attachLiveThinkingToLog(mapped, state, live);
+  // 成组放在最后一步：先让 live 思考贴到它那条上，再分组——组只吞连续的工具步，
+  // 思考、散文、失败结果都会把组切断，所以这个顺序不影响它们的归属。
+  return groupToolSteps(attachLiveThinkingToLog(mapped, state, live));
 }
 
 /**
@@ -3857,6 +3859,66 @@ export function attachLiveThinkingToLog(entries, state, live) {
     return next;
   }
   return entries;
+}
+
+/** 成组门槛：连续 ≥2 个工具调用才收成组。单个工具自己站着——没有组时别假装有抽屉。 */
+export const TOOL_GROUP_MIN_STEPS = 2;
+
+/** 能被收进组的条目：tool_call，以及紧随其后的**成功** tool_result。
+    失败结果必须独立站着（见 defaultCollapsed 的展开白名单：它藏了变量）。 */
+function isGroupableStep(entry) {
+  if (entry.type === "tool_call") return true;
+  return entry.type === "tool_result" && !entry.resultIsError;
+}
+
+/**
+ * 把连续的 ≥2 个工具调用收成一条 `tool_group`。
+ *
+ * 为什么键是**组内首条的 seq**：折叠覆盖表（`Map<runId, Map<seq, boolean>>`）与
+ * `appendOnly` 的「一 key 一节点」契约都以 seq 为键。组沿用首条的 seq，两套协议
+ * 都不用改；组内成员不再单独渲染，所以不会撞键。
+ *
+ * 思考、散文、失败的 tool_result 都会把组切断——它们是"藏了变量"的条目，折起来
+ * 等于藏了东西，不许被组吞掉。
+ */
+export function groupToolSteps(entries) {
+  const out = [];
+  let i = 0;
+  while (i < entries.length) {
+    if (entries[i].type !== "tool_call") {
+      out.push(entries[i]);
+      i += 1;
+      continue;
+    }
+    let j = i;
+    let calls = 0;
+    while (j < entries.length && isGroupableStep(entries[j])) {
+      if (entries[j].type === "tool_call") calls += 1;
+      j += 1;
+    }
+    if (calls >= TOOL_GROUP_MIN_STEPS) {
+      const steps = entries.slice(i, j);
+      const names = [];
+      for (const s of steps) {
+        if (s.type === "tool_call" && s.name && !names.includes(s.name)) names.push(s.name);
+      }
+      out.push({
+        type: "tool_group",
+        seq: steps[0].seq,
+        turn: steps[0].turn,
+        source: steps[0].source,
+        collapsed: true,
+        steps,
+        stepCount: calls,
+        names,
+      });
+      i = j;
+    } else {
+      out.push(entries[i]);
+      i += 1;
+    }
+  }
+  return out;
 }
 
 /**

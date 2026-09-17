@@ -35,6 +35,7 @@ import {
   expirePendingApprovals,
   deriveOverview,
   deriveLogEntries,
+  groupToolSteps,
   toggleEntryCollapsed,
   isEntryCollapsedByDefault,
   deriveRunListItems,
@@ -1883,6 +1884,68 @@ describe("AC4 日志分层 (R-04)", () => {
     expect(isEntryCollapsedByDefault({ seq: 0, source: "main", type: "approval_request", toolUseId: "t", name: "x", input: {} })).toBe(false);
     expect(isEntryCollapsedByDefault({ seq: 0, source: "main", type: "api_retry", attempt: 1, reason: "x" })).toBe(false);
     expect(isEntryCollapsedByDefault({ seq: 0, source: "main", type: "compaction", droppedBlocks: 5 })).toBe(false);
+  });
+});
+
+// ---- P5: 连续工具成组（过程显示）----
+describe("P5 连续工具成组", () => {
+  const call = (seq: number, name = "read_file") => ({ seq, source: "main", type: "tool_call", name, toolUseId: `u${seq}`, input: {} });
+  const ok = (seq: number) => ({ seq, source: "main", type: "tool_result", toolUseId: `u${seq - 1}`, resultContent: "ok", resultIsError: false });
+  const bad = (seq: number) => ({ seq, source: "main", type: "tool_result", toolUseId: `u${seq - 1}`, resultContent: "boom", resultIsError: true });
+  const text = (seq: number) => ({ seq, source: "main", type: "assistant_text", text: "讲一句" });
+
+  it("连续两个工具调用收成一组，组键是首条 seq", () => {
+    const out = groupToolSteps([call(1), ok(2), call(3), ok(4)]);
+    expect(out).toHaveLength(1);
+    expect(out[0].type).toBe("tool_group");
+    expect(out[0].seq).toBe(1);
+    expect(out[0].stepCount).toBe(2);
+  });
+
+  it("单个工具不成组，原样内联（不假装有抽屉）", () => {
+    const out = groupToolSteps([call(1), ok(2)]);
+    expect(out.map((e) => e.type)).toEqual(["tool_call", "tool_result"]);
+  });
+
+  it("散文夹在中间要把组切断", () => {
+    const out = groupToolSteps([call(1), ok(2), text(3), call(4), ok(5)]);
+    expect(out.map((e) => e.type)).toEqual([
+      "tool_call", "tool_result", "assistant_text", "tool_call", "tool_result",
+    ]);
+  });
+
+  it("失败的工具结果不进组，也不被组吞掉（它藏了变量）", () => {
+    const out = groupToolSteps([call(1), bad(2), call(3), ok(4), call(5), ok(6)]);
+    expect(out.map((e) => (e.type === "tool_group" ? `group(${e.stepCount})` : e.type)))
+      .toEqual(["tool_call", "tool_result", "group(2)"]);
+  });
+
+  it("开头的孤立成功结果不自己开组", () => {
+    const out = groupToolSteps([ok(1), call(2), ok(3)]);
+    expect(out.map((e) => e.type)).toEqual(["tool_result", "tool_call", "tool_result"]);
+  });
+
+  it("组条目自带默认折叠与去重后的工具名", () => {
+    const out = groupToolSteps([
+      call(1, "read_file"), ok(2),
+      call(3, "write_file"), ok(4),
+      call(5, "read_file"), ok(6),
+    ]);
+    expect(out).toHaveLength(1);
+    expect(out[0].collapsed).toBe(true);
+    expect(out[0].stepCount).toBe(3);
+    expect(out[0].names).toEqual(["read_file", "write_file"]);
+  });
+
+  it("deriveLogEntries 的输出已经成组：连续两个工具只剩一条 tool_group", () => {
+    const state = makeState({
+      timeline: [
+        { seq: 1, source: "main", type: "turn_start", turn: 1 },
+        call(2), ok(3), call(4), ok(5),
+      ],
+    });
+    const out = deriveLogEntries(state);
+    expect(out.map((e) => e.type)).toEqual(["turn_start", "tool_group"]);
   });
 });
 
