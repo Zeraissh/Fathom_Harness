@@ -47,6 +47,7 @@ afterEach(() => {
 
 describe("model-windows 登记表：有出处才登记", () => {
   it("DeepSeek v4 flash / pro = 1,048,576（真机 400 报文）；Claude 4.x 按文档 200k / 1M 分档；Kimi k3 1M、k2.x 256k", () => {
+    expect(registryContextWindow("deepseek-flash")?.windowTokens).toBe(1_048_576);
     expect(registryContextWindow("deepseek-v4-flash")?.windowTokens).toBe(1_048_576);
     expect(registryContextWindow("deepseek-v4-pro")?.windowTokens).toBe(1_048_576);
     expect(registryContextWindow("claude-opus-4-8")?.windowTokens).toBe(1_000_000);
@@ -60,7 +61,7 @@ describe("model-windows 登记表：有出处才登记", () => {
 
   it("不认识的模型不猜：mock-model / 视觉变体 / 空串都 undefined", () => {
     expect(registryContextWindow("mock-model")).toBeUndefined();
-    expect(registryContextWindow("deepseek-v4-flash-vision-exp")).toBeUndefined();
+    expect(registryContextWindow("deepseek-chat")).toBeUndefined();
     expect(registryContextWindow("")).toBeUndefined();
   });
 

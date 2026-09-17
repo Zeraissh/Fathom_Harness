@@ -72,6 +72,7 @@ describe("Work 普通发送与 Web 默认先问", () => {
     const row = await waitForRow(base, body.runId!, (r) => typeof r.status === "string");
     expect(row.task).toContain("hello-verify-ux.txt");
     expect(row.designRoute).toBeUndefined();
+    expect(row.packName).toBe("design");
   });
 
   it("若仍 4xx，正文不含 HTTP 和 领域包", async () => {

@@ -10039,43 +10039,52 @@ export function createUiServer(options: UiServerOptions = {}): UiServerHandle {
     });
     if (willPromoteDirector) {
       /* 导演不走设计门面 / autoPack：拆役已由 detectCampaignSplit 裁定 */
-    } else if (wantsDesign && pickedDesignTemplate) {
+    } else if (wantsDesign) {
       const installed = installedFilePacksFrom(allPacks());
       const installedNames = installed.map((p) => p.name);
       // 设计模式锁定后端包为 design，除非点了已安装文件包。内置工程包忽略。
-      if (parsed.pack && PACKS[parsed.pack] && !installedNames.includes(parsed.pack)) {
+      // 没点模板芯片也锁——否则请求体不带 pack，回落到进程 AGENT_PACK（常是 ts-coding）。
+      if (
+        parsed.pack
+        && parsed.pack !== "design"
+        && PACKS[parsed.pack]
+        && !installedNames.includes(parsed.pack)
+      ) {
         parsed.pack = undefined;
       }
-      const explicitFilePack =
-        typeof parsed.designFilePack === "string" && installedNames.includes(parsed.designFilePack)
-          ? parsed.designFilePack
-          : typeof parsed.pack === "string" && installedNames.includes(parsed.pack)
-            ? parsed.pack
-            : undefined;
-      admittedDesignRoute = await routeDesignTask({
-        cfg: { systemPrompt: "router", tools: [], workdir: runWorkdir ?? workdir, compat: envCompat },
-        model: modelClient,
-        task: parsed.task,
-        explicitId: typeof parsed.designId === "string" ? parsed.designId : undefined,
-        explicitTab: typeof parsed.designTab === "string" ? parsed.designTab : undefined,
-        explicitTemplate: typeof parsed.designTemplate === "string" ? parsed.designTemplate : undefined,
-        explicitFilePack,
-        installedFilePacks: installed,
-      });
-      // 没点芯片时普通发送直接走（上面已跳过路由）。点了芯片仍 R2 才用人话拒绝，不用 409。
-      if (designRouteBlocksCreate(admittedDesignRoute, pickedDesignTemplate)) {
-        return {
-          status: 400,
-          payload: {
-            error: "请先选一个稿件模板，或直接描述要做什么。",
-          },
-        };
+      if (pickedDesignTemplate) {
+        const explicitFilePack =
+          typeof parsed.designFilePack === "string" && installedNames.includes(parsed.designFilePack)
+            ? parsed.designFilePack
+            : typeof parsed.pack === "string" && installedNames.includes(parsed.pack)
+              ? parsed.pack
+              : undefined;
+        admittedDesignRoute = await routeDesignTask({
+          cfg: { systemPrompt: "router", tools: [], workdir: runWorkdir ?? workdir, compat: envCompat },
+          model: modelClient,
+          task: parsed.task,
+          explicitId: typeof parsed.designId === "string" ? parsed.designId : undefined,
+          explicitTab: typeof parsed.designTab === "string" ? parsed.designTab : undefined,
+          explicitTemplate: typeof parsed.designTemplate === "string" ? parsed.designTemplate : undefined,
+          explicitFilePack,
+          installedFilePacks: installed,
+        });
+        // 没点芯片时普通发送直接走（上面已跳过路由）。点了芯片仍 R2 才用人话拒绝，不用 409。
+        if (designRouteBlocksCreate(admittedDesignRoute, pickedDesignTemplate)) {
+          return {
+            status: 400,
+            payload: {
+              error: "请先选一个稿件模板，或直接描述要做什么。",
+            },
+          };
+        }
+        if (admittedDesignRoute.kind !== "r2") {
+          parsed.pack = admittedDesignRoute.pack;
+        } else {
+          admittedDesignRoute = undefined;
+        }
       }
-      if (admittedDesignRoute.kind !== "r2") {
-        parsed.pack = admittedDesignRoute.pack;
-      } else {
-        admittedDesignRoute = undefined;
-      }
+      if (!parsed.pack) parsed.pack = "design";
     } else if (parsed.autoPack === true && !parsed.pack && !wantsOrchestrate) {
       try {
         const outcome = await routeToPack(

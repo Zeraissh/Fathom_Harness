@@ -26,6 +26,7 @@ export const LITELLM_ALIASES: readonly LitellmAlias[] = [
   { keys: ["anthropic/claude-sonnet-4-6", "claude-sonnet-4-6"], model: "claude-sonnet-4-6", vendor: "anthropic" },
   { keys: ["anthropic/claude-opus-4-8", "claude-opus-4-8"], model: "claude-opus-4-8", vendor: "anthropic" },
   { keys: ["anthropic/claude-haiku-4-5", "claude-haiku-4-5"], model: "claude-haiku-4-5", vendor: "anthropic" },
+  { keys: ["deepseek/deepseek-flash", "deepseek-flash"], model: "deepseek-flash", vendor: "deepseek" },
   { keys: ["deepseek/deepseek-v4-flash", "deepseek-v4-flash"], model: "deepseek-v4-flash", vendor: "deepseek" },
   { keys: ["deepseek/deepseek-v4-pro", "deepseek-v4-pro"], model: "deepseek-v4-pro", vendor: "deepseek" },
 ];

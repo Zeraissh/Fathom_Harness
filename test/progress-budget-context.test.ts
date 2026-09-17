@@ -45,6 +45,8 @@ describe("selectPackTools always-on progress", () => {
     const selected = selectPackTools(PACKS["python-coding"], [fake], []);
     expect(ALWAYS_ON_BUILTIN_TOOLS.has("update_progress")).toBe(true);
     expect(ALWAYS_ON_BUILTIN_TOOLS.has("install_mcp")).toBe(true);
+    expect(ALWAYS_ON_BUILTIN_TOOLS.has("describe_image")).toBe(true);
+    expect(ALWAYS_ON_BUILTIN_TOOLS.has("view_image")).toBe(true);
     expect(selected.some((t) => t.name === "update_progress")).toBe(true);
   });
 });

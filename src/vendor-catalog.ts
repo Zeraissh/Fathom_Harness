@@ -60,7 +60,7 @@ export interface VendorPreset {
   models: readonly VendorListedModel[];
 }
 
-const DEEPSEEK_PRICE = "https://api-docs.deepseek.com/quick_start/pricing-details-usd";
+const DEEPSEEK_PRICE = "https://api-docs.deepseek.com/quick_start/pricing";
 const ANTHROPIC_PRICE = "https://platform.claude.com/docs/en/build-with-claude/prompt-caching";
 const KIMI_K3_PRICE = "https://platform.moonshot.ai/docs/pricing/chat-k3";
 const OPENAI_PRICE = "https://developers.openai.com/api/docs/pricing";
@@ -104,14 +104,15 @@ export const VENDOR_PRESETS: readonly VendorPreset[] = [
   {
     id: "deepseek",
     label: "DeepSeek",
-    hint: "官方 Anthropic 兼容端点。填一把 Key，Flash / Pro / 视觉都进库。",
+    hint: "官方 Anthropic 兼容端点。填一把 Key。Flash 自带识图；Pro 不认图。",
     provider: "anthropic",
     baseUrl: "https://api.deepseek.com/anthropic",
     envKey: "ANTHROPIC_API_KEY",
     models: [
-      priced("deepseek-v4-flash", "DeepSeek V4 Flash", 0.14, 0.28, 0.0028, 0.14, DEEPSEEK_PRICE, "2026-09-03"),
-      priced("deepseek-v4-pro", "DeepSeek V4 Pro", 0.435, 0.87, 0.003625, 0.435, DEEPSEEK_PRICE, "2026-09-03"),
-      priced("deepseek-v4-flash-vision-exp", "DeepSeek V4 Flash 视觉", 0.14, 0.28, 0.0028, 0.14, DEEPSEEK_PRICE, "2026-09-03"),
+      priced("deepseek-flash", "DeepSeek Flash", 0.3, 1.2, 0.006, 0.3, DEEPSEEK_PRICE, "2026-09-16"),
+      priced("deepseek-v4-pro", "DeepSeek V4 Pro", 1.32, 3.96, 0.044, 1.32, DEEPSEEK_PRICE, "2026-09-16"),
+      priced("deepseek-v4-flash", "DeepSeek V4 Flash（旧名）", 0.3, 1.2, 0.006, 0.3, DEEPSEEK_PRICE, "2026-09-16"),
+      priced("deepseek-v4-flash-vision-exp", "DeepSeek Flash 视觉（旧名）", 0.3, 1.2, 0.006, 0.3, DEEPSEEK_PRICE, "2026-09-16"),
     ],
   },
   {

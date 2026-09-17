@@ -340,8 +340,8 @@ export const MODEL_PROVIDER_CHOICES = [
 
 /** model 输入框的 datalist 建议——只是提示，不拦任何合法输入。 */
 export const MODEL_NAME_SUGGESTIONS = {
-  anthropic: ["claude-opus-4-8", "claude-sonnet-4-6", "claude-haiku-4-5", "kimi-k3", "deepseek-v4-flash"],
-  openai: ["gpt-4.1", "gpt-4.1-mini", "gpt-4o-mini", "deepseek-v4-flash", "deepseek-v4-pro"],
+  anthropic: ["claude-opus-4-8", "claude-sonnet-4-6", "claude-haiku-4-5", "kimi-k3", "deepseek-flash"],
+  openai: ["gpt-4.1", "gpt-4.1-mini", "gpt-4o-mini", "deepseek-flash", "deepseek-v4-pro"],
 };
 
 /**

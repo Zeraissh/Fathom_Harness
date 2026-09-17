@@ -9,6 +9,7 @@ import {
   parsePriceTableJson,
   sumRunCost,
 } from "../src/pricing.js";
+import { vendorPriceRows } from "../src/vendor-catalog.js";
 
 const usage = (
   inputTokens: number,
@@ -32,6 +33,28 @@ describe("OBS-02 · 单价表", () => {
     }
   });
 
+  /**
+   * BUILTIN_PRICE_TABLE = BUILTIN_CORE + vendorPriceRows()，**重名的按 BUILTIN_CORE 过滤掉**——
+   * 即 src/pricing.ts 是权威，src/vendor-catalog.ts 的同名条目被静默丢弃。
+   * 于是"只改了一处"不会报错、也不会生效：账照旧按另一处算。
+   * 这条锁住两处对同一模型必须给同一组价，下次漏改一处就红。
+   */
+  it("两处价表不许漂移：厂家预设与内置表对同一模型必须给同一组价", () => {
+    const builtin = new Map(BUILTIN_PRICE_TABLE.map((p) => [p.model.toLowerCase(), p]));
+    const fields = ["inputPer1M", "outputPer1M", "cacheReadPer1M", "cacheWritePer1M", "asOf"] as const;
+    let checked = 0;
+    for (const v of vendorPriceRows()) {
+      const b = builtin.get(v.model.toLowerCase());
+      if (!b) continue; // 内置表没有 = 不是重叠，厂家价就是唯一来源，漂移无从谈起
+      checked += 1;
+      for (const f of fields) {
+        expect(b[f], `${v.model}.${f}：pricing.ts 与 vendor-catalog.ts 不一致`).toEqual(v[f]);
+      }
+    }
+    // 防"两边一起清空"变成假绿：重叠面不该缩到 0
+    expect(checked).toBeGreaterThan(0);
+  });
+
   it("查不到就是查不到：不做前缀 / 模糊匹配", () => {
     const table = buildPriceTable();
     expect(lookupModelPrice(table, "anthropic", "claude-opus-4-8")?.inputPer1M).toBe(5);
@@ -41,8 +64,9 @@ describe("OBS-02 · 单价表", () => {
     expect(lookupModelPrice(null, "anthropic", "claude-opus-4-8")).toBeNull();
     expect(lookupModelPrice(table, "anthropic", null)).toBeNull();
     // provider 是 wire 协议不是厂商：deepseek 走哪条协议都查得到同一个价
-    expect(lookupModelPrice(table, "anthropic", "deepseek-v4-pro")?.outputPer1M).toBe(0.87);
-    expect(lookupModelPrice(table, "openai", "deepseek-v4-pro")?.outputPer1M).toBe(0.87);
+    expect(lookupModelPrice(table, "anthropic", "deepseek-v4-pro")?.outputPer1M).toBe(3.96);
+    expect(lookupModelPrice(table, "openai", "deepseek-v4-pro")?.outputPer1M).toBe(3.96);
+    expect(lookupModelPrice(table, "anthropic", "deepseek-flash")?.inputPer1M).toBe(0.3);
     expect(lookupModelPrice(table, "anthropic", "kimi-k3")?.inputPer1M).toBe(3);
     expect(lookupModelPrice(table, "anthropic", "kimi-k3", "kimi")?.outputPer1M).toBe(15);
     expect(lookupModelPrice(table, "anthropic", "kimi-k3", "unlisted")).toBeNull();
@@ -126,7 +150,7 @@ describe("OBS-02 · 单价表", () => {
     expect(table.source).toBe("builtin+override");
     expect(lookupModelPrice(table, "anthropic", "claude-opus-4-8")?.inputPer1M).toBe(1);
     // 未被覆盖的条目仍在
-    expect(lookupModelPrice(table, "anthropic", "deepseek-v4-flash")?.inputPer1M).toBe(0.14);
+    expect(lookupModelPrice(table, "anthropic", "deepseek-flash")?.inputPer1M).toBe(0.3);
 
     expect(() => parsePriceTableJson('[{"model":"x","inputPer1M":1}]')).toThrow(/outputPer1M/);
     expect(() => parsePriceTableJson('[{"inputPer1M":1}]')).toThrow(/缺 model/);

@@ -25,9 +25,12 @@ export interface ModelWindowEntry {
 
 /**
  * 出处逐条：
- * - DeepSeek v4 flash / pro：2026-09-03 真机冒烟（api.deepseek.com/anthropic）400 报文
+ * - DeepSeek：2026-09-03 真机冒烟（api.deepseek.com/anthropic）400 报文
  *   「This model's maximum context length is 1048576 tokens」，逐字锁在 test/compact-tier2.test.ts；
- *   pro 与 flash 同族同窗口（DeepSeek 模型页）。
+ *   pro 与 flash 同族同窗口（DeepSeek 模型页）。2026-09-16 官方页写明 CONTEXT LENGTH 是
+ *   **1M**（写整不写零头），flash 的正名是 deepseek-flash（V4.1-Flash），
+ *   旧名 deepseek-v4-flash / deepseek-v4-flash-vision-exp 与它共享同一个窗口——
+ *   真机报文给的 1,048,576 比官方那个 1M 更精确，按真机登记。
  * - Claude：platform.claude.com/docs/en/build-with-claude/context-windows（2026-09 读取）——
  *   Opus 4.6 / 4.7 / 4.8、Sonnet 4.6、Opus 5、Sonnet 5 为 1M 且**无需 beta 头**；
  *   Sonnet 4 / 4.5、Opus 4 / 4.1 / 4.5、Haiku 4.5 为 200k（Sonnet 4/4.5 的 1M beta 已于
@@ -38,9 +41,9 @@ export interface ModelWindowEntry {
  */
 export const MODEL_WINDOW_REGISTRY: readonly ModelWindowEntry[] = [
   {
-    pattern: /^deepseek-v4-(flash|pro)$/,
+    pattern: /^deepseek-(?:v4-(?:flash(?:-vision-exp)?|pro)|flash)$/,
     windowTokens: 1_048_576,
-    source: "2026-09-03 real-wire smoke @ api.deepseek.com/anthropic: 400 'maximum context length is 1048576 tokens'",
+    source: "2026-09-03 real-wire smoke @ api.deepseek.com/anthropic: 400 'maximum context length is 1048576 tokens'; official 2026-09-16: deepseek-flash / aliases share 1M",
   },
   {
     pattern: /^claude-opus-4-[678](-\d{8})?$/,

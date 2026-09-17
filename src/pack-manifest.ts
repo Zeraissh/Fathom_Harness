@@ -26,6 +26,7 @@ export const ALLOWED_FILE_PACK_TOOLS = [
   "fetch_url",
   "web_search",
   "describe_image",
+  "view_image",
   "generate_image",
 ] as const;
 
