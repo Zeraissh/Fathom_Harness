@@ -1,0 +1,116 @@
+{
+  "verdict": {
+    "判据1 恰好一组两步 run 出现一条组": true,
+    "判据1 组标题写「用了 2 步」": true,
+    "判据2 点开后组体有明细（条目数 ≥ 步数 且 > 0）": true,
+    "判据2 组体里的明细全是展开态（不留假行）": true,
+    "判据2 组展开后自己不再是折叠态": true,
+    "判据3 单步 run 没有组": true,
+    "判据3 单步 run 工具条内联可见": true,
+    "判据4 含失败 run 里失败条目独立于组": true,
+    "判据4 同一 run 里组与失败共存": true
+  },
+  "results": {
+    "two-steps": {
+      "runId": "5d6a3212-1716-4be7-99db-0dbfb20228e5",
+      "expect": "1 group / 2 steps",
+      "before": {
+        "totalEntries": 58,
+        "groupCount": 1,
+        "groupHeaders": [
+          "▸ ⋯ 用了 2 步 bash、update_progress"
+        ],
+        "groupCollapsed": [
+          true
+        ],
+        "groupInHostCount": 1,
+        "flatToolCount": 11,
+        "flatToolHeaders": [
+          "▸ ✓ bash 成功 [execution boundary=5d6a3212-1716-4be7-99db-0dbfb20228e5 sta… 102ms",
+          "▸ → bash { \"command\": \"echo '--- deck-basic ---'; ls -la deck-basic…",
+          "▸ ✓ bash 成功 [execution boundary=5d6a3212-1716-4be7-99db-0dbfb20228e5 sta… 251ms",
+          "▸ → write_file { \"path\": \"devin-dir-note.txt\", \"content\": \"ui-qa：UI 走查与…",
+          "▸ ✓ write_file 成功 Wrote 505 bytes to devin-dir-note.txt 9ms",
+          "▸ → bash { \"command\": \"wc -l devin-dir-note.txt; echo '---'; cat -n…"
+        ],
+        "errorCount": 0,
+        "errorHeaders": [],
+        "errorsInsideGroups": 0
+      },
+      "expanded": {
+        "hasBody": true,
+        "innerEntries": 3,
+        "innerExpanded": 3,
+        "innerBodyRendered": 3,
+        "innerSeqs": [
+          "6:→",
+          "7:→",
+          "8:✓"
+        ],
+        "groupStillCollapsed": false
+      }
+    },
+    "one-step": {
+      "runId": "cli-1789390950045",
+      "expect": "0 groups / inline tool",
+      "before": {
+        "totalEntries": 11,
+        "groupCount": 0,
+        "groupHeaders": [],
+        "groupCollapsed": [],
+        "groupInHostCount": 0,
+        "flatToolCount": 2,
+        "flatToolHeaders": [
+          "▸ → finish_task { \"status\": \"completed\", \"summary\": \"按要求仅回复了 \\\"pong\\\"，未调…",
+          "▸ ✓ finish_task 成功 已收到，交付完成。 0ms"
+        ],
+        "errorCount": 0,
+        "errorHeaders": [],
+        "errorsInsideGroups": 0
+      },
+      "expanded": null
+    },
+    "with-failure": {
+      "runId": "1c6df73a-ce2b-46f4-97f1-66f19c97a1f6",
+      "expect": "group + error stays out",
+      "before": {
+        "totalEntries": 43,
+        "groupCount": 1,
+        "groupHeaders": [
+          "▸ ⋯ 用了 2 步 bash、update_progress"
+        ],
+        "groupCollapsed": [
+          true
+        ],
+        "groupInHostCount": 1,
+        "flatToolCount": 9,
+        "flatToolHeaders": [
+          "▾ ✗ bash 失败 [execution boundary=1c6df73a-ce2b-46f4-97f1-66f19c97a1f6 sta… 1m1s",
+          "▸ → bash { \"command\": \"cd \\\"D:/Work/Github_pros/Agent_Design\\\" && f…",
+          "▾ ✗ bash 失败 User denied permission to run \"bash\". Reason: 委托方已停止这次运行 Adj… 1m12s",
+          "▸ → bash { \"command\": \"cd \\\"D:/Work/Github_pros/Agent_Design\\\" && l…",
+          "▸ ✓ bash 成功 [execution boundary=1c6df73a-ce2b-46f4-97f1-66f19c97a1f6 sta… 11.0s",
+          "▸ → update_progress { \"items\": [ { \"id\": \"1\", \"status\": \"done\"…"
+        ],
+        "errorCount": 2,
+        "errorHeaders": [
+          "▾ ✗ bash 失败 [execution boundary=1c6df73a-ce2b-46f4-97f1-66f19c97a1f6 sta… 1m1s",
+          "▾ ✗ bash 失败 User denied permission to run \"bash\". Reason: 委托方已停止这次运行 Adj… 1m12s"
+        ],
+        "errorsInsideGroups": 0
+      },
+      "expanded": {
+        "hasBody": true,
+        "innerEntries": 3,
+        "innerExpanded": 3,
+        "innerBodyRendered": 3,
+        "innerSeqs": [
+          "6:→",
+          "7:→",
+          "8:✓"
+        ],
+        "groupStillCollapsed": false
+      }
+    }
+  }
+}
