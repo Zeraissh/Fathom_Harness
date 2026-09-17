@@ -1108,13 +1108,13 @@ function applyNextActionChip(btn) {
   } else if (spec.action === "preview" && spec.path) {
     if (selectedRunId) openArtifactByPath(selectedRunId, spec.path);
     else {
-      const wd = composerWorkdir();
+      const wd = currentWorkdir();
       if (wd) filePreviewApi?.open({ path: spec.path, url: buildFilePreviewUrl({ path: spec.path, workdir: wd }) });
     }
   } else if (spec.action === "review" && spec.path) {
     if (selectedRunId) openArtifactByPath(selectedRunId, spec.path);
     else {
-      const wd = composerWorkdir();
+      const wd = currentWorkdir();
       if (wd) filePreviewApi?.open({ path: spec.path, url: buildFilePreviewUrl({ path: spec.path, workdir: wd }) });
     }
     requestAnimationFrame(() => {
@@ -1419,7 +1419,7 @@ function paintEmptyState() {
     workspaceFace,
     // 只有点开「更多稿件」才进设计目录；日常 Work 空态要看得见「说要做什么」。
     designModeActive: officeCatalogOpen,
-    workdir: composerWorkdir(),
+    workdir: currentWorkdir(),
     harness: harnessSnapshot,
     im: imSnapshot,
     githubPr: githubPrReady,
@@ -2165,7 +2165,7 @@ function renderDetailWithState(state) {
     threadFiles: conversationArtifactFiles(runId),
     runs,
     runStates,
-    workdir: info?.workdir || composerWorkdir(),
+    workdir: info?.workdir || currentWorkdir(),
     im: imSnapshot,
     githubPr: githubPrReady,
     canContinue: info?.canContinue === true,
@@ -3562,7 +3562,9 @@ async function ensureDesignDraftsWorkdir() {
   } catch { /* 失败不挡设计模式 */ }
 }
 
-function composerWorkdir() {
+/** 「当前目录」的**唯一**派生入口。树、预览坞、@、引用、发送都只准从这里读，
+    不准各自再判一次 —— 判两次就会像 09-15 那样，发送栏有目录而树说没有。 */
+function currentWorkdir() {
   if (workdirSelect && workdirSelect.value && workdirSelect.value !== WORKDIR_ADD_VALUE) {
     return getWorkdirSelection(workdirSelect).primary || workdirSelect.value;
   }
@@ -3591,7 +3593,7 @@ function refreshWorkdirDependents() {
 async function refreshGateChip() {
   const chip = document.getElementById("gate-chip");
   if (!chip) return;
-  const wd = composerWorkdir();
+  const wd = currentWorkdir();
   if (!wd) {
     paintGateChip(chip, null);
     return;
@@ -3614,7 +3616,7 @@ function paintCiteChips() {
   if (!host) return;
   host.replaceChildren();
   const selected = selectedCiteIds
-    .map((id) => citeCandidates.find((c) => c.runId === id) || sameWorkdirCiteRuns(runs, composerWorkdir()).find((r) => r.runId === id))
+    .map((id) => citeCandidates.find((c) => c.runId === id) || sameWorkdirCiteRuns(runs, currentWorkdir()).find((r) => r.runId === id))
     .filter(Boolean);
   host.hidden = selected.length === 0;
   for (const ref of selected) {
@@ -3675,7 +3677,7 @@ function bindWorkspacePickerFilter(picker, files, initial) {
 
 async function refetchWorkspaceFiles(query) {
   const picker = document.getElementById("cite-picker");
-  const wd = composerWorkdir();
+  const wd = currentWorkdir();
   if (!picker || picker.hidden || !wd) return;
   const token = ++filePickerToken;
   try {
@@ -3740,7 +3742,7 @@ function insertWorkspaceFileMention(relative, kind) {
 
 async function paintWorkspaceFilePicker(query) {
   const picker = document.getElementById("cite-picker");
-  const wd = composerWorkdir();
+  const wd = currentWorkdir();
   if (!picker) return;
   if (!wd) {
     hideCitePicker();
@@ -3777,7 +3779,7 @@ function paintCitePicker(query) {
   const picker = document.getElementById("cite-picker");
   if (!picker) return;
   picker.setAttribute("aria-label", "引用会话");
-  const local = sameWorkdirCiteRuns(runs, composerWorkdir()).map((r) => ({
+  const local = sameWorkdirCiteRuns(runs, currentWorkdir()).map((r) => ({
     runId: r.runId,
     title: r.title || r.task,
     task: r.task,
@@ -3832,7 +3834,7 @@ function addCite(runId) {
 }
 
 async function refreshCiteCandidates() {
-  const wd = composerWorkdir();
+  const wd = currentWorkdir();
   if (!wd) {
     citeCandidates = [];
     return;
@@ -5017,9 +5019,9 @@ try {
   if (fileTreeMount) {
     fileTreeApi = initFileTree({
       mount: fileTreeMount,
-      getWorkdir: () => composerWorkdir(),
+      getWorkdir: () => currentWorkdir(),
       onPreview: (path) => {
-        const wd = composerWorkdir();
+        const wd = currentWorkdir();
         if (!path || !wd) return;
         if (selectedRunId) {
           openArtifactByPath(selectedRunId, path);
