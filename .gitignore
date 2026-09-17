@@ -51,6 +51,9 @@ __pycache__/
 .claude/settings.local.json
 design-qa.md
 
+# 视觉走查伴侣（brainstorm 会话的 mockup 与 state）：本机草稿，不进仓
+.superpowers/
+
 # Chrome 用户数据：相对路径 ./chrome-profile 会弹系统框，禁止进仓
 /chrome-profile/
 eval/persona-ux/walks/*-chrome-profile/
