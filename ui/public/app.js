@@ -11494,7 +11494,7 @@ function updateLiveLogThinking(target, e) {
 }
 
 /** @returns {string} */
-function renderLogEntry(e) {
+export function renderLogEntry(e) {
   const collapsed = e.collapsed;
   const headerHtml = renderLogEntryHeader(e, collapsed);
   const bodyHtml = collapsed ? "" : renderLogEntryBody(e);
@@ -11511,6 +11511,7 @@ function renderLogEntry(e) {
   if (e.type === "compaction") cls += " log-entry--warning";
   if (e.type === "hook" && (e.outcome === "error" || e.outcome === "block")) cls += " log-entry--warning";
   if (e.live && e.type === "assistant_thinking") cls += " log-entry--live-thinking";
+  if (e.type === "tool_group") cls += " log-entry--group";
   if (collapsed) cls += " log-entry--collapsed";
 
   // 折叠的工具调用也必须看得到路径入口：路径条独立于 body，避免用户为了打开
@@ -11546,6 +11547,14 @@ function renderLogEntryHeader(e, collapsed) {
 /** @returns {string} */
 function renderLogEntryBody(e) {
   switch (e.type) {
+    case "tool_group": {
+      // 成员一律以展开态渲染：组内的行没有各自的点击监听（监听只挂在组的 header 上），
+      // 若按默认折叠渲染，会出现"看起来能点、点不动"的假行。
+      const inner = (Array.isArray(e.steps) ? e.steps : [])
+        .map((s) => renderLogEntry({ ...s, collapsed: false }))
+        .join("");
+      return `<div class="log-entry-group-body">${inner}</div>`;
+    }
     case "tool_call":
       return `<pre class="log-entry-body">${esc(formatInput(e.input))}</pre>`;
     case "tool_prepared":
@@ -11704,6 +11713,7 @@ function entryIcon(type, isError) {
   switch (type) {
     case "turn_start": return "──";      // cli.ts:516
     case "tool_call": return "→";        // cli.ts:527
+    case "tool_group": return "⋯";       // 连续多步收成一条
     case "tool_prepared": return "⬡";
     case "tool_running": return "⬡";
     case "tool_committed": return "⬡";
@@ -11747,6 +11757,7 @@ function entryActionLabel(e) {
   switch (e.type) {
     case "turn_start": return `第 ${e.turn ?? "?"} 轮`;
     case "tool_call": return e.name ?? "";
+    case "tool_group": return `用了 ${e.stepCount ?? (Array.isArray(e.steps) ? e.steps.filter((s) => s.type === "tool_call").length : 0)} 步`;
     case "tool_prepared": return `${e.name ?? ""} prepared`;
     case "tool_running": return `${e.name ?? ""} running`;
     case "tool_committed":
@@ -11833,6 +11844,8 @@ function entryDetail(e) {
   switch (e.type) {
     case "tool_call":
       return truncate(formatInput(e.input), 60);
+    case "tool_group":
+      return Array.isArray(e.names) && e.names.length ? e.names.join("、") : "";
     case "tool_prepared":
     case "tool_running":
     case "tool_committed":

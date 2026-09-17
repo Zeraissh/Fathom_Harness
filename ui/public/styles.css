@@ -2087,9 +2087,18 @@ body.sidebar-collapsed .sidebar {
   border-bottom: 1px solid var(--tl-border);
 }
 
+/* P5：连续工具成组。组体左侧拉一条细竖线，让"这些属于同一段过程"看得见 */
+.log-entry-group-body {
+  margin-left: 4px;
+  padding-left: 10px;
+  border-left: 2px solid var(--tl-border);
+}
+.log-entry--group > .log-entry-header .log-entry-action {
+  font-variant-numeric: tabular-nums;
+}
+
 .log-entry-text {
-  color: var(--fg);
-  max-height: 300px;
+  color: var(--fg);  max-height: 300px;
 }
 
 /* ===== 裁决卡 (R-07: 视觉收敛 — magenta 仅身份) ===== */

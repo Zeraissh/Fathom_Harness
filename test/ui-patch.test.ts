@@ -85,6 +85,7 @@ import {
   renderRunList,
   applyCollapseOverrides,
   nextCollapseOverride,
+  renderLogEntry,
   buildLocalPathProbePlan,
   toolPathCandidates,
   classifySessionFile,
@@ -5841,5 +5842,53 @@ describe("persona-ux 文案锁（#4/#5/#6/#9/#10/#25）", () => {
     expect(ROLE_PERSONA.main).toBe("助手");
     expect(ROLE_PERSONA.rework).toBe("助手");
     expect(Object.values(ROLE_PERSONA).join("")).not.toMatch(/计明远|施敢当|严不苟/);
+  });
+});
+
+// ---- P5: 组的渲染 ----
+describe("P5 组的渲染", () => {
+  it("tool_group 渲染成一条可折叠的 .log-entry--group，标题写「用了 N 步」", () => {
+    const html = renderLogEntry({
+      type: "tool_group",
+      seq: 1,
+      collapsed: true,
+      stepCount: 3,
+      names: ["read_file", "write_file"],
+      steps: [],
+    });
+    expect(html).toContain("log-entry--group");
+    expect(html).toContain("log-entry--collapsed");
+    expect(html).toContain("用了 3 步");
+    expect(html).toContain('data-seq="1"');
+    expect(html).toContain("read_file、write_file");
+  });
+
+  it("组展开时把每条以展开态渲染进 body，不留「看起来能点却点不动」的假行", () => {
+    const html = renderLogEntry({
+      type: "tool_group",
+      seq: 1,
+      collapsed: false,
+      stepCount: 2,
+      names: ["read_file"],
+      steps: [
+        { type: "tool_call", seq: 1, name: "read_file", input: { path: "a.txt" } },
+        { type: "tool_result", seq: 2, toolUseId: "u1", resultContent: "one" },
+      ],
+    });
+    expect(html).toContain("log-entry-group-body");
+    expect(html).toContain('<pre class="log-entry-body">');
+    expect(html).not.toContain('class="log-entry--collapsed"');
+  });
+
+  it("折叠的组不生成 body（与既有条目同款：不是 display:none）", () => {
+    const html = renderLogEntry({
+      type: "tool_group",
+      seq: 1,
+      collapsed: true,
+      stepCount: 2,
+      names: ["read_file"],
+      steps: [{ type: "tool_call", seq: 1, name: "read_file", input: {} }],
+    });
+    expect(html).not.toContain("log-entry-group-body");
   });
 });
