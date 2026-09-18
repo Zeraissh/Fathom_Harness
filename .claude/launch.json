@@ -30,6 +30,17 @@
       "port": 4201
     },
     {
+      "name": "personas-audit",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "tsx",
+        "--env-file-if-exists=.env",
+        "--env-file-if-exists=D:/Work/scratch/fathom-personas-20260918/personas.env",
+        "ui/serve.ts"
+      ],
+      "port": 4203
+    },
+    {
       "name": "fathom-rewalk",
       "runtimeExecutable": "npx",
       "runtimeArgs": [
