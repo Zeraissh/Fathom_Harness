@@ -1717,6 +1717,19 @@ body.sidebar-collapsed .sidebar {
 
 .dh-kicker-text { min-width: 0; }
 
+/* 会话头的进行时计数（「第 N 轮 · 已跑 Xm」）：长 run 在会话页此前零计数。
+   盖掉 kicker 的等宽/大字距/大写——中文串在那种排版下难读。 */
+.chat-progress {
+  font-family: var(--font-ui);
+  font-size: var(--font-sm);
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--text-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .chat-title {
   min-width: 0;
   overflow: hidden;

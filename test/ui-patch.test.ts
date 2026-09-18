@@ -1290,6 +1290,86 @@ describe("流式输出直接长在对话里", () => {
     renderRunDetail(s, { activeTab: "loop", liveText: "新的一句" });
     expect(document.querySelectorAll(".chat-item")[0]).toBe(first);
   });
+
+  /**
+   * 2026-09-18 走查实锤：隐藏条件此前是"时间线上**曾经**有过 tool_call"
+   * （`recent.find`），于是调过工具的 run（≈所有真任务）从第一个工具起整场
+   * 不再出现——64 秒 160 次真机采样零出现，而纯对话轮可见。
+   * 进行中的工具确实由对话里那条承担，但"工具都落地、在等下一轮模型"的窗口
+   * 没有理由沉默。
+   */
+  it("工具都落地后，等下一轮模型的窗口直播条恢复出声", () => {
+    let s = runningState();
+    s = reduceEvents(s, [
+      sse(1, "main", "tool_call", { toolUseId: "t1", name: "read_file", input: { path: "a.ts" } }),
+      sse(2, "main", "tool_result", { toolUseId: "t1", content: "ok" }),
+    ]);
+    renderRunDetail(s, { activeTab: "loop" });
+    expect(
+      (document.querySelector(".live-strip") as HTMLElement).hasAttribute("hidden"),
+      "工具已落地却仍整条沉默",
+    ).toBe(false);
+    expect(strip()).toContain("等待模型响应");
+  });
+
+  it("上一轮的旧正文不再冒充当前活动", () => {
+    let s = runningState();
+    s = reduceEvents(s, [
+      sse(1, "main", "assistant_text", { text: "上一轮的结论，早就不在跑了。" }),
+      sse(2, "main", "tool_call", { toolUseId: "t1", name: "read_file", input: { path: "a.ts" } }),
+      sse(3, "main", "tool_result", { toolUseId: "t1", content: "ok" }),
+    ]);
+    renderRunDetail(s, { activeTab: "loop" });
+    expect(strip(), "旧正文被拿来冒充当前活动").not.toContain("上一轮的结论");
+    expect(strip()).toContain("等待模型响应");
+  });
+
+  /**
+   * 核查段在真机上持续数十秒到数分钟，此前界面完全静止（verifier 事件不进
+   * timeline、段分界默认不可达）——用户看到的是"卡住了"。
+   */
+  it("核查阶段直播条说正在独立核查，不再假装什么都没发生", () => {
+    let s = createInitialState("run-verify-phase", "带核查的轮次", true);
+    s = reduceEvents(s, [
+      sse(0, "main", "turn_start", { turn: 1 }),
+      sse(1, "main", "assistant_text", { text: "改完了。" }),
+      sse(2, "main", "done", { stopReason: "completed", messageCount: 2, usage: {} }),
+      sse(3, "verifier", "turn_start", { turn: 1 }),
+    ]);
+    expect(s.status, "核查模式下主段 done 不改 run 状态").toBe("running");
+    renderRunDetail(s, { activeTab: "loop" });
+    expect(strip()).toContain("独立核查");
+  });
+
+  it("planner 拆解阶段直播条说正在拆解计划", () => {
+    let s = createInitialState("run-planner-phase", "计划编排", false);
+    s = reduceEvents(s, [sse(0, "planner", "turn_start", { turn: 1 })]);
+    renderRunDetail(s, { activeTab: "loop" });
+    expect(strip()).toContain("拆解计划");
+  });
+
+  /**
+   * 长 run 的"跑了多久/第几轮"此前只在指挥中心卡片里（还得开着看板才 10s 刷新），
+   * 会话页本身零计数。侧栏对**已结束**的 run 有「N 轮 · 1m20s」，进行中的却什么都没有。
+   */
+  it("会话头显示第 N 轮与已跑时长；结束后收起", () => {
+    let s = createInitialState("run-head-progress", "头部进度", false, {
+      createdAt: Date.now() - 125000,
+    });
+    s = reduceEvents(s, [
+      sse(0, "main", "turn_start", { turn: 1 }),
+      sse(1, "main", "turn_start", { turn: 2 }),
+    ]);
+    renderRunDetail(s, { activeTab: "loop" });
+    const el = document.querySelector(".chat-progress") as HTMLElement;
+    expect(el).toBeTruthy();
+    expect(el.hasAttribute("hidden")).toBe(false);
+    expect(el.textContent).toContain("第 2 轮");
+    expect(el.textContent).toMatch(/已跑 \d/);
+
+    renderRunDetail({ ...s, status: "done" }, { activeTab: "loop" });
+    expect((document.querySelector(".chat-progress") as HTMLElement).hasAttribute("hidden")).toBe(true);
+  });
 });
 
 describe("思考正文进对话时间线", () => {

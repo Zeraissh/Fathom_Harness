@@ -5374,7 +5374,7 @@ function ensureDetailSkeleton(mainEl, state, callbacks) {
   // 上下文圆环钉在 #submit-form 右下角（index.html），不占对话顶栏。
   const chatHead =
     '<span class="chat-head">' +
-    `<span class="dh-kicker">${PLUMB_KICKER_SVG}<span class="dh-kicker-text"></span></span>` +
+    `<span class="dh-kicker">${PLUMB_KICKER_SVG}<span class="dh-kicker-text"></span><span class="chat-progress" hidden></span></span>` +
     '<span class="chat-title" id="chat-title"></span>' +
     "</span>";
   mainEl.innerHTML =
@@ -5465,6 +5465,7 @@ function ensureDetailSkeleton(mainEl, state, callbacks) {
     // 它不随内容滚走，新审批出现在哪都看得见（委托方建议的结构解法）
     ...ensureActionDock(),
     liveStrip: mainEl.querySelector(".live-strip"),
+    progress: mainEl.querySelector(".chat-progress"),
     campaignStrip: mainEl.querySelector(".campaign-strip"),
     conversation: mainEl.querySelector(".conversation"),
     nextActions: mainEl.querySelector(".next-actions"),
@@ -5491,7 +5492,62 @@ function patchDetailHeader(parts, state, isRunning, faces) {
   if (kickerEl) setText(kickerEl, formatRunKicker(state.runId));
   const backBtn = parts.root.querySelector("#back-to-list-btn");
   if (backBtn) setAttr(backBtn, "aria-label", `返回列表：${title}`);
+  patchChatProgress(parts, state, isRunning);
   patchContextGauge(parts, faces.context);
+}
+
+/** 主段已开始的轮数（rework 段不计——它算同一轮的复核修正）。 */
+function countMainTurns(state) {
+  return (state.timeline ?? []).filter(
+    (e) => e.type === "turn_start" && segmentRole(e.source) === "main",
+  ).length;
+}
+
+/**
+ * 会话头的「第 N 轮 · 已跑 Xm」。
+ *
+ * 长 run 的"跑了多久/第几轮"此前只在指挥中心卡片里（还得开着看板才刷），
+ * 会话页零计数——带轮数/用量的「运行详情」抽屉 2026-09-18 已下线。真机采样
+ * （34 分钟/100 轮的 run）里这是唯一回答不了的问题。只在运行中显示；
+ * 已结束由侧栏与收尾条负责。
+ *
+ * 计时：除了事件驱动的重渲染，还需要一个低频节拍让"已跑"自己走字（长模型
+ * 调用期间可以几十秒没有事件）。30s 一次纯文本重写；节点断连即自清——骨架随
+ * run 切换重建，旧 parts 的计时器不许赖在 detached 节点上。
+ */
+function patchChatProgress(parts, state, isRunning) {
+  const el = parts.progress;
+  if (!el) return;
+  const turns = countMainTurns(state);
+  if (!(isRunning && turns > 0)) {
+    setAttr(el, "hidden", "");
+    if (el.__progressTimer) {
+      clearInterval(el.__progressTimer);
+      el.__progressTimer = null;
+    }
+    return;
+  }
+  parts.progressState = state;
+  const paint = () => {
+    if (!el.isConnected) {
+      if (el.__progressTimer) {
+        clearInterval(el.__progressTimer);
+        el.__progressTimer = null;
+      }
+      return;
+    }
+    const st = parts.progressState ?? state;
+    const n = countMainTurns(st);
+    if (!n) return;
+    const created = Number(st.createdAt);
+    const elapsed = Number.isFinite(created) && created > 0 ? Date.now() - created : null;
+    setText(el, `第 ${n} 轮${elapsed != null ? ` · 已跑 ${formatDuration(elapsed)}` : ""}`);
+  };
+  setAttr(el, "hidden", null);
+  paint();
+  if (Number.isFinite(Number(state.createdAt)) && !el.__progressTimer) {
+    el.__progressTimer = setInterval(paint, 30000);
+  }
 }
 
 /**
@@ -6489,6 +6545,36 @@ function paintLiveStripLabel(parts, label, flags = {}) {
   if (flags.title) setAttr(parts.liveStrip, "title", flags.title);
 }
 
+/**
+ * 主段之外的两段（planner 拆解 / verifier 独立核查）在真机上持续数十秒到
+ * 数分钟，此前界面完全静止——verifier 事件改道 verifierTimeline、段分界
+ * 默认不可达，用户看到的是"卡住了"。这里给直播条一个来源。
+ *
+ * 判据只认**当前**在跑谁，用事件流的 seq 秩序判断（`done` 不建 timeline
+ * 条目，不能靠"最后一条是 done"）：
+ *   · 核查：verifier 的最后事件晚于主段最后事件 → 正在独立核查；
+ *     返工段会让主段重新出现新事件（seq 更大），自然落回普通标签；
+ *   · 计划：planner 有活动而主段还没开张 → 正在拆解计划；
+ *     计划门挂起时让位给它自己的卡（那时人该看的是"待批准"）。
+ */
+export function deriveActivePhase(state) {
+  if (state?.status !== "running") return null;
+  const main = state.timeline ?? [];
+  const verifier = state.verifierTimeline ?? [];
+  const lastMainSeq = main.length ? Number(main[main.length - 1].seq ?? -1) : -1;
+  const lastVerifierSeq = verifier.length ? Number(verifier[verifier.length - 1].seq ?? -1) : -1;
+  if (verifier.length > 0 && lastVerifierSeq > lastMainSeq) {
+    return { kind: "verifier", label: "正在独立核查…（全新上下文复核）" };
+  }
+  if (state.planApproval?.status === "pending") return null;
+  const plannerSeen = main.some((e) => segmentRole(e.source) === "planner");
+  const mainSeen = main.some((e) => segmentRole(e.source) === "main");
+  if (plannerSeen && !mainSeen) {
+    return { kind: "planner", label: "正在拆解计划…" };
+  }
+  return null;
+}
+
 function patchLiveStrip(parts, state, isRunning, liveText = "", liveThinking = "", harness = null) {
   if (!isRunning) {
     setAttr(parts.liveStrip, "hidden", "");
@@ -6498,8 +6584,14 @@ function patchLiveStrip(parts, state, isRunning, liveText = "", liveThinking = "
   const streaming = String(liveText ?? "").trim();
   const thinking = String(liveThinking ?? "").trim();
   const recent = [...state.timeline].reverse();
-  const call = recent.find((e) => e.type === "tool_call");
-  const text = recent.find((e) => e.type === "assistant_text");
+  /**
+   * 只认**最新一条**就是正文。此前是"时间线上最后一段 assistant_text"，
+   * 拆掉过度隐藏后真机上立刻显形：等新模型响应的窗口里，直播条挂着
+   * 上一轮的旧结论冒充"当前活动"（走查实录：提交后先闪 2 秒旧散文）。
+   * 等模型时显示「等待模型响应…」才是实话。
+   */
+  const newest = recent[0];
+  const text = newest?.type === "assistant_text" ? newest : null;
   /**
    * 正文已经在对话里逐字流，直播条让位（V-16）。
    * 思考块默认折叠，thinking_delta 必须跟到这一条，否则人只看见「正在想…」。
@@ -6513,12 +6605,25 @@ function patchLiveStrip(parts, state, isRunning, liveText = "", liveThinking = "
     paintLiveStripLabel(parts, liveStripThinkingLabel(thinking), { think: true });
     return;
   }
+  // 拆解 / 核查阶段压过下面一切"旧信息"标签：这两段没有对话正文可看。
+  const phase = deriveActivePhase(state);
+  if (phase) {
+    paintLiveStripLabel(parts, phase.label, { think: true });
+    return;
+  }
   const results = new Set(
     (state.timeline ?? []).filter((e) => e.type === "tool_result").map((e) => e.toolUseId),
   );
   const toolLive = (state.timeline ?? []).some((e) => e.type === "tool_call" && !results.has(e.toolUseId));
-  // 进行中的工具由对话里那条滑动高亮承担，这里不再叠第二份「正在 bash」
-  if (toolLive || call) {
+  /**
+   * 进行中的工具由对话里那条滑动高亮承担，这里不再叠第二份「正在 bash」。
+   *
+   * **只挡"正在进行"，不挡"曾经有过"**（2026-09-18 走查实锤）：此前这里还
+   * `|| call`（时间线上最近一次 tool_call，不限于在飞），于是任何调过工具的
+   * run 从第一个工具起直播条整场消失——64 秒 160 次真机采样零出现，
+   * 等模型、等审批的窗口全静默；纯对话轮反而正常。
+   */
+  if (toolLive) {
     setAttr(parts.liveStrip, "hidden", "");
     parts.sig.live = null;
     return;
