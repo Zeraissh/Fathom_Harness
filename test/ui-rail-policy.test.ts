@@ -10,6 +10,8 @@
  *   · 记忆一份，且能从两个旧键迁移
  */
 import { describe, it, expect } from "vitest";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import {
   CENTER_MIN_PX,
   RAIL_MIN_PX,
@@ -25,6 +27,8 @@ import {
   normalizeRailPref,
   readRailPref,
   writeRailPref,
+  sidebarYieldBoundary,
+  shouldYieldSidebar,
 } from "../ui/public/core/rail-policy.js";
 
 const SIDEBAR = 280; // styles.css: .sidebar { width: 280px }
@@ -187,5 +191,56 @@ describe("右列记忆：一份键 + 两个旧键迁移", () => {
     expect(readRailPref(null).fraction).toBe(RAIL_DEFAULT_FRACTION);
     expect(() => writeRailPref(null, { fraction: 0.3 })).not.toThrow();
     expect(normalizeRailPref("{oops")).toBeNull();
+  });
+});
+
+describe("shouldYieldSidebar：窄窗左栏让位（与右列同一份预算）", () => {
+  const SIDEBAR = 292; // 活页实测宽（styles.css 声明 280，实测 292——边界先量后算）
+
+  it("边界 = 左栏实测宽 + 对话地板 + 右列下限（292 时是 948，与右列 side↔overlay 同一处）", () => {
+    expect(sidebarYieldBoundary(SIDEBAR)).toBe(948);
+    expect(sidebarYieldBoundary(280)).toBe(936);
+  });
+
+  it("有会话在开：低于边界让位，等于边界不让", () => {
+    expect(shouldYieldSidebar({ viewportWidth: 947, sidebarWidth: SIDEBAR, hasOpenConversation: true })).toBe(true);
+    expect(shouldYieldSidebar({ viewportWidth: 948, sidebarWidth: SIDEBAR, hasOpenConversation: true })).toBe(false);
+    // 701–707 那一段（活页实测对话 409–415 < 416）正是这条规则真正吃到的窗口
+    expect(shouldYieldSidebar({ viewportWidth: 705, sidebarWidth: SIDEBAR, hasOpenConversation: true })).toBe(true);
+  });
+
+  it("只看列表（欢迎态）不让位——那时左栏就是内容本身", () => {
+    expect(shouldYieldSidebar({ viewportWidth: 500, sidebarWidth: SIDEBAR, hasOpenConversation: false })).toBe(false);
+  });
+
+  it("已经收着（量到 0）不让位：无处可让，防收-展开抖动", () => {
+    expect(shouldYieldSidebar({ viewportWidth: 500, sidebarWidth: 0, hasOpenConversation: true })).toBe(false);
+  });
+
+  it("宽屏永不让位；空输入不炸", () => {
+    expect(shouldYieldSidebar({ viewportWidth: 1440, sidebarWidth: SIDEBAR, hasOpenConversation: true })).toBe(false);
+    expect(shouldYieldSidebar({})).toBe(false);
+    expect(shouldYieldSidebar()).toBe(false);
+  });
+});
+
+describe("宿主接线锁（index.html）", () => {
+  const html = readFileSync(join(__dirname, "..", "ui", "public", "index.html"), "utf-8");
+
+  it("让位判据用纯函数、收起不写用户偏好、各选会话路径与 resize 都接", () => {
+    expect(html).toMatch(/shouldYieldSidebar\(\{/);
+    // 视口逼出来的收起绝不写偏好（偏好是另一个键）
+    expect(html).toMatch(/setSidebarCollapsed\(true, \{ persist: false \}\)/);
+    expect((html.match(/syncSidebarYield\(\)/g) ?? []).length).toBeGreaterThanOrEqual(6);
+  });
+
+  it("resize 节流有自愈兜底——rAF 不落地时不能让后续 resize 全被吞", () => {
+    // 活页实测（2026-09-18）：面板被遮挡（document.hidden）后 rAF 那次回调永不落地，
+    // 旧写法 `if (raf) return` 从此吞掉所有 resize（连合成事件都唤不醒重绘）。
+    expect(html).toMatch(/if \(document\.hidden\) \{/);
+    expect(html).toMatch(/now - rafAt < 200/);
+    expect(html).toMatch(/cancelAnimationFrame\(raf\)/);
+    // 从隐藏回到可见要补上错过的重绘
+    expect(html).toMatch(/visibilitychange/);
   });
 });

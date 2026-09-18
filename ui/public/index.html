@@ -506,6 +506,7 @@ import {
   readRailPref,
   writeRailPref,
   CENTER_MIN_PX,
+  shouldYieldSidebar,
 } from "/core/rail-policy.js";
 import {
   createBatcher,
@@ -1293,7 +1294,40 @@ function toggleSidebar() {
   setSidebarCollapsed(!document.body.classList.contains("sidebar-collapsed"));
 }
 
+/**
+ * 窄窗左栏让位（2026-09-18 回走 §2.3，判据在 `shouldYieldSidebar`）：
+ * 视口窄于让位边界（=右列同一份预算）且有会话在开时，左栏默认收起。
+ * - **不写用户偏好**（persist:false）：偏好是另一个键，窗口回到边界之上时按它恢复；
+ * - 收起前要求左栏可见（`!sidebarIsHidden()`）：视口逼出来的那次收起只做一次，
+ *   用户随后手动展开不与之打架；
+ * - 左栏 width 在收起态量不到（display:none），所以记最近一次实测值兜底。
+ */
+let lastSidebarWidth = 280; // styles.css 的声明宽；可见时随实测更新
+let sidebarYielded = false;
+
+function syncSidebarYield() {
+  const el = document.querySelector(".sidebar");
+  const measured = sidebarIsHidden() || !el ? 0 : Math.round(el.getBoundingClientRect?.().width ?? 0);
+  if (measured > 0) lastSidebarWidth = measured;
+  const should = shouldYieldSidebar({
+    viewportWidth: window.innerWidth,
+    sidebarWidth: lastSidebarWidth,
+    hasOpenConversation: Boolean(selectedRunId),
+  });
+  if (should && !sidebarYielded && !sidebarIsHidden()) {
+    sidebarYielded = true;
+    setSidebarCollapsed(true, { persist: false });
+    return;
+  }
+  if (!should && sidebarYielded) {
+    sidebarYielded = false;
+    // 只把「视口逼出来的收起」还回去；用户此刻手动展开着就随他
+    if (sidebarIsHidden()) setSidebarCollapsed(readSidebarCollapsed(localStorage), { persist: false });
+  }
+}
+
 setSidebarCollapsed(readSidebarCollapsed(localStorage), { persist: false });
+syncSidebarYield();
 sidebarCollapseBtn?.addEventListener("click", () => setSidebarCollapsed(true));
 sidebarExpandBtn?.addEventListener("click", () => setSidebarCollapsed(false));
 document.addEventListener("keydown", (e) => {
@@ -1330,6 +1364,7 @@ function exitDetailMode() {
   selectedRunId = null;
   refreshRunListView();
   paintEmptyState();
+  syncSidebarYield();
   changesApi?.setRun(null); // T8：离开会话，变更分区随之收起
   syncChangesCommand();
   artifactCanvasApi?.close(); // T10：离开会话，画布与挂账的深链一并收起
@@ -1716,6 +1751,7 @@ if (runSearch) {
 function selectRun(runId, opts = {}) {
   if (selectedRunId === runId) return;
   selectedRunId = runId;
+  syncSidebarYield();
   unreadRuns.delete(runId); // 看了就算读过
   refreshRunListView();
 
@@ -3972,6 +4008,7 @@ async function submitNewRun({ text: task }) {
     });
     selectedRunId = runId;
     activeTabs.set(runId, "loop");
+    syncSidebarYield();
     renderDetailWithState(state);
     enterDetailMode();
     writeHash(runId, "loop");
@@ -4135,6 +4172,7 @@ function subscribeLifecycle() {
         if (selectedRunId === payload.runId) {
           selectedRunId = null;
           writeHash(null, null);
+          syncSidebarYield();
         }
       } else if (payload.run) {
         const idx = runs.findIndex((r) => r.runId === payload.run.runId);
@@ -4702,6 +4740,7 @@ if (newChatBtn) {
     selectedDesignTemplate = null;
     selectedDesignSample = null;
     officeCatalogOpen = false;
+    syncSidebarYield();
     designModeActive = workspaceFace === "office";
     writeHash(null, null);
     refreshRunListView();
@@ -5175,13 +5214,40 @@ function showRailPanel(panel) {
   });
 
   paintRightRail();
+  /**
+   * 一帧一次的重绘（拖窗口时每帧都会触发 resize）。
+   *
+   * **不能只用 `if (raf) return` 防抖**：rAF 在隐藏标签页 / 被遮挡时不触发
+   * （本项目踩过同族一次：后台标签页里 rAF 停摆、界面永不更新），那次排队的
+   * 回调永不落地，`raf` 就永远是"忙"——此后所有 resize 都被静默吞掉。
+   * 2026-09-18 活页实测：面板被遮挡一次后，连派发合成 resize 都唤不醒重绘。
+   * 兜底：排队超过 200ms 就重排（正常情况下一帧 ≈16ms，不会走到这条）。
+   */
   let raf = 0;
+  let rafAt = 0;
+  const repaintNow = () => {
+    syncSidebarYield();
+    paintRightRail();
+  };
   window.addEventListener("resize", () => {
-    if (raf) return;
+    // 隐藏页（窗格被遮挡/标签页切走）rAF 不落地：别把活排进一个排不空的队列，
+    // 直接算。2026-09-18 活页实测：面板一被遮挡，旧写法此后吞掉所有 resize。
+    if (document.hidden) {
+      repaintNow();
+      return;
+    }
+    const now = performance.now();
+    if (raf && now - rafAt < 200) return;
+    rafAt = now;
+    if (raf) cancelAnimationFrame(raf);
     raf = requestAnimationFrame(() => {
       raf = 0;
-      paintRightRail();
+      repaintNow();
     });
+  });
+  // 从隐藏回到可见：把隐藏期间错过的重绘补上（同一族：rAF 停摆期间的 resize 全积压）
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) repaintNow();
   });
 })();
 

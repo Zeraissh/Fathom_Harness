@@ -33,6 +33,34 @@ export const RAIL_MAX_FRACTION = 0.45;
 export const RAIL_DEFAULT_FRACTION = 0.25;
 export const RAIL_DEFAULT_SPLIT_RATIO = 0.5;
 
+/**
+ * 左栏让位边界（2026-09-18 回走 §2.3，活页校正后）：
+ * **与 railPolicy 的 side↔overlay 边界是同一份预算**——左栏实测宽 + 对话地板 + 右列下限。
+ * 视口低于它时右列已退覆盖档，左栏（还有对话在开时）也该默认收起，
+ * 否则对话只剩「视口 − 左栏」，越窄越不像对话。
+ *
+ * 活页校正：≤700px 是既有的堆叠布局（左栏成顶部横条、对话全宽在下），
+ * 那段不需要本规则兜底；真正吃到它的是 701px 到边界之间的窗口。
+ */
+export function sidebarYieldBoundary(sidebarWidth) {
+  return Math.max(0, num(sidebarWidth, 0)) + CENTER_MIN_PX + RAIL_MIN_PX;
+}
+
+/**
+ * 窄窗左栏要不要让位。
+ * - **有会话在开才算**：只看列表（欢迎态）时左栏就是内容本身，把它收了等于给用户一张白纸。
+ * - 收起不是锁死：用户按 Ctrl+B / 浮出按钮展开仍然有效（本次会话内），
+ *   窗口回到边界之上时由宿主恢复其持久偏好。
+ *
+ * @param {{ viewportWidth?: number, sidebarWidth?: number, hasOpenConversation?: boolean }} [input]
+ */
+export function shouldYieldSidebar(input = {}) {
+  if (input.hasOpenConversation !== true) return false;
+  const sidebarWidth = Math.max(0, num(input.sidebarWidth, 0));
+  if (sidebarWidth <= 0) return false; // 已经收着/量不到：无处可让
+  return Math.max(0, num(input.viewportWidth, 0)) < sidebarYieldBoundary(sidebarWidth);
+}
+
 /** 新记忆键。取代 filesRailCollapsed + dock 宽度两个键。 */
 export const RAIL_PREF_KEY = "agent.ui.pref.rightRail";
 /** 旧键：只读不写，降级回滚时不丢用户偏好 */
