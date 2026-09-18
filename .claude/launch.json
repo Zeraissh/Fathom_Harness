@@ -19,6 +19,17 @@
       "port": 4173
     },
     {
+      "name": "fathom-audit",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "tsx",
+        "--env-file-if-exists=.env",
+        "--env-file-if-exists=D:/Work/scratch/fathom-ux-audit-20260918/audit.env",
+        "ui/serve.ts"
+      ],
+      "port": 4201
+    },
+    {
       "name": "fathom-rewalk",
       "runtimeExecutable": "npx",
       "runtimeArgs": [
