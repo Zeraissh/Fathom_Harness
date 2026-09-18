@@ -8736,6 +8736,63 @@ describe("监控闭环：outcome 分档指标与告警文件一致性", () => {
     }
   });
 
+  it("编排补发 verification 事件：逐子任务逐轮透出，静态推导徽标按子任务自己的包算", async () => {
+    // 两个子任务**故意**用不同的包，这正是编排与单执行者的分野：
+    //   consult       白名单 ["ls","head",...] 无可运行器 → 裁决只能是静态推导
+    //   python-coding 白名单含 "python -m pytest"    → 核查者能亲自运行
+    // staticOnly 必须按子任务自己的包算——按 run 级包算等于把两个子任务混成
+    // 一个（逐子任务配置是编排的全部意义）。修前：编排路径的 onVerification
+    // 只记账、不发事件，对话里一条裁决卡都不出现。
+    const planJson = JSON.stringify({
+      subtasks: [
+        { id: "s1", title: "静态核查的一步", pack: "consult", description: "做 A", acceptance: ["A 完成"], dependsOn: [] },
+        { id: "s2", title: "能跑测试的一步", pack: "python-coding", description: "做 B", acceptance: ["B 完成"], dependsOn: ["s1"] },
+      ],
+    });
+    const pass = () =>
+      fakeMessage([textBlock(JSON.stringify({ passed: true, issues: [], summary: "通过" }))], "end_turn");
+    const model = new FakeModelClient([
+      fakeMessage([textBlock(["```json", planJson, "```"].join("\n"))], "end_turn"),
+      fakeMessage([textBlock("s1 完成")], "end_turn"), pass(),
+      fakeMessage([textBlock("s2 完成")], "end_turn"), pass(),
+    ]);
+    const dir = await mkdtemp(join(tmpdir(), "plan-verification-events-"));
+    const handle = createUiServer({ modelClient: model, workdir: dir });
+    try {
+      const port = await startServer(handle);
+      const base = baseUrl(port);
+      const { runId } = await (await fetch(`${base}/api/runs`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ task: "两步任务", mode: "plan" }),
+      })).json() as { runId: string };
+      await waitForDone(base, runId);
+
+      const events = await readSSEAll(await fetch(`${base}/api/runs/${runId}/events`));
+      const verifs = events.filter((e: any) => e.event.type === "verification");
+      // 每个子任务各一发；来源带子任务前缀（同 plan / plan_result 的口径），
+      // 否则并行下根本分不清是谁的裁决
+      expect(verifs.map((e: any) => [e.event.subtaskId, e.source])).toEqual([
+        ["s1", "s1/verifier"],
+        ["s2", "s2/verifier"],
+      ]);
+      // 徽标按子任务自己的包算
+      expect(verifs[0]!.event.staticOnly).toBe(true);
+      expect(verifs[1]!.event.staticOnly).toBeUndefined();
+      // 与单执行者同口径的字段一个都不能少——UI 是逐字段白名单投影，
+      // 少列一个就在渲染层静默消失（judgedTurn 的坑踩过六次）
+      for (const v of verifs) {
+        expect(v.event.judgedTurn).toBe(1);
+        expect(v.event.round).toBe(0);
+        expect((v.event.verdict as any).passed).toBe(true);
+        expect(v.event.usage).toBeTruthy();
+      }
+    } finally {
+      await handle.close();
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
   it("token 计量 plan 模式三角色全链路：planner/execution/verification 各归各档", async () => {
     // 五段脚本（同 v2-17 形状）：planner 拆两步 + s1 执行/裁决 + s2 执行/裁决。
     // 子任务 verifier 的 done 被 orchestrate 压掉——verification 档只能靠

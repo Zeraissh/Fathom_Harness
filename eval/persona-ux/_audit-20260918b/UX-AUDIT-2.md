@@ -91,3 +91,43 @@ node eval/persona-ux/_audit-20260918b/capture.mjs
 截图：`shots/w1-welcome-wide.png`（欢迎页零右列+边缘把手）、`w2/w3`（窄档把手→全宽 sheet）、
 `v1-verdict-static-derived.png`（「核查通过（静态推导）」）、`a1-approval-single-line.png`（命令只一遍）、
 `l1-run-list-stopped.png`（列表「已停止」）。
+
+## 6. 遗留项收尾（2026-09-18 深夜，本目录后续三刀）
+
+上表 §2 的遗留逐条收口，另有一条**只有活页才抓得到**的新缺陷。
+
+| 遗留 | 落地 |
+|---|---|
+| H4/H5/H6（中断提示 / 跨目录 bin 与示例 / MCP 后移） | **`d3b8127`** |
+| 图形化纲领第一批（视觉优先纪律 / Progress / 消耗双视角） | **`80ea462`** + CSP 实锤补禁脚本 **`ffc5f7f`** + 双样本归档 **`8b0be6a`** |
+| 僵尸档案（`phase:executing` 永久堆积） | **`6d9e2ba`**：owner 章（pid/host）+ `archiveOwnerLiveness` 可证死才收；并行 CLI 的活档案靠"同机 pid 仍活"拦下——当初不敢上朴素扫描的顾虑正是这一格 |
+| **H8 边界另一半：编排不补发 verification 事件** | 本刀（见下） |
+
+### 6.1 编排补发 verification 事件（H8 的另一半）
+
+**病：** 单执行者路径逐轮发 `verification` 事件（V-08），编排路径的 `onVerification`
+只记账不发——多子任务 run 里**一条裁决卡都不出现**，"这一步为什么被打回"在界面上无答案。
+
+**修法（三处，一处一测）：**
+1. **宿主**（`ui/server.ts`）：编排的 `onVerification` 与单执行者同形发事件，多带
+   `subtaskId` 归属；`staticOnly` 按**该子任务自己的包**算（`resolveSubtask` 处落
+   `subPack` 表——逐子任务配置是编排的全部意义，按 run 级包算等于把 s1/s2 混成一个）。
+2. **UI**（`ui/public/app.js`）：白名单投影补 `subtaskId`（第七次提醒：不列出就静默丢）；
+   裁决卡标「子任务 id · 标题」；打开子代理时**只显示它自己的裁决**（此前 agentId
+   一律清空——子任务视角里它的裁决卡永远看不到）。
+3. **CLI**（`src/cli.ts`）：编排结果块逐子任务注「静态推导」，口径同上按各自的包。
+
+**活页抓到的真缺陷（单测全绿而浏览器少一张卡）：** 条目键按 `judgedTurn:round` 生成，
+编排下**每个子任务各有自己的 round 0** → s1 与 s2 的首轮同键 `verdict:1:0`；`patchList`
+的 `byKey` 是 Map，同键只留最后一条，先到的那张卡直接从 DOM 消失。纯函数（`deriveChatItems`）
+输出三项全对，缝在控制器。修法：键里编入归属。锁在 `test/ui-patch.test.ts`（键互不相同）。
+
+**验收（活页 + 重放）：** 脚本化宿主（`serve-planverif.ts`，:4207）造两个子任务、
+包不同（`consult` 无运行器 / `python-coding` 有）——三张卡带归属，徽标只出现在 s1 的两轮上；
+窄档 390 无横向溢出（归属行做唯一可缩项）；子代理视角各只见自己的。**重启宿主后再跑一遍**：
+断言逐条相同，截图逐像素对照差异只在相对时间与欢迎页起步区（会话区 0 像素差）。
+
+**同族的一条已存在的过宽口径（未改，如实记）：** `verifierCanExecute` 只看 bash 白名单，
+不含 MCP 工具——`stm32-debug` 包未声明 `readOnlyCommands`，其核查者拿的是 MCP 探针工具，
+徽标却会标「静态推导」。单执行者路径同样如此（H8 原刀遗留），本刀只保证编排与它同口径，
+不改判据本身。

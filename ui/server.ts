@@ -7800,6 +7800,12 @@ export function createUiServer(options: UiServerOptions = {}): UiServerHandle {
     let effectiveConcurrency = typeof concurrency === "number" ? concurrency : 1;
     let mainStopReason: string | undefined;
     let mainError: string | null = null;
+    /**
+     * 子任务 → 解析出的领域包：在 resolveSubtask 里填（那是对每个子任务解析包的
+     * **唯一**一处）。裁决透出要用它按子任务自己的包算核查白名单——编排的全部
+     * 意义就是逐子任务配置，按 run 级包算等于把 s1 与 s2 混成一个。
+     */
+    const subtaskPack = new Map<string, DomainPack | undefined>();
 
     try {
       const usePlanner = run.usePlannerModel ?? true;
@@ -7914,6 +7920,7 @@ export function createUiServer(options: UiServerOptions = {}): UiServerHandle {
         },
         resolveSubtask: (sub: SubTask) => {
           const sp = sub.pack ? getPack(sub.pack) : undefined;
+          subtaskPack.set(sub.id, sp);
           if (sub.pack && !sp) {
             // 未知包不静默吞：降级用默认配置，但必须让界面看见这次降级
             pushSyntheticEvent(run, "host", {
@@ -7976,8 +7983,24 @@ export function createUiServer(options: UiServerOptions = {}): UiServerHandle {
         // 核查成本逐轮记账（子任务 verifier 的 done 被 orchestrate 压掉不经
         // pushEvent；此前从返回值 steps 收尾回扫——宿主级异常时已完成轮次
         // 整体漏记，长 run 期间成本指标到收尾才跳变，违背入口记账原则）
-        onVerification: (_subtaskId, _round, vo) => {
+        // 并且**逐轮透出**（H8 边界另一半）：单执行者路径早就发 verification
+        // 事件，编排路径此前只记账——子任务裁决在界面上一条都看不到，"为什么
+        // 返工"永远不可见。字段与单执行者同形，多的只有 subtaskId 归属。
+        onVerification: (subtaskId, round, vo) => {
           growTokens("verification", vo.usage, run);
+          pushSyntheticEvent(run, `${subtaskId}/verifier`, {
+            type: "verification",
+            subtaskId,
+            round,
+            judgedTurn: run.conversationTurn,
+            verdict: vo.verdict,
+            usage: vo.usage,
+            recovery: vo.recovery,
+            // H8：核查侧无执行手段 → 裁决是静态推导。按**该子任务**的包算
+            ...(verifierCanExecute(readOnlyFor(subtaskPack.get(subtaskId)).commands)
+              ? {}
+              : { staticOnly: true }),
+          });
         },
         // 跨 run 资源互斥：把宿主表注入调度器——子任务粒度互斥，被别的 run
         // 持有时等待而非 skip；holder 前缀 = runId，冲突诊断可读

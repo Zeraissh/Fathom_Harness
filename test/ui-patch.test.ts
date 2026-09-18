@@ -5904,6 +5904,150 @@ describe("H8 · 裁决卡标注「静态推导」", () => {
     expect(server).toMatch(/verifierCanExecute\(/);
     expect(server).toMatch(/staticOnly: true/);
   });
+
+  /**
+   * 编排路径的裁决归属（2026-09-18 二轮走查 §2 遗留的 H8 边界另一半）。
+   * 编排 run 的裁决此前只记账、不发事件——多子任务下"裁决是哪一步的"这个
+   * 问题根本没有答案，所以 subtaskId 必须与 staticOnly 同等待遇：逐字段
+   * 白名单投影里少列一个，它在渲染层就静默消失（judgedTurn 的坑，第七次）。
+   */
+  it("reducer 透传 subtaskId（编排裁决的归属不得静默丢）", () => {
+    let s = createInitialState("run-st", "任务", true);
+    s = reduceEvents(s, [
+      sse(0, "s1/verifier", "verification", {
+        round: 0,
+        subtaskId: "s1",
+        judgedTurn: 1,
+        staticOnly: true,
+        verdict: { passed: true, issues: [], unverified: [], advisory: [], summary: "读源码推导" },
+      }),
+      // 单执行者路径没有 subtaskId——缺省是 null（同 recovery 的口径），
+      // 不能是空串：空串会被下游当成"某个 id 为空的子任务"
+      sse(1, "verifier", "verification", {
+        round: 0,
+        judgedTurn: 1,
+        verdict: { passed: true, issues: [], unverified: [], advisory: [], summary: "跑了测试" },
+      }),
+    ]);
+    expect(s.verifications[0].subtaskId).toBe("s1");
+    expect(s.verifications[1].subtaskId).toBeNull();
+  });
+
+  it("编排裁决卡标明归属；子代理视角只显示自己那一条", () => {
+    let s = createInitialState("run-sub", "任务", true);
+    s = reduceEvents(s, [
+      sse(0, "host", "plan", {
+        concurrency: 2,
+        concurrencyMode: "auto",
+        plannerMs: 10,
+        subtasks: [
+          { id: "s1", title: "静态核查的一步", pack: "consult", description: "", acceptance: [], dependsOn: [], resources: [] },
+          { id: "s2", title: "能跑测试的一步", pack: "python-coding", description: "", acceptance: [], dependsOn: [], resources: [] },
+        ],
+      }),
+      sse(1, "s1/verifier", "verification", {
+        round: 0,
+        subtaskId: "s1",
+        judgedTurn: 1,
+        staticOnly: true,
+        verdict: { passed: true, issues: [], unverified: [], advisory: [], summary: "读源码推导" },
+      }),
+      sse(2, "s2/verifier", "verification", {
+        round: 0,
+        subtaskId: "s2",
+        judgedTurn: 1,
+        verdict: { passed: false, issues: ["断言失败"], unverified: [], advisory: [], summary: "测试红了" },
+      }),
+    ]);
+
+    // 主对话：两条都在，各带自己的归属（标题取自计划）
+    const items = deriveChatItems(s, null).filter((it) => it.kind === "verdict");
+    expect(items.map((it) => it.subtaskId)).toEqual(["s1", "s2"]);
+    expect(items.map((it) => it.subtaskTitle)).toEqual(["静态核查的一步", "能跑测试的一步"]);
+
+    // 子代理视角：打开 s2 时看到的是它自己的裁决，而不是一片空白；
+    // 别的子任务的裁决不越界进来
+    const scoped = deriveChatItems(s, null, { agentId: "s2" }).filter((it) => it.kind === "verdict");
+    expect(scoped).toHaveLength(1);
+    expect(scoped[0].subtaskId).toBe("s2");
+    expect(scoped[0].verdict.issues).toEqual(["断言失败"]);
+  });
+
+  it("编排下条目键必须互不相同——键撞了 patchList 会吃掉一张卡", () => {
+    // 真机实录（2026-09-18 活页，单测全绿而浏览器少了一张卡）：两个子任务
+    // 各有自己的 round 0，而键按 judgedTurn:round 生成 → s1 与 s2 的首轮
+    // 裁决卡同键 verdict:1:0。patchList 的 byKey 是 Map，同键只留最后一条，
+    // s1 那张在此刻从 DOM 里消失（纯函数全对，缝在控制器）。
+    let s = createInitialState("run-key-collide", "任务", true);
+    s = reduceEvents(s, [
+      sse(0, "host", "plan", {
+        concurrency: 2,
+        concurrencyMode: "auto",
+        plannerMs: 10,
+        subtasks: [
+          { id: "s1", title: "静态核查的一步", pack: "consult", description: "", acceptance: [], dependsOn: [], resources: [] },
+          { id: "s2", title: "能跑测试的一步", pack: "python-coding", description: "", acceptance: [], dependsOn: [], resources: [] },
+        ],
+      }),
+      sse(1, "s1/main", "turn_start", { turn: 1 }),
+      sse(2, "s1/verifier", "verification", {
+        round: 0,
+        subtaskId: "s1",
+        judgedTurn: 1,
+        verdict: { passed: false, issues: ["数漏一份"], unverified: [], advisory: [], summary: "返工" },
+      }),
+      sse(3, "s2/main", "turn_start", { turn: 1 }),
+      sse(4, "s2/verifier", "verification", {
+        round: 0,
+        subtaskId: "s2",
+        judgedTurn: 1,
+        verdict: { passed: true, issues: [], unverified: [], advisory: [], summary: "通过" },
+      }),
+    ]);
+    const items = deriveChatItems(s, null);
+    const keys = items.map((it) => it.key);
+    expect(keys.filter((k) => String(k).startsWith("verdict:"))).toHaveLength(2);
+    expect(new Set(keys).size, `键有重复：${keys.join(" | ")}`).toBe(keys.length);
+  });
+
+  it("编排裁决卡渲染出「子任务 id · 标题」，单执行者卡不出现归属行", () => {
+    let s = createInitialState("run-sub-render", "任务", true);
+    s = reduceEvents(s, [
+      sse(0, "host", "plan", {
+        concurrency: 1,
+        concurrencyMode: "fixed",
+        plannerMs: 10,
+        subtasks: [
+          { id: "s1", title: "静态核查的一步", pack: "consult", description: "", acceptance: [], dependsOn: [], resources: [] },
+        ],
+      }),
+      sse(1, "s1/verifier", "verification", {
+        round: 0,
+        subtaskId: "s1",
+        judgedTurn: 1,
+        staticOnly: true,
+        verdict: { passed: true, issues: [], unverified: [], advisory: [], summary: "读源码推导" },
+      }),
+    ]);
+    renderRunDetail(s, { activeTab: "loop", harness: null });
+    const own = document.querySelector("[data-subtask-id]") as HTMLElement | null;
+    expect(own, "编排裁决卡未标出归属").not.toBeNull();
+    expect(own!.textContent).toContain("s1");
+    expect(own!.textContent).toContain("静态核查的一步");
+    // 静态推导徽标与归属并存（两个维度不是一回事）
+    expect(document.querySelector("[data-static-only]")).not.toBeNull();
+
+    let s2 = createInitialState("run-single-render", "任务", true);
+    s2 = reduceEvents(s2, [
+      sse(0, "verifier", "verification", {
+        round: 0,
+        judgedTurn: 1,
+        verdict: { passed: true, issues: [], unverified: [], advisory: [], summary: "跑了测试" },
+      }),
+    ]);
+    renderRunDetail(s2, { activeTab: "loop", harness: null });
+    expect(document.querySelector("[data-subtask-id]")).toBeNull();
+  });
 });
 
 /**

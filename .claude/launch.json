@@ -50,6 +50,12 @@
         "ui/serve.ts"
       ],
       "port": 4199
+    },
+    {
+      "name": "planverif",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["tsx", "eval/persona-ux/_audit-20260918b/serve-planverif.ts"],
+      "port": 4207
     }
   ]
 }

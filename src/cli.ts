@@ -2090,6 +2090,12 @@ async function main(): Promise<void> {
         finalOut(`${mark} ${sub.id} ${sub.title}${sub.pack ? c.dim(` [${sub.pack}]`) : ""}${dur}`);
         if (step) {
           printVerdictSignal("    ", step.result.finalPassed, step.result.verifications.at(-1)?.verdict);
+          // H8 边界另一半（走查 2026-09-18）：与单执行者路径同一条注，但口径
+          // 按**子任务自己的包**算——编排的全部意义就是逐子任务配置，按 run 级
+          // 包算等于把 s1 与 s2 混成一个（一个能跑、一个不能，终端上却是同一行）。
+          if (!verifierCanExecute(readOnlyFor(sub.pack ? getPack(sub.pack) : undefined).commands)) {
+            finalOut(c.dim("    静态推导：核查侧白名单不含可运行器——产物未经运行验证"));
+          }
         }
       }
       const serialMs = outcome.steps.reduce((acc, s) => acc + s.durationMs, 0);

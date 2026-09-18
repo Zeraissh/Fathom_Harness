@@ -1269,6 +1269,9 @@ function applyVerification(state, seq, event) {
         seq: typeof seq === "number" ? seq : null,
         // 裁决获得路径（第五次提醒：这是逐字段白名单投影，不列出就静默丢弃）
         recovery: event.recovery ? String(event.recovery) : null,
+        // 编排裁决的归属（哪一步判的）。没有它是 null 而非空串——单执行者
+        // 路径的裁决本来就没有归属，"" 会被当成一个子任务 id
+        subtaskId: event.subtaskId ? String(event.subtaskId) : null,
         // H8：核查侧无执行手段（宿主按白名单算）——静态推导必须能走到渲染层
         ...(event.staticOnly === true ? { staticOnly: true } : {}),
         verdict: {
@@ -2405,11 +2408,34 @@ export function deriveLoopFace(state, harness) {
   }
 
   const segments = deriveSegments(state);
-  const verdictOf = (round) => state.verifications.find((v) => v.round === round)?.verdict ?? null;
+  // 配对口径（H8 边界另一半）：编排下每个子任务各有各的轮次编号——s1 的
+  // round 1 与 s2 的 round 0 同时存在，按轮号找必然错位（s2 的首个核查段会
+  // 去捡 s1 的返工裁决）。所以**先按归属配**、每条裁决只领一次。
+  // 没有归属的裁决（单执行者、以及转发进父时间线的 spawn 支线）退回原口径：
+  // 第 k 个核查段配 round=k——那里两者等价，且这些段按归属找本就空手而归。
   let verifierSeen = 0;
+  const unclaimed = new Set(state.verifications);
+  const verdictOf = (source) => {
+    const owner = childAgentKey(source);
+    if (owner) {
+      const mine = state.verifications.find(
+        (x) => x.subtaskId === owner && unclaimed.has(x),
+      );
+      if (mine) {
+        unclaimed.delete(mine);
+        return mine.verdict ?? null;
+      }
+      // 自己那条丢了就是丢了：按序号去捡别人的裁决只会把"未知"变成一个错值
+      return null;
+    }
+    const v = state.verifications.find((x) => x.round === verifierSeen && !x.subtaskId);
+    verifierSeen++;
+    if (v) unclaimed.delete(v);
+    return v?.verdict ?? null;
+  };
   const chain = segments.map((s) => {
     if (s.role !== "verifier") return { role: s.role, round: s.round, passed: null };
-    const v = verdictOf(verifierSeen++);
+    const v = verdictOf(s.source);
     return { role: "verifier", round: s.round, passed: v ? Boolean(v.passed) : null };
   });
 
@@ -8845,16 +8871,27 @@ export function deriveChatItems(state, live, opts = {}) {
     }
   }
 
-  const verdictItems = (agentId ? [] : (state.verifications ?? [])).map((v) => ({
-    kind: "verdict",
-    round: v.round,
-    judgedTurn: v.judgedTurn ?? null,
-    verdict: v.verdict,
-    recovery: v.recovery ?? null,
-    seq: typeof v.seq === "number" ? v.seq : null,
-    // H8：静态推导标注（白名单投影，不列出就丢）
-    ...(v.staticOnly === true ? { staticOnly: true } : {}),
-  }));
+  // 编排裁决的归属：多子任务下"这是哪一步判的"没有答案，裁决卡就没有意义。
+  // 打开某个子代理时只显示它自己的裁决（此前 agentId 一律清空——子任务视角
+  // 里它的裁决卡永远看不到，而那正是"我这一步为什么被打回"的答案）。
+  const subtaskTitleOf = (id) =>
+    (state?.plan?.subtasks ?? []).find((t) => t.id === id)?.title ?? null;
+  const verdictItems = (state.verifications ?? [])
+    .filter((v) => !agentId || v.subtaskId === agentId)
+    .map((v) => ({
+      kind: "verdict",
+      round: v.round,
+      judgedTurn: v.judgedTurn ?? null,
+      verdict: v.verdict,
+      recovery: v.recovery ?? null,
+      seq: typeof v.seq === "number" ? v.seq : null,
+      // H8 边界另一半：编排裁决的归属（白名单投影，不列出就丢）
+      ...(v.subtaskId
+        ? { subtaskId: v.subtaskId, subtaskTitle: subtaskTitleOf(v.subtaskId) }
+        : {}),
+      // H8：静态推导标注（白名单投影，不列出就丢）
+      ...(v.staticOnly === true ? { staticOnly: true } : {}),
+    }));
   const placed = verdictItems.filter((v) => v.seq !== null);
   if (placed.length > 0) {
     for (const v of placed) {
@@ -8922,7 +8959,10 @@ export function deriveChatItems(state, live, opts = {}) {
       : it.kind === "notice" ? ("notice:" + (it.seq ?? "x"))
       : it.kind === "run-next" ? "run-next"
       : it.kind === "tools" ? ("tools:" + (it.tools?.[0]?.toolUseId ?? it.seq ?? "x"))
-      : it.kind === "verdict" ? ("verdict:" + (it.judgedTurn ?? "x") + ":" + it.round)
+      // 编排裁决必须把归属编进键：每个子任务各有自己的 round 0，只按
+      // judgedTurn:round 生成键会撞（s1 与 s2 的首轮都是 verdict:1:0），
+      // patchList 的 byKey 是 Map——同键只留最后一条，先到的那张卡直接消失
+      : it.kind === "verdict" ? ("verdict:" + (it.subtaskId ? it.subtaskId + ":" : "") + (it.judgedTurn ?? "x") + ":" + it.round)
       : it.kind === "artifacts" ? "artifacts"
       : it.kind === "blocked" ? "blocked"
       : it.kind === "sources" ? "sources"
@@ -10882,9 +10922,17 @@ function renderVerdictInline(it) {
   const staticBadge = it.staticOnly === true
     ? '<span class="aside-peek chat-verdict-static" data-static-only title="核查侧白名单不含可运行器——产物未经运行验证">（静态推导）</span>'
     : "";
+  // H8 边界另一半（编排）：裁决必须说清是哪一步判的——多子任务并行时
+  // 一张没署名的"核查通过"根本不知道在给谁背书。标题取自计划，缺则退化成 id。
+  const who = it.subtaskId
+    ? `<span class="aside-peek chat-verdict-subtask" data-subtask-id="${esc(it.subtaskId)}">${esc(
+        it.subtaskTitle ? `${it.subtaskId} · ${it.subtaskTitle}` : String(it.subtaskId),
+      )}</span>`
+    : "";
   return (
     `<div class="chat-verdict chat-verdict--${tone}">` +
     `<div class="chat-verdict-head">◆ ${esc(label)}` +
+    who +
     staticBadge +
     judged +
     (it.round ? `<span class="aside-peek">返工第 ${it.round} 轮</span>` : "") +

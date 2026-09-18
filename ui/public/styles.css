@@ -7068,6 +7068,15 @@ body.sidebar-collapsed .sidebar {
 .chat-verdict--ok { border-left-color: var(--green); }
 .chat-verdict--warn { border-left-color: var(--yellow); }
 .chat-verdict--bad { border-left-color: var(--red); }
+/* 编排裁决卡的归属（id · 标题）：子任务标题可以很长，撑破卡片就是另一场
+   事故（.aside-peek 在 390px 越界的同款教训）。让它做唯一可缩的一项。 */
+.chat-verdict-subtask {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .chat-verdict-head {
   font-weight: 600;
   display: flex;

@@ -193,6 +193,50 @@ describe("deriveLoopFace", () => {
     expect(chain[3].passed).toBe(true);
   });
 
+  /**
+   * 编排下"返工裁决序列"按子任务归属配对（H8 边界另一半）。
+   * 段链此前按序号取裁决（verdictOf(round) + verifierSeen++）：单执行者下
+   * 等价于按序配对，编排一进来就错位——s1 返工一轮后，s2 的首个 verifier
+   * 段会去捡 round=2 的裁决（s1 的），s2 自己的裁决谁也取不到。
+   */
+  it("返工裁决序列：编排下按子任务归属配对，不按序号捡", () => {
+    const s = feed([
+      ev("s1/main", { type: "turn_start", turn: 1 }),
+      ev("s1/verifier", { type: "turn_start", turn: 1 }),
+      ev("s1/verifier", { type: "verification", round: 0, subtaskId: "s1", judgedTurn: 1, verdict: { passed: false, issues: ["x"], unverified: [], advisory: [], summary: "" } }),
+      ev("s1/rework", { type: "turn_start", turn: 2 }),
+      ev("s1/verifier", { type: "turn_start", turn: 1 }),
+      ev("s1/verifier", { type: "verification", round: 1, subtaskId: "s1", judgedTurn: 1, verdict: { passed: true, issues: [], unverified: [], advisory: [], summary: "" } }),
+      ev("s2/main", { type: "turn_start", turn: 1 }),
+      ev("s2/verifier", { type: "turn_start", turn: 1 }),
+      ev("s2/verifier", { type: "verification", round: 0, subtaskId: "s2", judgedTurn: 1, verdict: { passed: true, issues: [], unverified: [], advisory: [], summary: "" } }),
+    ]);
+    const chain = deriveLoopFace(s, HARNESS).chain;
+    expect(chain.map((c) => c.role)).toEqual(["main", "verifier", "rework", "verifier", "main", "verifier"]);
+    expect(chain[1].passed).toBe(false);
+    expect(chain[3].passed).toBe(true);
+    // 关键点：s2 那一段必须拿到 s2 自己的裁决（修前为 null——去捡 round=2 捡空）
+    expect(chain[5].passed).toBe(true);
+  });
+
+  /**
+   * 归属配对的另一面：没有归属的核查段不许去捡编排子任务的裁决。
+   * 编排 run 里可能同时存在两类裁决——子任务带 subtaskId 的，和 spawn 支线
+   * 转发进来不带归属的。只按轮号找的话，先到的那条会顶替掉后面那条，
+   * 把"别人的通过"画成"我的通过"。
+   */
+  it("返工裁决序列：无归属的核查段不捡编排子任务的裁决", () => {
+    const s = feed([
+      // spawn 支线转发的裁决：无归属，且先到（round 与 s1 的相撞）
+      ev("spawn/查寄存器", { type: "verification", round: 0, judgedTurn: 1, verdict: { passed: false, issues: ["支线未过"], unverified: [], advisory: [], summary: "" } }),
+      ev("main", { type: "turn_start", turn: 1 }),
+      ev("s1/verifier", { type: "turn_start", turn: 1 }),
+      ev("s1/verifier", { type: "verification", round: 0, subtaskId: "s1", judgedTurn: 1, verdict: { passed: true, issues: [], unverified: [], advisory: [], summary: "" } }),
+    ]);
+    const chain = deriveLoopFace(s, HARNESS).chain;
+    expect(chain.filter((c) => c.role === "verifier").map((c) => c.passed)).toEqual([true]);
+  });
+
   it("运行中不给 stopReason；结束后给六值分档", () => {
     const running = feed([ev("main", { type: "turn_start", turn: 1 })]);
     expect(deriveLoopFace(running, HARNESS).stopReason).toBeNull();
