@@ -10356,6 +10356,25 @@ export function deriveWrittenPaths(state, queue) {
   return [...written];
 }
 
+/**
+ * 写盘成功之后该播什么（P3）。
+ *
+ * 以前播的是「产物画布已打开：X」——那是"你换了个视图"，不是"发生了什么事实"，
+ * 而且它会在未写盘时就响。现在播的是事实本身：**已写出 X**。
+ *
+ * 多个路径一次写成功时只播一条（整句念完太吵），超过一条补一个计数。
+ * @param {string[]} paths
+ * @param {(p: string) => string} [basename]
+ * @returns {string} 没有路径时返回空串（调用方据此不播）
+ */
+export function writeAnnouncement(paths, basename) {
+  const list = (Array.isArray(paths) ? paths : []).filter(Boolean).map(String);
+  if (list.length === 0) return "";
+  const short = typeof basename === "function" ? basename : (p) => String(p).split(/[\\/]/).pop() || String(p);
+  const head = `已写出 ${short(list[0])}`;
+  return list.length === 1 ? head : `${head} 等 ${list.length} 个文件`;
+}
+
 /** 会引起"换段"的事件类型：turn_start 这类噪声不该产生分界 */
 const CHAT_SOURCED = new Set([
   "user_message", "assistant_text", "assistant_thinking", "tool_call", "approval_request",

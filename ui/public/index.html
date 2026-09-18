@@ -529,6 +529,7 @@ import {
   readSidebarCollapsed,
   writeSidebarCollapsed,
   deriveWrittenPaths,
+  writeAnnouncement,
   deriveArtifacts,
   deliveryFace,
   conversationChainIds,
@@ -629,6 +630,7 @@ import {
   isBrowserPreviewPath,
   wrapIndex,
   indexAfterCloseTab,
+  artifactBasename,
 } from "/features/artifact-canvas.js";
 import {
   initFilePreview,
@@ -2971,6 +2973,10 @@ function applySseBatch(runId, queue) {
     if (selectedRunId === runId) {
       const written = deriveWrittenPaths(state, queue);
       if (written.length > 0) {
+        // P3：播的是**事实**——写盘成功。以前那半句是「产物画布已打开」，
+        // 那是"你换了个视图"，而且曾在未写盘时先响。
+        const line = writeAnnouncement(written, artifactBasename);
+        if (line) announceStatus(line);
         if (artifactCanvasApi?.isOpen()) artifactCanvasApi.noteWrites(written);
         else openArtifactByPath(runId, written.find((p) => /\.html?$/i.test(p)) ?? written[written.length - 1]);
       }
@@ -5686,6 +5692,16 @@ try {
   artifactCanvasApi = initArtifactCanvas({
     getRunId: () => selectedRunId,
     getArtifacts: () => (selectedRunId ? openedPreviewArtifacts(selectedRunId) : []),
+    // P3：预览读不到时先回答「它写过没有」。判据是**成功的写结果**——
+    // deriveArtifacts 已经把失败/等批准的调用滤掉了，不新增状态。
+    hasWrittenPath: (path) => {
+      if (!selectedRunId) return false;
+      const st = runStates.get(selectedRunId);
+      if (!st) return false;
+      const want = String(path ?? "").replace(/\/g, "/");
+      if (!want) return false;
+      return deriveArtifacts(st).some((a) => String(a.path ?? "").replace(/\/g, "/") === want);
+    },
     onClose: () => closeArtifactRoute(),
     onSwitch: (index) => {
       if (selectedRunId) {

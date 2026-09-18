@@ -36,6 +36,7 @@ import {
   deriveOverview,
   deriveLogEntries,
   groupToolSteps,
+  writeAnnouncement,
   toggleEntryCollapsed,
   isEntryCollapsedByDefault,
   deriveRunListItems,
@@ -3604,5 +3605,24 @@ describe("pickWelcomeWorkdir", () => {
       hostWorkdirIsHarness: false,
       hasPref: false,
     })).toBe(repo);
+  });
+});
+
+// ---- P3: 写盘成功的播报文案 ----
+describe("P3 已写出播报", () => {
+  it("单条：已写出 <basename>", () => {
+    expect(writeAnnouncement(["out/hello-b1.txt"])).toBe("已写出 hello-b1.txt");
+  });
+  it("多条：只念第一条 + 计数（整句念完太吵）", () => {
+    expect(writeAnnouncement(["a/x.html", "a/y.css", "a/z.js"]))
+      .toBe("已写出 x.html 等 3 个文件");
+  });
+  it("空/非数组 → 空串（调用方据此不播）", () => {
+    expect(writeAnnouncement([])).toBe("");
+    expect(writeAnnouncement(null)).toBe("");
+    expect(writeAnnouncement([""])).toBe("");
+  });
+  it("不说「产物画布已打开」这类视图事件", () => {
+    expect(writeAnnouncement(["a.html"])).not.toMatch(/画布|已打开/);
   });
 });
