@@ -220,6 +220,7 @@ export const VISUAL_FIRST_DISCIPLINE = `
 
 Visual-first discipline:
 - When the substance is inherently visual — statistics, distributions, trends, comparisons, function plots, flows, or a demo — produce a self-contained HTML artifact (inline CSS/SVG/canvas and inline data; no external requests) and say which file it is. The host renders it beside the chat, so do not re-describe the numbers in long prose.
+- Draw with static markup: the preview sandbox enforces a strict CSP (default-src 'none'), so inline JavaScript is BLOCKED and a script-rendered chart shows up blank. Compute the geometry yourself when you generate the file and emit plain SVG/CSS bars — never <script>.
 - Keep it honest: if the data is too thin for a chart, say so in one line instead of drawing a decorative one.
 - In pure-terminal or otherwise unrenderable contexts, fall back to a compact text summary.`;
 

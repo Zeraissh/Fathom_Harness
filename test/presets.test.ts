@@ -53,6 +53,9 @@ describe("domain packs", () => {
     expect(DEFAULT_HOST_DISCIPLINES).toMatch(/self-contained/i);
     // 退化条件也要写清：纯终端/无法成图时才用文字
     expect(DEFAULT_HOST_DISCIPLINES).toMatch(/terminal|text-only|no way to render/i);
+    // 复跑实测：JS 渲染的图在画布里是空白（CSP default-src 'none' 拦脚本）——
+    // 纪律必须写明静态绘制
+    expect(DEFAULT_HOST_DISCIPLINES).toMatch(/no JavaScript|without JavaScript|static (SVG|markup)|CSP/i);
   });
 
   it("consult 包：有据咨询 + fetch_url/web_search + rubric 核查 + 禁装饰 emoji", () => {

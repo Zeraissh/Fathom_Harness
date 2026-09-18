@@ -13,8 +13,9 @@
  *   圈禁 + 无动态构造，一段不过即整条弹卡。
  *
  * 纪律（保守起步，白名单「只进不出」改动需过评审）：
- * - 名单里的命令全无写能力。`sed`（`-i`）、`awk`（程序内重定向）、`tee`、`xargs`、
- *   `env`、`bash -c` 一类能写或能执行的一律不在名单。
+ * - 名单里的命令全无写能力。`sed` 带逐条写向量守卫（`-i/--in-place`、脚本内
+ *   `w/W` 写命令——含 `s///w file` 与 `2w file` 地址形）才在名单；`awk`（程序内
+ *   重定向）、`tee`、`xargs`、`env`、`bash -c` 一类能写或能执行的一律不在名单。
  * - 重定向目标只有 null sink（`/dev/null`、`NUL`）算无害；`<` 输入重定向一律弹卡。
  * - 任何 `$` / 反引号 / 未闭合引号 → 静态判不准 → 弹卡。
  * - 参数里任何静态判不出在 workdir/readRoots 内的路径（绝对越界、`..`、`~`）→ 弹卡。
@@ -46,7 +47,7 @@ export const READ_ONLY_SHELL_COMMANDS: ReadonlySet<string> = new Set([
   "ls", "cat", "head", "tail", "wc", "od", "xxd", "file", "stat", "pwd",
   "grep", "rg", "cut", "tr", "diff", "cmp", "strings", "du", "df", "tree",
   "which", "whereis", "date", "basename", "dirname", "realpath",
-  "md5sum", "sha1sum", "sha256sum", "echo", "sort", "uniq", "find",
+  "md5sum", "sha1sum", "sha256sum", "echo", "sed", "sort", "uniq", "find",
   // 2026-09-18 真机新摩擦（报告 §9）：模型习惯 `cd <圈内目录> && wc -l f`，
   // 链式只读本身已放行，卡的是 cd 前缀。cd 有专用守卫（见 classifySegment）。
   "cd",
@@ -173,9 +174,27 @@ function classifySegment(seg: string, workdir: string, readRoots?: string[]): Re
   if (head === "uniq" && rest.filter((t) => !t.startsWith("-")).length > 1) {
     return ask("uniq 的第二个位置参数是输出文件");
   }
+  /**
+   * sed（2026-09-18 统计样本收紧）：s 命令本身纯读，写向量是 -i 与脚本里的
+   * w/W 写命令。守卫按"脚本里出现独立的 w 词"判——`s/world/x/`、替换文本里的
+   * w 不误伤；`s///w file`、`2w file`、`-e 'w pwn'` 全部拦下（判不准回卡不拒绝）。
+   */
+  if (head === "sed") {
+    if (rest.some((t) => t.startsWith("-i") || t.startsWith("--in-place"))) {
+      return ask("sed -i/--in-place 会就地写文件");
+    }
+    if (rest.some((t) => /(?:^|[^A-Za-z\\])[wW]\s/.test(t))) {
+      return ask("sed 脚本含 w/W 写命令");
+    }
+  }
 
   // 参数圈禁：非旗标词按路径解析；旗标的 `=value` 同样解析。
   for (const token of rest) {
+    // shell 转义标点（`\(` `\)` `\;` 这类恰好两字符）是表达式语法，不是路径——
+    // find 的 `\( … -o … \)` 组合曾在这里被判「参数可能在工作目录外」整单弹卡
+    // （2026-09-18 统计样本实录：开场第一条计数命令就是它）。裸 ( 子壳仍由
+    // 段扫描拦下，不在此放行。
+    if (/^\\[^A-Za-z0-9]$/.test(token)) continue;
     const values = token.startsWith("-")
       ? token.includes("=")
         ? [token.slice(token.indexOf("=") + 1)]

@@ -266,3 +266,42 @@ describe("只读 role 装配锁", () => {
     expect((planner.match(/readOnlyShellAutoAllow:\s*false/g) ?? []).length).toBe(2);
   });
 });
+
+/**
+ * 统计样本复跑刀（2026-09-18 深夜）：把统计跑（8466165e）的 16 次审批原文
+ * 回喂分类器——12 条 bash 里 node×7 / 变量×2 / mkdir×1 是判对的（agent 自选
+ * 脚本路线、任意执行必须问）；可收紧的只有两处，且开场第一条就是它们：
+ * ① find 的转义括号 \( -o \) 被判成「参数可能在工作目录外」；
+ * ② 管道中段无 -i 的 sed 被按命令名一刀切。
+ */
+describe("统计链收紧：find \( \) 组合 / 无 -i 的 sed", () => {
+  it("开场计数命令原文（find \( -name -o … \) | wc -l）免问", () => {
+    const wd = process.cwd();
+    const cmd =
+      "find . -type f \\( -name '*.ts' -o -name '*.js' -o -name '*.css' -o -name '*.html' \\) -not -path '*/node_modules/*' -not -path '*/.git/*' | wc -l; echo";
+    expect(classifyReadOnlyShellCommand(cmd, wd).allow).toBe(true);
+  });
+
+  it("管道中段无 -i 的 sed（s 命令纯读）免问", () => {
+    const wd = process.cwd();
+    const cmd =
+      "find . -type f -name '*.js' -not -path '*/node_modules/*' | sed 's|/[^/]*$||' | sort | uniq -c | head -20";
+    expect(classifyReadOnlyShellCommand(cmd, wd).allow).toBe(true);
+  });
+
+  it("守卫不松：sed -i / sed 的 w·W 写命令 / find -exec / 转义括号之外仍照旧", () => {
+    const wd = process.cwd();
+    for (const cmd of [
+      "sed -i 's/a/b/' f.txt",
+      "sed --in-place 's/a/b/' f.txt",
+      "sed 's/a/b/w out.txt' f.txt",
+      "sed '2w out.txt' f.txt",
+      "sed -e 'w pwn.txt' f.txt",
+      "find . -name '*.js' -exec rm {} \\;",
+      "node count.js",
+      "echo $(date)",
+    ]) {
+      expect(classifyReadOnlyShellCommand(cmd, wd).allow, cmd).toBe(false);
+    }
+  });
+});
