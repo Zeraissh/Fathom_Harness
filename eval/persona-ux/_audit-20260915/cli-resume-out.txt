@@ -1,0 +1,10 @@
+[2mcompat mode [anthropic]: model=deepseek-v4-flash via https://api.deepseek.com/anthropic (thinking/effort/cache_control disabled)[0m
+[2m上下文：水位 963k（跟窗口） / 窗口 1,048k（来源：registry）[0m
+[2mvision model: kimi-k3[0m
+[2mdescribe_image: vision-role (kimi-k3)[0m
+[33mexecution: report-only / host (mode=report, probe=unavailable) — shell commands are not run-isolated[0m
+[2m飞书/微信宿主未开[0m
+[31m不能续跑 cli-1789479284955：终态 completed 没有可热续的检查点
+原任务：write hello-yes-banner.txt one line yes-ok. do not read other files
+终态：completed
+飞行中杀掉不能接着工具。读不到热续检查点会停，不会当新任务重开。[0m

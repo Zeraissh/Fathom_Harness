@@ -1,0 +1,34 @@
+
+> agent-harness@1.3.0 agent
+> tsx --env-file-if-exists=.env src/cli.ts --help
+
+Agent_Design CLI
+
+Usage:
+  npm run agent -- run [options] "task description"
+  npm run agent -- run --help
+  npm run agent -- doctor
+  npm run agent -- --help | --version
+
+Compatibility:
+  npm run cli -- [options] "task description"
+
+Run options:
+  --yes          自动批准工具请求（仅用于明确接受风险的无人值守运行）
+  --verify       独立核查，未通过时有界返工
+  --plan         拆完计划后停下等确认再执行并核查。TTY 打印子任务短表并问是否开跑（y/n，可选改一行标题）；非 TTY 须加 --yes 才自动开跑，否则退出码 2 并印「需要确认，请加 --yes」
+  --parallel N   plan 并行度；也接受 --parallel=N，省略 N 表示 auto
+  --auto         自动选择单领域 pack
+  --ask          允许 agent 在执行前集中提问（与 --yes 互斥）
+  --resume-run ID  同 run 热续。须有已提交检查点；飞行中杀掉不能接着工具。读不到检查点会停并印原任务/终态，不会当新任务重开
+  --             后续内容一律视为任务文本
+
+Model:
+  命令行暂不能 --model / --api-key / --workdir。
+  换模型：环境变量 AGENT_MODEL（可选 AGENT_PROVIDER、ANTHROPIC_API_KEY / ANTHROPIC_BASE_URL，或 OPENAI_API_KEY / OPENAI_BASE_URL）。
+  工作目录即当前 cwd。doctor 可查看当前 provider / model / 是否有 Key。
+
+Confirm:
+  没有交互终端时请加 --yes，否则会停在确认（退出码 2），不会摔 readline 栈。
+
+Doctor is static: it performs no network request and starts no execution worker.

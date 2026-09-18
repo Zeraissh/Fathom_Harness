@@ -1,0 +1,6 @@
+=== --help ===
+exit=
+=== run --help ===
+exit=
+=== doctor ===
+exit=

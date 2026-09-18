@@ -1,0 +1,1143 @@
+{
+  "generatedAt": "2026-09-15T13:27:24.616Z",
+  "base": "http://127.0.0.1:4174",
+  "count": 80,
+  "records": [
+    {
+      "t": "2026-09-15T13:26:41.089Z",
+      "id": "cold-title",
+      "ok": true,
+      "title": "FATHOM",
+      "hash": "",
+      "onboarding": {
+        "text": "初次使用\n\n打一句话，回车\n\n在输入框里写下要做的事，按 Enter 发送。Shift+Enter 换行。下面的例子只填进输入框，由你确认后再跑。\n\n1 / 4\n\n跳过\n下一步",
+        "aria": null,
+        "hiddenAttr": null,
+        "display": "on-screen"
+      },
+      "welcome": {
+        "text": "AGENT CONSOLE\n\nFATHOM.\n\n说要做什么，回车就发。\n\n稿件、纪要、问答都可以从这里开始。\n\n现在只能在这个窗口下指令。\n\n输入 @ 可按文件名找这个文件夹里的文件。旧对话用「引用会话」。",
+        "aria": null,
+        "hiddenAttr": null,
+        "display": "on-screen"
+      },
+      "placeholder": "说要做什么…",
+      "submitAria": null,
+      "submitLabel": "发送",
+      "faceOffice": "true",
+      "faceCode": "false",
+      "autoApprove": false,
+      "verify": false,
+      "shot": "shots/a00-cold.png"
+    },
+    {
+      "t": "2026-09-15T13:26:41.103Z",
+      "id": "onboarding-page1",
+      "ok": true,
+      "title": "打一句话，回车",
+      "body": "在输入框里写下要做的事，按 Enter 发送。Shift+Enter 换行。下面的例子只填进输入框，由你确认后再跑。"
+    },
+    {
+      "t": "2026-09-15T13:26:42.433Z",
+      "id": "onboarding-walk",
+      "ok": true,
+      "steps": [
+        {
+          "i": 0,
+          "title": "打一句话，回车",
+          "body": "在输入框里写下要做的事，按 Enter 发送。Shift+Enter 换行。下面的例子只填进输入框，由你确认后再跑。",
+          "meta": "1 / 4",
+          "next": "下一步"
+        },
+        {
+          "i": 1,
+          "title": "对话按项目分组",
+          "body": "左侧是历史。点项目名可以收起一组；标题会尽量收成短句，而不是整段任务。",
+          "meta": "2 / 4",
+          "next": "下一步"
+        },
+        {
+          "i": 2,
+          "title": "需要时再开运行设置",
+          "body": "更多选项收在「运行设置」里。日常对话不用先配任何东西。",
+          "meta": "3 / 4",
+          "next": "下一步"
+        },
+        {
+          "i": 3,
+          "title": "写完的文件会出现在旁边",
+          "body": "这次写下的文件会列在对话右侧。设置里写着：只能改这些文件夹。",
+          "meta": "4 / 4",
+          "next": "开始使用"
+        }
+      ],
+      "shot": "shots/a01-after-onboarding.png"
+    },
+    {
+      "t": "2026-09-15T13:26:42.864Z",
+      "id": "chrome-notifications",
+      "sel": "#notifications-btn",
+      "ok": true,
+      "vis": {
+        "text": "",
+        "aria": "通知中心",
+        "hiddenAttr": null,
+        "display": "on-screen"
+      },
+      "before": {
+        "hash": "",
+        "title": "FATHOM"
+      },
+      "after": {
+        "hash": "",
+        "title": "FATHOM"
+      },
+      "bodySnippet": "FATHOM\nFATHOM.\n今日 $1.98\nWork\nCode\n新建对话\n筛选对话列表，回车按正文全局搜索\nEnter\n尚无运行。\n引导完成\n\nAGENT CONSOLE\n\nFATHOM.\n\n说要做什么，回车就发。\n\n稿件、纪要、问答都可以从这里开始。\n\n现在只能在这个窗口下指令。\n\n输入 @ 可按文件名找这个文件夹里的文件。旧对话用「引用会话」。\n\n文件\n文件 ⟩\n\n先选一个工作目录。\n\n项目\n未入项（按目录）\n＋ 新建项目…\n未入项（按目录）\n工作目录\nD:\\Work\\scratch\\fathom-ux-20260915\\web-a\nD:\\Wor"
+    },
+    {
+      "t": "2026-09-15T13:26:43.367Z",
+      "id": "chrome-spend",
+      "sel": "#home-spend",
+      "ok": true,
+      "vis": {
+        "text": "今日 $1.98",
+        "aria": "花费：今日 $1.98 · 今日已用 20 次",
+        "hiddenAttr": null,
+        "display": "on-screen"
+      },
+      "before": {
+        "hash": "",
+        "title": "FATHOM"
+      },
+      "after": {
+        "hash": "#/settings",
+        "title": "FATHOM · 设置"
+      },
+      "bodySnippet": "FATHOM · 设置\nFATHOM.\n今日 $1.98\nWork\nCode\n新建对话\n筛选对话列表，回车按正文全局搜索\nEnter\n尚无运行。\n设置已打开\n\nAGENT CONSOLE\n\nFATHOM.\n\n说要做什么，回车就发。\n\n稿件、纪要、问答都可以从这里开始。\n\n现在只能在这个窗口下指令。\n\n输入 @ 可按文件名找这个文件夹里的文件。旧对话用「引用会话」。\n\n文件\n文件 ⟩\n\n先选一个工作目录。\n\n项目\n未入项（按目录）\n＋ 新建项目…\n未入项（按目录）\n工作目录\nD:\\Work\\scratch\\fathom-ux-20260915\\web-a\n"
+    },
+    {
+      "t": "2026-09-15T13:26:44.873Z",
+      "id": "chrome-theme-open",
+      "sel": "#theme-toggle",
+      "ok": true,
+      "vis": {
+        "text": "",
+        "aria": "选择配色主题（当前：跟随系统）",
+        "hiddenAttr": null,
+        "display": "on-screen"
+      },
+      "before": {
+        "hash": "#/settings",
+        "title": "FATHOM · 设置"
+      },
+      "after": {
+        "hash": "#/settings",
+        "title": "FATHOM · 设置"
+      },
+      "bodySnippet": "FATHOM · 设置\nFATHOM.\n今日 $1.98\n跟随系统\n自动匹配设备\n暖纸\n低眩光浅色\n暖炭\n温暖深色\n石墨\n中性深色\n高对比\n更强文字与边界\nWork\nCode\n新建对话\n筛选对话列表，回车按正文全局搜索\nEnter\n尚无运行。\n设置已打开\n\nAGENT CONSOLE\n\nFATHOM.\n\n说要做什么，回车就发。\n\n稿件、纪要、问答都可以从这里开始。\n\n现在只能在这个窗口下指令。\n\n输入 @ 可按文件名找这个文件夹里的文件。旧对话用「引用会话」。\n\n文件\n文件 ⟩\n\n先选一个工作目录。\n\n项目\n未入项（按目录）\n＋ 新建项目…\n未入项（按目"
+    },
+    {
+      "t": "2026-09-15T13:26:49.949Z",
+      "id": "theme-auto",
+      "sel": "[data-theme-choice=\"auto\"]",
+      "ok": false,
+      "reason": "TimeoutError: locator.click: Timeout 4000ms exceeded.\nCall log:\n  - waiting for locator('[data-theme-choice=\"auto\"]').first()\n    - locator resolved to <button type=\"button\" aria-checked=\"true\" class=\"theme-option\" role=\"menuitemradio\" data",
+      "vis": {
+        "text": "跟随系统\n自动匹配设备",
+        "aria": null,
+        "hiddenAttr": null,
+        "display": "on-screen"
+      }
+    },
+    {
+      "t": "2026-09-15T13:26:54.124Z",
+      "id": "theme-light",
+      "sel": "[data-theme-choice=\"light\"]",
+      "ok": false,
+      "reason": "TimeoutError: locator.click: Timeout 4000ms exceeded.\nCall log:\n  - waiting for locator('[data-theme-choice=\"light\"]').first()\n    - locator resolved to <button type=\"button\" class=\"theme-option\" role=\"menuitemradio\" aria-checked=\"false\" da",
+      "vis": {
+        "text": "暖纸\n低眩光浅色",
+        "aria": null,
+        "hiddenAttr": null,
+        "display": "on-screen"
+      }
+    },
+    {
+      "t": "2026-09-15T13:26:58.310Z",
+      "id": "theme-dark",
+      "sel": "[data-theme-choice=\"dark\"]",
+      "ok": false,
+      "reason": "TimeoutError: locator.click: Timeout 4000ms exceeded.\nCall log:\n  - waiting for locator('[data-theme-choice=\"dark\"]').first()\n    - locator resolved to <button type=\"button\" class=\"theme-option\" role=\"menuitemradio\" aria-checked=\"false\" dat",
+      "vis": {
+        "text": "暖炭\n温暖深色",
+        "aria": null,
+        "hiddenAttr": null,
+        "display": "on-screen"
+      }
+    },
+    {
+      "t": "2026-09-15T13:27:02.493Z",
+      "id": "theme-graphite",
+      "sel": "[data-theme-choice=\"graphite\"]",
+      "ok": false,
+      "reason": "TimeoutError: locator.click: Timeout 4000ms exceeded.\nCall log:\n  - waiting for locator('[data-theme-choice=\"graphite\"]').first()\n    - locator resolved to <button type=\"button\" class=\"theme-option\" role=\"menuitemradio\" aria-checked=\"false\"",
+      "vis": {
+        "text": "石墨\n中性深色",
+        "aria": null,
+        "hiddenAttr": null,
+        "display": "on-screen"
+      }
+    },
+    {
+      "t": "2026-09-15T13:27:06.675Z",
+      "id": "theme-contrast",
+      "sel": "[data-theme-choice=\"contrast\"]",
+      "ok": false,
+      "reason": "TimeoutError: locator.click: Timeout 4000ms exceeded.\nCall log:\n  - waiting for locator('[data-theme-choice=\"contrast\"]').first()\n    - locator resolved to <button type=\"button\" class=\"theme-option\" role=\"menuitemradio\" aria-checked=\"false\"",
+      "vis": {
+        "text": "高对比\n更强文字与边界",
+        "aria": null,
+        "hiddenAttr": null,
+        "display": "on-screen"
+      }
+    },
+    {
+      "t": "2026-09-15T13:27:07.129Z",
+      "id": "chrome-theme-reopen",
+      "sel": "#theme-toggle",
+      "ok": true,
+      "vis": {
+        "text": "",
+        "aria": "选择配色主题（当前：跟随系统）",
+        "hiddenAttr": null,
+        "display": "on-screen"
+      },
+      "before": {
+        "hash": "#/settings",
+        "title": "FATHOM · 设置"
+      },
+      "after": {
+        "hash": "#/settings",
+        "title": "FATHOM · 设置"
+      },
+      "bodySnippet": "FATHOM · 设置\nFATHOM.\n今日 $1.98\nWork\nCode\n新建对话\n筛选对话列表，回车按正文全局搜索\nEnter\n尚无运行。\n设置已打开\n\nAGENT CONSOLE\n\nFATHOM.\n\n说要做什么，回车就发。\n\n稿件、纪要、问答都可以从这里开始。\n\n现在只能在这个窗口下指令。\n\n输入 @ 可按文件名找这个文件夹里的文件。旧对话用「引用会话」。\n\n文件\n文件 ⟩\n\n先选一个工作目录。\n\n项目\n未入项（按目录）\n＋ 新建项目…\n未入项（按目录）\n工作目录\nD:\\Work\\scratch\\fathom-ux-20260915\\web-a\n"
+    },
+    {
+      "t": "2026-09-15T13:27:07.439Z",
+      "id": "face-code",
+      "sel": "#workspace-face-code",
+      "ok": true,
+      "vis": {
+        "text": "Code",
+        "aria": null,
+        "hiddenAttr": null,
+        "display": "on-screen"
+      },
+      "before": {
+        "hash": "#/settings",
+        "title": "FATHOM · 设置"
+      },
+      "after": {
+        "hash": "#/settings",
+        "title": "FATHOM · 设置"
+      },
+      "bodySnippet": "FATHOM · 设置\nFATHOM.\n今日 $1.98\nWork\nCode\n新建对话\n筛选对话列表，回车按正文全局搜索\nEnter\n尚无运行。\n设置已打开\n\nAGENT CONSOLE\n\nFATHOM.\n\n说要做什么，回车就发。\n\n稿件、纪要、问答都可以从这里开始。\n\n现在只能在这个窗口下指令。\n\n输入 @ 可按文件名找这个文件夹里的文件。旧对话用「引用会话」。\n\n文件\n文件 ⟩\nhello-seed.txt\n@\npreview-seed.html\n@\n项目\n未入项（按目录）\n＋ 新建项目…\n未入项（按目录）\n工作目录\nD:\\Work\\scratch\\"
+    },
+    {
+      "t": "2026-09-15T13:27:07.733Z",
+      "id": "face-work",
+      "sel": "#workspace-face-office",
+      "ok": true,
+      "vis": {
+        "text": "Work",
+        "aria": null,
+        "hiddenAttr": null,
+        "display": "on-screen"
+      },
+      "before": {
+        "hash": "#/settings",
+        "title": "FATHOM · 设置"
+      },
+      "after": {
+        "hash": "#/settings",
+        "title": "FATHOM · 设置"
+      },
+      "bodySnippet": "FATHOM · 设置\nFATHOM.\n今日 $1.98\nWork\nCode\n新建对话\n筛选对话列表，回车按正文全局搜索\nEnter\n尚无运行。\n设置已打开\n\nAGENT CONSOLE\n\nFATHOM.\n\n说要做什么，回车就发。\n\n稿件、纪要、问答都可以从这里开始。\n\n现在只能在这个窗口下指令。\n\n输入 @ 可按文件名找这个文件夹里的文件。旧对话用「引用会话」。\n\n文件\n文件 ⟩\nhello-seed.txt\n@\npreview-seed.html\n@\n项目\n未入项（按目录）\n＋ 新建项目…\n未入项（按目录）\n工作目录\nD:\\Work\\scratch\\"
+    },
+    {
+      "t": "2026-09-15T13:27:08.032Z",
+      "id": "new-chat",
+      "sel": "#new-chat-btn",
+      "ok": true,
+      "vis": {
+        "text": "新建对话",
+        "aria": null,
+        "hiddenAttr": null,
+        "display": "on-screen"
+      },
+      "before": {
+        "hash": "#/settings",
+        "title": "FATHOM · 设置"
+      },
+      "after": {
+        "hash": "#/",
+        "title": "FATHOM"
+      },
+      "bodySnippet": "FATHOM\nFATHOM.\n今日 $1.98\nWork\nCode\n新建对话\n筛选对话列表，回车按正文全局搜索\nEnter\n尚无运行。\n已开始新对话，说要做什么\n\nAGENT CONSOLE\n\nFATHOM.\n\n说要做什么，回车就发。\n\n稿件、纪要、问答都可以从这里开始。\n\n现在只能在这个窗口下指令。\n\n输入 @ 可按文件名找这个文件夹里的文件。旧对话用「引用会话」。\n\n文件\n文件 ⟩\nhello-seed.txt\n@\npreview-seed.html\n@\n项目\n未入项（按目录）\n＋ 新建项目…\n未入项（按目录）\n工作目录\nD:\\Work\\scratc"
+    },
+    {
+      "t": "2026-09-15T13:27:08.327Z",
+      "id": "filter-open",
+      "sel": "#sidebar-filter-btn",
+      "ok": true,
+      "vis": {
+        "text": "",
+        "aria": "筛选对话",
+        "hiddenAttr": null,
+        "display": "on-screen"
+      },
+      "before": {
+        "hash": "#/",
+        "title": "FATHOM"
+      },
+      "after": {
+        "hash": "#/",
+        "title": "FATHOM"
+      },
+      "bodySnippet": "FATHOM\nFATHOM.\n今日 $1.98\nWork\nCode\n新建对话\n筛选对话列表，回车按正文全局搜索\nEnter\n全部项目\n全部\n运行中\n已完成\n未通过\n全部\n尚无运行。\n已开始新对话，说要做什么\n\nAGENT CONSOLE\n\nFATHOM.\n\n说要做什么，回车就发。\n\n稿件、纪要、问答都可以从这里开始。\n\n现在只能在这个窗口下指令。\n\n输入 @ 可按文件名找这个文件夹里的文件。旧对话用「引用会话」。\n\n文件\n文件 ⟩\nhello-seed.txt\n@\npreview-seed.html\n@\n项目\n未入项（按目录）\n＋ 新建项目…\n未入项（按"
+    },
+    {
+      "t": "2026-09-15T13:27:08.332Z",
+      "id": "filter-all-projects-default",
+      "ok": true,
+      "checked": true,
+      "filterOptions": [
+        "全部",
+        "运行中",
+        "已完成",
+        "未通过"
+      ]
+    },
+    {
+      "t": "2026-09-15T13:27:08.339Z",
+      "id": "filter-status-running",
+      "ok": true,
+      "value": "running"
+    },
+    {
+      "t": "2026-09-15T13:27:08.345Z",
+      "id": "filter-status-done",
+      "ok": true,
+      "value": "done"
+    },
+    {
+      "t": "2026-09-15T13:27:08.350Z",
+      "id": "filter-status-failed",
+      "ok": true,
+      "value": "failed"
+    },
+    {
+      "t": "2026-09-15T13:27:08.356Z",
+      "id": "filter-status-all",
+      "ok": true,
+      "value": "all"
+    },
+    {
+      "t": "2026-09-15T13:27:08.654Z",
+      "id": "sidebar-collapse",
+      "sel": "#sidebar-collapse",
+      "ok": true,
+      "vis": {
+        "text": "",
+        "aria": "隐藏侧栏",
+        "hiddenAttr": null,
+        "display": "on-screen"
+      },
+      "before": {
+        "hash": "#/",
+        "title": "FATHOM"
+      },
+      "after": {
+        "hash": "#/",
+        "title": "FATHOM"
+      },
+      "bodySnippet": "FATHOM\n已开始新对话，说要做什么\n\nAGENT CONSOLE\n\nFATHOM.\n\n说要做什么，回车就发。\n\n稿件、纪要、问答都可以从这里开始。\n\n现在只能在这个窗口下指令。\n\n输入 @ 可按文件名找这个文件夹里的文件。旧对话用「引用会话」。\n\n文件\n文件 ⟩\nhello-seed.txt\n@\npreview-seed.html\n@\n项目\n未入项（按目录）\n＋ 新建项目…\n未入项（按目录）\n工作目录\nD:\\Work\\scratch\\fathom-ux-20260915\\web-a\nD:\\Work\\scratch\\fathom-ux-20260915"
+    },
+    {
+      "t": "2026-09-15T13:27:08.949Z",
+      "id": "sidebar-expand",
+      "sel": "#sidebar-expand",
+      "ok": true,
+      "vis": {
+        "text": "",
+        "aria": "显示侧栏",
+        "hiddenAttr": null,
+        "display": "on-screen"
+      },
+      "before": {
+        "hash": "#/",
+        "title": "FATHOM"
+      },
+      "after": {
+        "hash": "#/",
+        "title": "FATHOM"
+      },
+      "bodySnippet": "FATHOM\nFATHOM.\n今日 $1.98\nWork\nCode\n新建对话\n筛选对话列表，回车按正文全局搜索\nEnter\n尚无运行。\n已开始新对话，说要做什么\n\nAGENT CONSOLE\n\nFATHOM.\n\n说要做什么，回车就发。\n\n稿件、纪要、问答都可以从这里开始。\n\n现在只能在这个窗口下指令。\n\n输入 @ 可按文件名找这个文件夹里的文件。旧对话用「引用会话」。\n\n文件\n文件 ⟩\nhello-seed.txt\n@\npreview-seed.html\n@\n项目\n未入项（按目录）\n＋ 新建项目…\n未入项（按目录）\n工作目录\nD:\\Work\\scratc"
+    },
+    {
+      "t": "2026-09-15T13:27:09.247Z",
+      "id": "footer-board",
+      "sel": "#board-open-btn",
+      "ok": true,
+      "vis": {
+        "text": "",
+        "aria": "打开指挥中心",
+        "hiddenAttr": null,
+        "display": "on-screen"
+      },
+      "before": {
+        "hash": "#/",
+        "title": "FATHOM"
+      },
+      "after": {
+        "hash": "#/board",
+        "title": "FATHOM · 指挥中心"
+      },
+      "bodySnippet": "FATHOM · 指挥中心\nFATHOM.\n今日 $1.98\nWork\nCode\n新建对话\n筛选对话列表，回车按正文全局搜索\nEnter\n尚无运行。\n指挥中心已打开\n\nAGENT CONSOLE\n\nFATHOM.\n\n说要做什么，回车就发。\n\n稿件、纪要、问答都可以从这里开始。\n\n现在只能在这个窗口下指令。\n\n输入 @ 可按文件名找这个文件夹里的文件。旧对话用「引用会话」。\n\n文件\n文件 ⟩\nhello-seed.txt\n@\npreview-seed.html\n@\n项目\n未入项（按目录）\n＋ 新建项目…\n未入项（按目录）\n工作目录\nD:\\Work\\scra"
+    },
+    {
+      "t": "2026-09-15T13:27:09.791Z",
+      "id": "footer-artifacts",
+      "sel": "#artifacts-open-btn",
+      "ok": true,
+      "vis": {
+        "text": "",
+        "aria": "打开产物",
+        "hiddenAttr": null,
+        "display": "on-screen"
+      },
+      "before": {
+        "hash": "#/board",
+        "title": "FATHOM · 指挥中心"
+      },
+      "after": {
+        "hash": "#/artifacts",
+        "title": "FATHOM · 产物"
+      },
+      "bodySnippet": "FATHOM · 产物\nFATHOM.\n今日 $1.98\nWork\nCode\n新建对话\n筛选对话列表，回车按正文全局搜索\nEnter\n尚无运行。\n产物已打开\n\nAGENT CONSOLE\n\nFATHOM.\n\n说要做什么，回车就发。\n\n稿件、纪要、问答都可以从这里开始。\n\n现在只能在这个窗口下指令。\n\n输入 @ 可按文件名找这个文件夹里的文件。旧对话用「引用会话」。\n\n文件\n文件 ⟩\nhello-seed.txt\n@\npreview-seed.html\n@\n项目\n未入项（按目录）\n＋ 新建项目…\n未入项（按目录）\n工作目录\nD:\\Work\\scratch\\"
+    },
+    {
+      "t": "2026-09-15T13:27:10.336Z",
+      "id": "footer-schedules",
+      "sel": "#schedules-open-btn",
+      "ok": true,
+      "vis": {
+        "text": "",
+        "aria": "打开定时任务",
+        "hiddenAttr": null,
+        "display": "on-screen"
+      },
+      "before": {
+        "hash": "#/artifacts",
+        "title": "FATHOM · 产物"
+      },
+      "after": {
+        "hash": "#/schedules",
+        "title": "FATHOM · 定时任务"
+      },
+      "bodySnippet": "FATHOM · 定时任务\nFATHOM.\n今日 $1.98\nWork\nCode\n新建对话\n筛选对话列表，回车按正文全局搜索\nEnter\n尚无运行。\n定时任务已打开\n\nAGENT CONSOLE\n\nFATHOM.\n\n说要做什么，回车就发。\n\n稿件、纪要、问答都可以从这里开始。\n\n现在只能在这个窗口下指令。\n\n输入 @ 可按文件名找这个文件夹里的文件。旧对话用「引用会话」。\n\n文件\n文件 ⟩\nhello-seed.txt\n@\npreview-seed.html\n@\n项目\n未入项（按目录）\n＋ 新建项目…\n未入项（按目录）\n工作目录\nD:\\Work\\scra"
+    },
+    {
+      "t": "2026-09-15T13:27:10.900Z",
+      "id": "footer-memory",
+      "sel": "#memory-btn",
+      "ok": true,
+      "vis": {
+        "text": "",
+        "aria": "记忆",
+        "hiddenAttr": null,
+        "display": "on-screen"
+      },
+      "before": {
+        "hash": "#/schedules",
+        "title": "FATHOM · 定时任务"
+      },
+      "after": {
+        "hash": "#/schedules",
+        "title": "FATHOM · 定时任务"
+      },
+      "bodySnippet": "FATHOM · 定时任务\nFATHOM.\n今日 $1.98\nWork\nCode\n新建对话\n筛选对话列表，回车按正文全局搜索\nEnter\n尚无运行。\n记忆面板已打开\n\nAGENT CONSOLE\n\nFATHOM.\n\n说要做什么，回车就发。\n\n稿件、纪要、问答都可以从这里开始。\n\n现在只能在这个窗口下指令。\n\n输入 @ 可按文件名找这个文件夹里的文件。旧对话用「引用会话」。\n\n文件\n文件 ⟩\nhello-seed.txt\n@\npreview-seed.html\n@\n项目\n未入项（按目录）\n＋ 新建项目…\n未入项（按目录）\n工作目录\nD:\\Work\\scra"
+    },
+    {
+      "t": "2026-09-15T13:27:11.477Z",
+      "id": "footer-settings",
+      "sel": "#settings-open-btn",
+      "ok": true,
+      "vis": {
+        "text": "",
+        "aria": "打开设置",
+        "hiddenAttr": null,
+        "display": "on-screen"
+      },
+      "before": {
+        "hash": "#/schedules",
+        "title": "FATHOM · 定时任务"
+      },
+      "after": {
+        "hash": "#/settings",
+        "title": "FATHOM · 设置"
+      },
+      "bodySnippet": "FATHOM · 设置\nFATHOM.\n今日 $1.98\nWork\nCode\n新建对话\n筛选对话列表，回车按正文全局搜索\nEnter\n尚无运行。\n设置已打开\n\nAGENT CONSOLE\n\nFATHOM.\n\n说要做什么，回车就发。\n\n稿件、纪要、问答都可以从这里开始。\n\n现在只能在这个窗口下指令。\n\n输入 @ 可按文件名找这个文件夹里的文件。旧对话用「引用会话」。\n\n文件\n文件 ⟩\nhello-seed.txt\n@\npreview-seed.html\n@\n项目\n未入项（按目录）\n＋ 新建项目…\n未入项（按目录）\n工作目录\nD:\\Work\\scratch\\"
+    },
+    {
+      "t": "2026-09-15T13:27:12.239Z",
+      "id": "route-#/",
+      "ok": true,
+      "hash": "#/",
+      "title": "FATHOM",
+      "h": "FATHOM",
+      "snippet": "FATHOM\nFATHOM.\n今日 $1.98\nWork\nCode\n新建对话\n筛选对话列表，回车按正文全局搜索\nEnter\n尚无运行。\n设置已打开\n\nAGENT CONSOLE\n\nFATHOM.\n\n说要做什么，回车就发。\n\n稿件、纪要、问答都可以从这里开始。\n\n现在只能在这个窗口下指令。\n\n输入 @ 可按文件名找这个文件夹里的文件。旧对话用「引用会话」。\n\n文件\n文件 ⟩\nhello-seed.txt\n@\npreview-seed.html\n@\n项目\n未入项（按目录）\n＋ 新建项目…\n未入项（按目录）\n工作目录\nD:\\Work\\scratch\\fathom-ux-20260915\\web-a\nD:\\Work\\scratch\\fathom-ux-20260915\\web-b\nD:\\Work\\scratch\\fat",
+      "shot": "shots/a20-route-home.png"
+    },
+    {
+      "t": "2026-09-15T13:27:12.703Z",
+      "id": "route-#/board",
+      "ok": true,
+      "hash": "#/board",
+      "title": "FATHOM · 指挥中心",
+      "h": "FATHOM · 指挥中心",
+      "snippet": "FATHOM · 指挥中心\nFATHOM.\n今日 $1.98\nWork\nCode\n新建对话\n筛选对话列表，回车按正文全局搜索\nEnter\n尚无运行。\n指挥中心已打开\n\nAGENT CONSOLE\n\nFATHOM.\n\n说要做什么，回车就发。\n\n稿件、纪要、问答都可以从这里开始。\n\n现在只能在这个窗口下指令。\n\n输入 @ 可按文件名找这个文件夹里的文件。旧对话用「引用会话」。\n\n文件\n文件 ⟩\nhello-seed.txt\n@\npreview-seed.html\n@\n项目\n未入项（按目录）\n＋ 新建项目…\n未入项（按目录）\n工作目录\nD:\\Work\\scratch\\fathom-ux-20260915\\web-a\nD:\\Work\\scratch\\fathom-ux-20260915\\web-b\nD:\\Work\\sc",
+      "shot": "shots/a20-route-board.png"
+    },
+    {
+      "t": "2026-09-15T13:27:13.167Z",
+      "id": "route-#/artifacts",
+      "ok": true,
+      "hash": "#/artifacts",
+      "title": "FATHOM · 产物",
+      "h": "FATHOM · 产物",
+      "snippet": "FATHOM · 产物\nFATHOM.\n今日 $1.98\nWork\nCode\n新建对话\n筛选对话列表，回车按正文全局搜索\nEnter\n尚无运行。\n产物已打开\n\nAGENT CONSOLE\n\nFATHOM.\n\n说要做什么，回车就发。\n\n稿件、纪要、问答都可以从这里开始。\n\n现在只能在这个窗口下指令。\n\n输入 @ 可按文件名找这个文件夹里的文件。旧对话用「引用会话」。\n\n文件\n文件 ⟩\nhello-seed.txt\n@\npreview-seed.html\n@\n项目\n未入项（按目录）\n＋ 新建项目…\n未入项（按目录）\n工作目录\nD:\\Work\\scratch\\fathom-ux-20260915\\web-a\nD:\\Work\\scratch\\fathom-ux-20260915\\web-b\nD:\\Work\\scratc",
+      "shot": "shots/a20-route-artifacts.png"
+    },
+    {
+      "t": "2026-09-15T13:27:13.636Z",
+      "id": "route-#/schedules",
+      "ok": true,
+      "hash": "#/schedules",
+      "title": "FATHOM · 定时任务",
+      "h": "FATHOM · 定时任务",
+      "snippet": "FATHOM · 定时任务\nFATHOM.\n今日 $1.98\nWork\nCode\n新建对话\n筛选对话列表，回车按正文全局搜索\nEnter\n尚无运行。\n定时任务已打开\n\nAGENT CONSOLE\n\nFATHOM.\n\n说要做什么，回车就发。\n\n稿件、纪要、问答都可以从这里开始。\n\n现在只能在这个窗口下指令。\n\n输入 @ 可按文件名找这个文件夹里的文件。旧对话用「引用会话」。\n\n文件\n文件 ⟩\nhello-seed.txt\n@\npreview-seed.html\n@\n项目\n未入项（按目录）\n＋ 新建项目…\n未入项（按目录）\n工作目录\nD:\\Work\\scratch\\fathom-ux-20260915\\web-a\nD:\\Work\\scratch\\fathom-ux-20260915\\web-b\nD:\\Work\\sc",
+      "shot": "shots/a20-route-schedules.png"
+    },
+    {
+      "t": "2026-09-15T13:27:14.121Z",
+      "id": "route-#/settings",
+      "ok": true,
+      "hash": "#/settings",
+      "title": "FATHOM · 设置",
+      "h": "FATHOM · 设置",
+      "snippet": "FATHOM · 设置\nFATHOM.\n今日 $1.98\nWork\nCode\n新建对话\n筛选对话列表，回车按正文全局搜索\nEnter\n尚无运行。\n设置已打开\n\nAGENT CONSOLE\n\nFATHOM.\n\n说要做什么，回车就发。\n\n稿件、纪要、问答都可以从这里开始。\n\n现在只能在这个窗口下指令。\n\n输入 @ 可按文件名找这个文件夹里的文件。旧对话用「引用会话」。\n\n文件\n文件 ⟩\nhello-seed.txt\n@\npreview-seed.html\n@\n项目\n未入项（按目录）\n＋ 新建项目…\n未入项（按目录）\n工作目录\nD:\\Work\\scratch\\fathom-ux-20260915\\web-a\nD:\\Work\\scratch\\fathom-ux-20260915\\web-b\nD:\\Work\\scratc",
+      "shot": "shots/a20-route-settings.png"
+    },
+    {
+      "t": "2026-09-15T13:27:14.586Z",
+      "id": "route-#/usage",
+      "ok": true,
+      "hash": "#/usage",
+      "title": "FATHOM · 消耗",
+      "h": "FATHOM · 消耗",
+      "snippet": "FATHOM · 消耗\nFATHOM.\n今日 $1.98\nWork\nCode\n新建对话\n筛选对话列表，回车按正文全局搜索\nEnter\n尚无运行。\n设置已打开\n\nAGENT CONSOLE\n\nFATHOM.\n\n说要做什么，回车就发。\n\n稿件、纪要、问答都可以从这里开始。\n\n现在只能在这个窗口下指令。\n\n输入 @ 可按文件名找这个文件夹里的文件。旧对话用「引用会话」。\n\n文件\n文件 ⟩\nhello-seed.txt\n@\npreview-seed.html\n@\n项目\n未入项（按目录）\n＋ 新建项目…\n未入项（按目录）\n工作目录\nD:\\Work\\scratch\\fathom-ux-20260915\\web-a\nD:\\Work\\scratch\\fathom-ux-20260915\\web-b\nD:\\Work\\scratc",
+      "shot": "shots/a20-route-usage.png"
+    },
+    {
+      "t": "2026-09-15T13:27:15.297Z",
+      "id": "settings-tab-settings-appearance",
+      "sel": "#settings-appearance, [href=\"#settings-appearance\"], [data-section=\"settings-appearance\"]",
+      "ok": true,
+      "vis": {
+        "text": "外观",
+        "aria": null,
+        "hiddenAttr": null,
+        "display": "on-screen"
+      },
+      "before": {
+        "hash": "#/settings",
+        "title": "FATHOM · 设置"
+      },
+      "after": {
+        "hash": "#/settings",
+        "title": "FATHOM · 设置"
+      },
+      "bodySnippet": "FATHOM · 设置\nFATHOM.\n今日 $1.98\nWork\nCode\n新建对话\n筛选对话列表，回车按正文全局搜索\nEnter\n尚无运行。\n设置已打开\n\nAGENT CONSOLE\n\nFATHOM.\n\n说要做什么，回车就发。\n\n稿件、纪要、问答都可以从这里开始。\n\n现在只能在这个窗口下指令。\n\n输入 @ 可按文件名找这个文件夹里的文件。旧对话用「引用会话」。\n\n文件\n文件 ⟩\nhello-seed.txt\n@\npreview-seed.html\n@\n项目\n未入项（按目录）\n＋ 新建项目…\n未入项（按目录）\n工作目录\nD:\\Work\\scratch\\"
+    },
+    {
+      "t": "2026-09-15T13:27:15.388Z",
+      "id": "settings-body-settings-appearance",
+      "ok": true,
+      "snippet": "FATHOM · 设置\nFATHOM.\n今日 $1.98\nWork\nCode\n新建对话\n筛选对话列表，回车按正文全局搜索\nEnter\n尚无运行。\n设置已打开\n\nAGENT CONSOLE\n\nFATHOM.\n\n说要做什么，回车就发。\n\n稿件、纪要、问答都可以从这里开始。\n\n现在只能在这个窗口下指令。\n\n输入 @ 可按文件名找这个文件夹里的文件。旧对话用「引用会话」。\n\n文件\n文件 ⟩\nhello-seed.txt\n@\npreview-seed.html\n@\n项目\n未入项（按目录）\n＋ 新建项目…\n未入项（按目录）\n工作目录\nD:\\Work\\scratch\\fathom-ux-20260915\\web-a\nD:\\Work\\scratch\\fathom-ux-20260915\\web-b\nD:\\Work\\scratch\\fathom-ux-20260915\\cli\nD:\\Work\\scratch\\fath…ux-20260915\\desktop\nC:\\Users\\rk302\\Fathom\n＋ 添加目录…\nD:\\Work\\scratc…0260915\\web-a\n模型\n环境变量 · deeps",
+      "shot": "shots/a30-settings-appearance.png"
+    },
+    {
+      "t": "2026-09-15T13:27:15.685Z",
+      "id": "settings-tab-settings-models",
+      "sel": "#settings-models, [href=\"#settings-models\"], [data-section=\"settings-models\"]",
+      "ok": true,
+      "vis": {
+        "text": "模型",
+        "aria": null,
+        "hiddenAttr": null,
+        "display": "on-screen"
+      },
+      "before": {
+        "hash": "#/settings",
+        "title": "FATHOM · 设置"
+      },
+      "after": {
+        "hash": "#/settings",
+        "title": "FATHOM · 设置"
+      },
+      "bodySnippet": "FATHOM · 设置\nFATHOM.\n今日 $1.98\nWork\nCode\n新建对话\n筛选对话列表，回车按正文全局搜索\nEnter\n尚无运行。\n设置已打开\n\nAGENT CONSOLE\n\nFATHOM.\n\n说要做什么，回车就发。\n\n稿件、纪要、问答都可以从这里开始。\n\n现在只能在这个窗口下指令。\n\n输入 @ 可按文件名找这个文件夹里的文件。旧对话用「引用会话」。\n\n文件\n文件 ⟩\nhello-seed.txt\n@\npreview-seed.html\n@\n项目\n未入项（按目录）\n＋ 新建项目…\n未入项（按目录）\n工作目录\nD:\\Work\\scratch\\"
+    },
+    {
+      "t": "2026-09-15T13:27:15.771Z",
+      "id": "settings-body-settings-models",
+      "ok": true,
+      "snippet": "FATHOM · 设置\nFATHOM.\n今日 $1.98\nWork\nCode\n新建对话\n筛选对话列表，回车按正文全局搜索\nEnter\n尚无运行。\n设置已打开\n\nAGENT CONSOLE\n\nFATHOM.\n\n说要做什么，回车就发。\n\n稿件、纪要、问答都可以从这里开始。\n\n现在只能在这个窗口下指令。\n\n输入 @ 可按文件名找这个文件夹里的文件。旧对话用「引用会话」。\n\n文件\n文件 ⟩\nhello-seed.txt\n@\npreview-seed.html\n@\n项目\n未入项（按目录）\n＋ 新建项目…\n未入项（按目录）\n工作目录\nD:\\Work\\scratch\\fathom-ux-20260915\\web-a\nD:\\Work\\scratch\\fathom-ux-20260915\\web-b\nD:\\Work\\scratch\\fathom-ux-20260915\\cli\nD:\\Work\\scratch\\fath…ux-20260915\\desktop\nC:\\Users\\rk302\\Fathom\n＋ 添加目录…\nD:\\Work\\scratc…0260915\\web-a\n模型\n环境变量 · deeps",
+      "shot": "shots/a30-settings-models.png"
+    },
+    {
+      "t": "2026-09-15T13:27:16.074Z",
+      "id": "settings-tab-settings-mcp",
+      "sel": "#settings-mcp, [href=\"#settings-mcp\"], [data-section=\"settings-mcp\"]",
+      "ok": true,
+      "vis": {
+        "text": "MCP / Skills",
+        "aria": null,
+        "hiddenAttr": null,
+        "display": "on-screen"
+      },
+      "before": {
+        "hash": "#/settings",
+        "title": "FATHOM · 设置"
+      },
+      "after": {
+        "hash": "#/settings",
+        "title": "FATHOM · 设置"
+      },
+      "bodySnippet": "FATHOM · 设置\nFATHOM.\n今日 $1.98\nWork\nCode\n新建对话\n筛选对话列表，回车按正文全局搜索\nEnter\n尚无运行。\n设置已打开\n\nAGENT CONSOLE\n\nFATHOM.\n\n说要做什么，回车就发。\n\n稿件、纪要、问答都可以从这里开始。\n\n现在只能在这个窗口下指令。\n\n输入 @ 可按文件名找这个文件夹里的文件。旧对话用「引用会话」。\n\n文件\n文件 ⟩\nhello-seed.txt\n@\npreview-seed.html\n@\n项目\n未入项（按目录）\n＋ 新建项目…\n未入项（按目录）\n工作目录\nD:\\Work\\scratch\\"
+    },
+    {
+      "t": "2026-09-15T13:27:16.172Z",
+      "id": "settings-body-settings-mcp",
+      "ok": true,
+      "snippet": "FATHOM · 设置\nFATHOM.\n今日 $1.98\nWork\nCode\n新建对话\n筛选对话列表，回车按正文全局搜索\nEnter\n尚无运行。\n设置已打开\n\nAGENT CONSOLE\n\nFATHOM.\n\n说要做什么，回车就发。\n\n稿件、纪要、问答都可以从这里开始。\n\n现在只能在这个窗口下指令。\n\n输入 @ 可按文件名找这个文件夹里的文件。旧对话用「引用会话」。\n\n文件\n文件 ⟩\nhello-seed.txt\n@\npreview-seed.html\n@\n项目\n未入项（按目录）\n＋ 新建项目…\n未入项（按目录）\n工作目录\nD:\\Work\\scratch\\fathom-ux-20260915\\web-a\nD:\\Work\\scratch\\fathom-ux-20260915\\web-b\nD:\\Work\\scratch\\fathom-ux-20260915\\cli\nD:\\Work\\scratch\\fath…ux-20260915\\desktop\nC:\\Users\\rk302\\Fathom\n＋ 添加目录…\nD:\\Work\\scratc…0260915\\web-a\n模型\n环境变量 · deeps",
+      "shot": "shots/a30-settings-mcp.png"
+    },
+    {
+      "t": "2026-09-15T13:27:16.479Z",
+      "id": "settings-tab-settings-packs",
+      "sel": "#settings-packs, [href=\"#settings-packs\"], [data-section=\"settings-packs\"]",
+      "ok": true,
+      "vis": {
+        "text": "领域包",
+        "aria": null,
+        "hiddenAttr": null,
+        "display": "on-screen"
+      },
+      "before": {
+        "hash": "#/settings",
+        "title": "FATHOM · 设置"
+      },
+      "after": {
+        "hash": "#/settings",
+        "title": "FATHOM · 设置"
+      },
+      "bodySnippet": "FATHOM · 设置\nFATHOM.\n今日 $1.98\nWork\nCode\n新建对话\n筛选对话列表，回车按正文全局搜索\nEnter\n尚无运行。\n设置已打开\n\nAGENT CONSOLE\n\nFATHOM.\n\n说要做什么，回车就发。\n\n稿件、纪要、问答都可以从这里开始。\n\n现在只能在这个窗口下指令。\n\n输入 @ 可按文件名找这个文件夹里的文件。旧对话用「引用会话」。\n\n文件\n文件 ⟩\nhello-seed.txt\n@\npreview-seed.html\n@\n项目\n未入项（按目录）\n＋ 新建项目…\n未入项（按目录）\n工作目录\nD:\\Work\\scratch\\"
+    },
+    {
+      "t": "2026-09-15T13:27:16.574Z",
+      "id": "settings-body-settings-packs",
+      "ok": true,
+      "snippet": "FATHOM · 设置\nFATHOM.\n今日 $1.98\nWork\nCode\n新建对话\n筛选对话列表，回车按正文全局搜索\nEnter\n尚无运行。\n设置已打开\n\nAGENT CONSOLE\n\nFATHOM.\n\n说要做什么，回车就发。\n\n稿件、纪要、问答都可以从这里开始。\n\n现在只能在这个窗口下指令。\n\n输入 @ 可按文件名找这个文件夹里的文件。旧对话用「引用会话」。\n\n文件\n文件 ⟩\nhello-seed.txt\n@\npreview-seed.html\n@\n项目\n未入项（按目录）\n＋ 新建项目…\n未入项（按目录）\n工作目录\nD:\\Work\\scratch\\fathom-ux-20260915\\web-a\nD:\\Work\\scratch\\fathom-ux-20260915\\web-b\nD:\\Work\\scratch\\fathom-ux-20260915\\cli\nD:\\Work\\scratch\\fath…ux-20260915\\desktop\nC:\\Users\\rk302\\Fathom\n＋ 添加目录…\nD:\\Work\\scratc…0260915\\web-a\n模型\n环境变量 · deeps",
+      "shot": "shots/a30-settings-packs.png"
+    },
+    {
+      "t": "2026-09-15T13:27:16.887Z",
+      "id": "settings-tab-settings-defaults",
+      "sel": "#settings-defaults, [href=\"#settings-defaults\"], [data-section=\"settings-defaults\"]",
+      "ok": true,
+      "vis": {
+        "text": "运行默认值",
+        "aria": null,
+        "hiddenAttr": null,
+        "display": "on-screen"
+      },
+      "before": {
+        "hash": "#/settings",
+        "title": "FATHOM · 设置"
+      },
+      "after": {
+        "hash": "#/settings",
+        "title": "FATHOM · 设置"
+      },
+      "bodySnippet": "FATHOM · 设置\nFATHOM.\n今日 $1.98\nWork\nCode\n新建对话\n筛选对话列表，回车按正文全局搜索\nEnter\n尚无运行。\n设置已打开\n\nAGENT CONSOLE\n\nFATHOM.\n\n说要做什么，回车就发。\n\n稿件、纪要、问答都可以从这里开始。\n\n现在只能在这个窗口下指令。\n\n输入 @ 可按文件名找这个文件夹里的文件。旧对话用「引用会话」。\n\n文件\n文件 ⟩\nhello-seed.txt\n@\npreview-seed.html\n@\n项目\n未入项（按目录）\n＋ 新建项目…\n未入项（按目录）\n工作目录\nD:\\Work\\scratch\\"
+    },
+    {
+      "t": "2026-09-15T13:27:16.972Z",
+      "id": "settings-body-settings-defaults",
+      "ok": true,
+      "snippet": "FATHOM · 设置\nFATHOM.\n今日 $1.98\nWork\nCode\n新建对话\n筛选对话列表，回车按正文全局搜索\nEnter\n尚无运行。\n设置已打开\n\nAGENT CONSOLE\n\nFATHOM.\n\n说要做什么，回车就发。\n\n稿件、纪要、问答都可以从这里开始。\n\n现在只能在这个窗口下指令。\n\n输入 @ 可按文件名找这个文件夹里的文件。旧对话用「引用会话」。\n\n文件\n文件 ⟩\nhello-seed.txt\n@\npreview-seed.html\n@\n项目\n未入项（按目录）\n＋ 新建项目…\n未入项（按目录）\n工作目录\nD:\\Work\\scratch\\fathom-ux-20260915\\web-a\nD:\\Work\\scratch\\fathom-ux-20260915\\web-b\nD:\\Work\\scratch\\fathom-ux-20260915\\cli\nD:\\Work\\scratch\\fath…ux-20260915\\desktop\nC:\\Users\\rk302\\Fathom\n＋ 添加目录…\nD:\\Work\\scratc…0260915\\web-a\n模型\n环境变量 · deeps",
+      "shot": "shots/a30-settings-defaults.png"
+    },
+    {
+      "t": "2026-09-15T13:27:17.293Z",
+      "id": "settings-tab-settings-notifications",
+      "sel": "#settings-notifications, [href=\"#settings-notifications\"], [data-section=\"settings-notifications\"]",
+      "ok": true,
+      "vis": {
+        "text": "通知",
+        "aria": null,
+        "hiddenAttr": null,
+        "display": "on-screen"
+      },
+      "before": {
+        "hash": "#/settings",
+        "title": "FATHOM · 设置"
+      },
+      "after": {
+        "hash": "#/settings",
+        "title": "FATHOM · 设置"
+      },
+      "bodySnippet": "FATHOM · 设置\nFATHOM.\n今日 $1.98\nWork\nCode\n新建对话\n筛选对话列表，回车按正文全局搜索\nEnter\n尚无运行。\n设置已打开\n\nAGENT CONSOLE\n\nFATHOM.\n\n说要做什么，回车就发。\n\n稿件、纪要、问答都可以从这里开始。\n\n现在只能在这个窗口下指令。\n\n输入 @ 可按文件名找这个文件夹里的文件。旧对话用「引用会话」。\n\n文件\n文件 ⟩\nhello-seed.txt\n@\npreview-seed.html\n@\n项目\n未入项（按目录）\n＋ 新建项目…\n未入项（按目录）\n工作目录\nD:\\Work\\scratch\\"
+    },
+    {
+      "t": "2026-09-15T13:27:17.389Z",
+      "id": "settings-body-settings-notifications",
+      "ok": true,
+      "snippet": "FATHOM · 设置\nFATHOM.\n今日 $1.98\nWork\nCode\n新建对话\n筛选对话列表，回车按正文全局搜索\nEnter\n尚无运行。\n设置已打开\n\nAGENT CONSOLE\n\nFATHOM.\n\n说要做什么，回车就发。\n\n稿件、纪要、问答都可以从这里开始。\n\n现在只能在这个窗口下指令。\n\n输入 @ 可按文件名找这个文件夹里的文件。旧对话用「引用会话」。\n\n文件\n文件 ⟩\nhello-seed.txt\n@\npreview-seed.html\n@\n项目\n未入项（按目录）\n＋ 新建项目…\n未入项（按目录）\n工作目录\nD:\\Work\\scratch\\fathom-ux-20260915\\web-a\nD:\\Work\\scratch\\fathom-ux-20260915\\web-b\nD:\\Work\\scratch\\fathom-ux-20260915\\cli\nD:\\Work\\scratch\\fath…ux-20260915\\desktop\nC:\\Users\\rk302\\Fathom\n＋ 添加目录…\nD:\\Work\\scratc…0260915\\web-a\n模型\n环境变量 · deeps",
+      "shot": "shots/a30-settings-notifications.png"
+    },
+    {
+      "t": "2026-09-15T13:27:17.702Z",
+      "id": "settings-tab-settings-shortcuts",
+      "sel": "#settings-shortcuts, [href=\"#settings-shortcuts\"], [data-section=\"settings-shortcuts\"]",
+      "ok": true,
+      "vis": {
+        "text": "快捷键",
+        "aria": null,
+        "hiddenAttr": null,
+        "display": "on-screen"
+      },
+      "before": {
+        "hash": "#/settings",
+        "title": "FATHOM · 设置"
+      },
+      "after": {
+        "hash": "#/settings",
+        "title": "FATHOM · 设置"
+      },
+      "bodySnippet": "FATHOM · 设置\nFATHOM.\n今日 $1.98\nWork\nCode\n新建对话\n筛选对话列表，回车按正文全局搜索\nEnter\n尚无运行。\n设置已打开\n\nAGENT CONSOLE\n\nFATHOM.\n\n说要做什么，回车就发。\n\n稿件、纪要、问答都可以从这里开始。\n\n现在只能在这个窗口下指令。\n\n输入 @ 可按文件名找这个文件夹里的文件。旧对话用「引用会话」。\n\n文件\n文件 ⟩\nhello-seed.txt\n@\npreview-seed.html\n@\n项目\n未入项（按目录）\n＋ 新建项目…\n未入项（按目录）\n工作目录\nD:\\Work\\scratch\\"
+    },
+    {
+      "t": "2026-09-15T13:27:17.770Z",
+      "id": "settings-body-settings-shortcuts",
+      "ok": true,
+      "snippet": "FATHOM · 设置\nFATHOM.\n今日 $1.98\nWork\nCode\n新建对话\n筛选对话列表，回车按正文全局搜索\nEnter\n尚无运行。\n设置已打开\n\nAGENT CONSOLE\n\nFATHOM.\n\n说要做什么，回车就发。\n\n稿件、纪要、问答都可以从这里开始。\n\n现在只能在这个窗口下指令。\n\n输入 @ 可按文件名找这个文件夹里的文件。旧对话用「引用会话」。\n\n文件\n文件 ⟩\nhello-seed.txt\n@\npreview-seed.html\n@\n项目\n未入项（按目录）\n＋ 新建项目…\n未入项（按目录）\n工作目录\nD:\\Work\\scratch\\fathom-ux-20260915\\web-a\nD:\\Work\\scratch\\fathom-ux-20260915\\web-b\nD:\\Work\\scratch\\fathom-ux-20260915\\cli\nD:\\Work\\scratch\\fath…ux-20260915\\desktop\nC:\\Users\\rk302\\Fathom\n＋ 添加目录…\nD:\\Work\\scratc…0260915\\web-a\n模型\n环境变量 · deeps",
+      "shot": "shots/a30-settings-shortcuts.png"
+    },
+    {
+      "t": "2026-09-15T13:27:18.091Z",
+      "id": "settings-tab-settings-usage",
+      "sel": "#settings-usage, [href=\"#settings-usage\"], [data-section=\"settings-usage\"]",
+      "ok": true,
+      "vis": {
+        "text": "消耗",
+        "aria": null,
+        "hiddenAttr": null,
+        "display": "on-screen"
+      },
+      "before": {
+        "hash": "#/settings",
+        "title": "FATHOM · 设置"
+      },
+      "after": {
+        "hash": "#/settings",
+        "title": "FATHOM · 设置"
+      },
+      "bodySnippet": "FATHOM · 设置\nFATHOM.\n今日 $1.98\nWork\nCode\n新建对话\n筛选对话列表，回车按正文全局搜索\nEnter\n尚无运行。\n设置已打开\n\nAGENT CONSOLE\n\nFATHOM.\n\n说要做什么，回车就发。\n\n稿件、纪要、问答都可以从这里开始。\n\n现在只能在这个窗口下指令。\n\n输入 @ 可按文件名找这个文件夹里的文件。旧对话用「引用会话」。\n\n文件\n文件 ⟩\nhello-seed.txt\n@\npreview-seed.html\n@\n项目\n未入项（按目录）\n＋ 新建项目…\n未入项（按目录）\n工作目录\nD:\\Work\\scratch\\"
+    },
+    {
+      "t": "2026-09-15T13:27:18.171Z",
+      "id": "settings-body-settings-usage",
+      "ok": true,
+      "snippet": "FATHOM · 设置\nFATHOM.\n今日 $1.98\nWork\nCode\n新建对话\n筛选对话列表，回车按正文全局搜索\nEnter\n尚无运行。\n设置已打开\n\nAGENT CONSOLE\n\nFATHOM.\n\n说要做什么，回车就发。\n\n稿件、纪要、问答都可以从这里开始。\n\n现在只能在这个窗口下指令。\n\n输入 @ 可按文件名找这个文件夹里的文件。旧对话用「引用会话」。\n\n文件\n文件 ⟩\nhello-seed.txt\n@\npreview-seed.html\n@\n项目\n未入项（按目录）\n＋ 新建项目…\n未入项（按目录）\n工作目录\nD:\\Work\\scratch\\fathom-ux-20260915\\web-a\nD:\\Work\\scratch\\fathom-ux-20260915\\web-b\nD:\\Work\\scratch\\fathom-ux-20260915\\cli\nD:\\Work\\scratch\\fath…ux-20260915\\desktop\nC:\\Users\\rk302\\Fathom\n＋ 添加目录…\nD:\\Work\\scratc…0260915\\web-a\n模型\n环境变量 · deeps",
+      "shot": "shots/a30-settings-usage.png"
+    },
+    {
+      "t": "2026-09-15T13:27:18.479Z",
+      "id": "settings-tab-settings-about",
+      "sel": "#settings-about, [href=\"#settings-about\"], [data-section=\"settings-about\"]",
+      "ok": true,
+      "vis": {
+        "text": "关于",
+        "aria": null,
+        "hiddenAttr": null,
+        "display": "on-screen"
+      },
+      "before": {
+        "hash": "#/settings",
+        "title": "FATHOM · 设置"
+      },
+      "after": {
+        "hash": "#/settings",
+        "title": "FATHOM · 设置"
+      },
+      "bodySnippet": "FATHOM · 设置\nFATHOM.\n今日 $1.98\nWork\nCode\n新建对话\n筛选对话列表，回车按正文全局搜索\nEnter\n尚无运行。\n设置已打开\n\nAGENT CONSOLE\n\nFATHOM.\n\n说要做什么，回车就发。\n\n稿件、纪要、问答都可以从这里开始。\n\n现在只能在这个窗口下指令。\n\n输入 @ 可按文件名找这个文件夹里的文件。旧对话用「引用会话」。\n\n文件\n文件 ⟩\nhello-seed.txt\n@\npreview-seed.html\n@\n项目\n未入项（按目录）\n＋ 新建项目…\n未入项（按目录）\n工作目录\nD:\\Work\\scratch\\"
+    },
+    {
+      "t": "2026-09-15T13:27:18.552Z",
+      "id": "settings-body-settings-about",
+      "ok": true,
+      "snippet": "FATHOM · 设置\nFATHOM.\n今日 $1.98\nWork\nCode\n新建对话\n筛选对话列表，回车按正文全局搜索\nEnter\n尚无运行。\n设置已打开\n\nAGENT CONSOLE\n\nFATHOM.\n\n说要做什么，回车就发。\n\n稿件、纪要、问答都可以从这里开始。\n\n现在只能在这个窗口下指令。\n\n输入 @ 可按文件名找这个文件夹里的文件。旧对话用「引用会话」。\n\n文件\n文件 ⟩\nhello-seed.txt\n@\npreview-seed.html\n@\n项目\n未入项（按目录）\n＋ 新建项目…\n未入项（按目录）\n工作目录\nD:\\Work\\scratch\\fathom-ux-20260915\\web-a\nD:\\Work\\scratch\\fathom-ux-20260915\\web-b\nD:\\Work\\scratch\\fathom-ux-20260915\\cli\nD:\\Work\\scratch\\fath…ux-20260915\\desktop\nC:\\Users\\rk302\\Fathom\n＋ 添加目录…\nD:\\Work\\scratc…0260915\\web-a\n模型\n环境变量 · deeps",
+      "shot": "shots/a30-settings-about.png"
+    },
+    {
+      "t": "2026-09-15T13:27:18.866Z",
+      "id": "settings-theme-before-reload",
+      "ok": true,
+      "theme": null
+    },
+    {
+      "t": "2026-09-15T13:27:19.287Z",
+      "id": "composer-resting",
+      "ok": true,
+      "placeholder": "说要做什么…",
+      "submit": "发送",
+      "workdir": "D:\\Work\\scratc…0260915\\web-a",
+      "project": "未入项（按目录）\n＋ 新建项目…",
+      "model": "环境变量 · deepseek-v4-flash",
+      "roles": "\n        角色\n        \n          \n            \n            \n          \n          \n            \n            规划 · 跟随执行\n          \n          \n            \n            \n          \n          \n            \n            核查 · 跟随执行\n          \n          \n            \n            识图 · kimi-k3\n          \n          \n            \n            生图 · 未配置\n          \n        \n        规划与核查跟随执行模型；识图与生图模型独立作为工具接入。\n      ",
+      "knobsHidden": true,
+      "budgetHidden": true,
+      "errorHidden": true,
+      "reconnectHidden": true,
+      "gitHidden": true
+    },
+    {
+      "t": "2026-09-15T13:27:19.584Z",
+      "id": "composer-workdir-open",
+      "sel": "#workdir-trigger",
+      "ok": true,
+      "vis": {
+        "text": "D:\\Work\\scratc…0260915\\web-a",
+        "aria": null,
+        "hiddenAttr": null,
+        "display": "on-screen"
+      },
+      "before": {
+        "hash": "",
+        "title": "FATHOM"
+      },
+      "after": {
+        "hash": "",
+        "title": "FATHOM"
+      },
+      "bodySnippet": "FATHOM\nFATHOM.\n今日 $1.98\nWork\nCode\n新建对话\n筛选对话列表，回车按正文全局搜索\nEnter\n尚无运行。\n\nAGENT CONSOLE\n\nFATHOM.\n\n说要做什么，回车就发。\n\n稿件、纪要、问答都可以从这里开始。\n\n现在只能在这个窗口下指令。\n\n输入 @ 可按文件名找这个文件夹里的文件。旧对话用「引用会话」。\n\n文件\n文件 ⟩\n\n先选一个工作目录。\n\n项目\n未入项（按目录）\n＋ 新建项目…\n未入项（按目录）\n工作目录\nD:\\Work\\scratch\\fathom-ux-20260915\\web-a\nD:\\Work\\scr"
+    },
+    {
+      "t": "2026-09-15T13:27:19.585Z",
+      "id": "composer-workdir-menu",
+      "ok": true,
+      "menu": "点文件夹名：下次写入这里。勾选：这次也可以读写这个文件夹。改写入点不会把旧目录自动勾回来。\n\nD:\\Work\\scratch\\fathom-ux-20260915\\web-a\n正在写入\nD:\\Work\\scratch\\fathom-ux-20260915\\web-b\n改到这里\nD:\\Work\\scratch\\fathom-ux-20260915\\cli\n改到这里\nD:\\Work\\scratch\\fathom-ux-20260915\\desktop\n改到这里\nC:\\Users\\rk302\\Fathom\n改到这里\n＋ 添加目录…"
+    },
+    {
+      "t": "2026-09-15T13:27:19.879Z",
+      "id": "composer-model-open",
+      "sel": "#executor-model-trigger",
+      "ok": true,
+      "vis": {
+        "text": "环境变量 · deepseek-v4-flash",
+        "aria": null,
+        "hiddenAttr": null,
+        "display": "on-screen"
+      },
+      "before": {
+        "hash": "",
+        "title": "FATHOM"
+      },
+      "after": {
+        "hash": "",
+        "title": "FATHOM"
+      },
+      "bodySnippet": "FATHOM\nFATHOM.\n今日 $1.98\nWork\nCode\n新建对话\n筛选对话列表，回车按正文全局搜索\nEnter\n尚无运行。\n\nAGENT CONSOLE\n\nFATHOM.\n\n说要做什么，回车就发。\n\n稿件、纪要、问答都可以从这里开始。\n\n现在只能在这个窗口下指令。\n\n输入 @ 可按文件名找这个文件夹里的文件。旧对话用「引用会话」。\n\n文件\n文件 ⟩\n\n先选一个工作目录。\n\n项目\n未入项（按目录）\n＋ 新建项目…\n未入项（按目录）\n工作目录\nD:\\Work\\scratch\\fathom-ux-20260915\\web-a\nD:\\Work\\scr"
+    },
+    {
+      "t": "2026-09-15T13:27:19.881Z",
+      "id": "composer-model-menu",
+      "ok": true,
+      "menu": "环境变量 · deepseek-v4-flash\ndeepseek-v4-flash · 1048k 上下文窗口\n环境变量 · kimi-k3\nkimi-k3 · 1048k 上下文窗口\n管理模型…\n环境变量 · deepseek-v4-flash\nanthropic · deepseek-v4-flash\n1048k 上下文窗口\n\n切换后水位按 1048k tokens（来源：登记表） 重算"
+    },
+    {
+      "t": "2026-09-15T13:27:20.174Z",
+      "id": "composer-knobs-open",
+      "sel": "#knobs-toggle",
+      "ok": true,
+      "vis": {
+        "text": "运行设置",
+        "aria": "运行设置",
+        "hiddenAttr": null,
+        "display": "on-screen"
+      },
+      "before": {
+        "hash": "",
+        "title": "FATHOM"
+      },
+      "after": {
+        "hash": "",
+        "title": "FATHOM"
+      },
+      "bodySnippet": "FATHOM\nFATHOM.\n今日 $1.98\nWork\nCode\n新建对话\n筛选对话列表，回车按正文全局搜索\nEnter\n尚无运行。\n\nAGENT CONSOLE\n\nFATHOM.\n\n说要做什么，回车就发。\n\n稿件、纪要、问答都可以从这里开始。\n\n现在只能在这个窗口下指令。\n\n输入 @ 可按文件名找这个文件夹里的文件。旧对话用「引用会话」。\n\n文件\n文件 ⟩\n\n先选一个工作目录。\n\n项目\n未入项（按目录）\n＋ 新建项目…\n未入项（按目录）\n工作目录\nD:\\Work\\scratch\\fathom-ux-20260915\\web-a\nD:\\Work\\scr"
+    },
+    {
+      "t": "2026-09-15T13:27:20.240Z",
+      "id": "composer-knobs",
+      "ok": true,
+      "text": "领域包\n查资料选 consult\n不用领域包\nstm32-debug\nstm32-coding\npython-coding\nts-coding\nconsult · 查资料\nkicad\ndesign\n不用领域包\n自动匹配\n按任务选已注册的包\n权限\n手动 · 危险动作会先问你，不会自动放行\n自定义\n逐次审批\n计划确认门\n自动放行 ask\n自定义\n计划\n拆解后等人批准\n多 agent\n并行子任务，最多 3\n自动放行\n默认先问；勾上才自动放行\n独立核查\n思考强度\n低\n中\n高\n很高\n最高\n低\n评分表",
+      "packOptions": [
+        "不用领域包",
+        "stm32-debug",
+        "stm32-coding",
+        "python-coding",
+        "ts-coding",
+        "consult · 查资料",
+        "kicad",
+        "design"
+      ],
+      "permissionOptions": [
+        "自定义",
+        "逐次审批",
+        "计划确认门",
+        "自动放行 ask"
+      ],
+      "effortOptions": [
+        "低",
+        "中",
+        "高",
+        "很高",
+        "最高"
+      ],
+      "autoApprove": false,
+      "verify": false,
+      "plan": false,
+      "multi": false,
+      "permissionStance": "手动 · 危险动作会先问你，不会自动放行",
+      "shot": "shots/a40-knobs.png"
+    },
+    {
+      "t": "2026-09-15T13:27:20.821Z",
+      "id": "at-picker",
+      "ok": true,
+      "pickerVisible": true,
+      "picker": "hello-seed.txt\npreview-seed.html",
+      "shot": "shots/a41-at.png"
+    },
+    {
+      "t": "2026-09-15T13:27:21.222Z",
+      "id": "hash-picker",
+      "ok": true,
+      "pickerVisible": false,
+      "input": "#"
+    },
+    {
+      "t": "2026-09-15T13:27:21.608Z",
+      "id": "slash-picker",
+      "ok": true,
+      "pickerVisible": false,
+      "palette": false,
+      "input": "/"
+    },
+    {
+      "t": "2026-09-15T13:27:21.978Z",
+      "id": "dollar-picker",
+      "ok": true,
+      "pickerVisible": false,
+      "input": "$"
+    },
+    {
+      "t": "2026-09-15T13:27:22.303Z",
+      "id": "cite-session",
+      "sel": "#cite-session-btn",
+      "ok": true,
+      "vis": {
+        "text": "引用会话",
+        "aria": "引用会话",
+        "hiddenAttr": null,
+        "display": "on-screen"
+      },
+      "before": {
+        "hash": "",
+        "title": "FATHOM"
+      },
+      "after": {
+        "hash": "",
+        "title": "FATHOM"
+      },
+      "bodySnippet": "FATHOM\nFATHOM.\n今日 $1.98\nWork\nCode\n新建对话\n筛选对话列表，回车按正文全局搜索\nEnter\n尚无运行。\n\nAGENT CONSOLE\n\nFATHOM.\n\n说要做什么，回车就发。\n\n稿件、纪要、问答都可以从这里开始。\n\n现在只能在这个窗口下指令。\n\n输入 @ 可按文件名找这个文件夹里的文件。旧对话用「引用会话」。\n\n文件\n文件 ⟩\n\n先选一个工作目录。\n\n项目\n未入项（按目录）\n＋ 新建项目…\n未入项（按目录）\n工作目录\nD:\\Work\\scratch\\fathom-ux-20260915\\web-a\nD:\\Work\\scr"
+    },
+    {
+      "t": "2026-09-15T13:27:22.304Z",
+      "id": "cite-session-panel",
+      "ok": true,
+      "picker": ""
+    },
+    {
+      "t": "2026-09-15T13:27:22.689Z",
+      "id": "command-palette",
+      "ok": true,
+      "visible": true,
+      "text": true,
+      "snippet": " 记忆本项目全部还没有记忆——Agent 在跨会话工作中积累的内容会出现在这里重试",
+      "shot": "shots/a42-palette.png"
+    },
+    {
+      "t": "2026-09-15T13:27:22.696Z",
+      "id": "file-tree-resting",
+      "ok": true,
+      "tree": "文件\n文件 ⟩\n\n先选一个工作目录。",
+      "visible": true
+    },
+    {
+      "t": "2026-09-15T13:27:22.699Z",
+      "id": "file-tree-open-seed",
+      "ok": false,
+      "reason": "seed row not found"
+    },
+    {
+      "t": "2026-09-15T13:27:22.703Z",
+      "id": "starter-gallery",
+      "ok": true,
+      "hidden": false,
+      "text": "做纪要\n把材料收成可转发的短纪要\n做一页\n一页介绍，浏览器里预览\n带出处问答\n回答时列出来说 / 该页说的 / 链接\n更多稿件\n原型、看板、邮件和其他样子"
+    },
+    {
+      "t": "2026-09-15T13:27:23.139Z",
+      "id": "viewport-1280",
+      "ok": true,
+      "overflowX": 0,
+      "sidebarVisible": true,
+      "composerVisible": true,
+      "shot": "shots/a50-vp-1280.png"
+    },
+    {
+      "t": "2026-09-15T13:27:23.587Z",
+      "id": "viewport-1100",
+      "ok": true,
+      "overflowX": 0,
+      "sidebarVisible": true,
+      "composerVisible": true,
+      "shot": "shots/a50-vp-1100.png"
+    },
+    {
+      "t": "2026-09-15T13:27:24.048Z",
+      "id": "viewport-900",
+      "ok": true,
+      "overflowX": 0,
+      "sidebarVisible": true,
+      "composerVisible": true,
+      "shot": "shots/a50-vp-900.png"
+    },
+    {
+      "t": "2026-09-15T13:27:24.497Z",
+      "id": "viewport-700",
+      "ok": true,
+      "overflowX": 0,
+      "sidebarVisible": true,
+      "composerVisible": true,
+      "shot": "shots/a50-vp-700.png"
+    },
+    {
+      "t": "2026-09-15T13:27:24.591Z",
+      "id": "hidden-display-lies",
+      "ok": true,
+      "lie": [
+        {
+          "id": "reconnect-banner",
+          "hasHidden": true,
+          "display": "none",
+          "visibility": "visible",
+          "lie": false
+        },
+        {
+          "id": "budget-extend-row",
+          "hasHidden": true,
+          "display": "none",
+          "visibility": "visible",
+          "lie": false
+        },
+        {
+          "id": "submit-error",
+          "hasHidden": true,
+          "display": "none",
+          "visibility": "visible",
+          "lie": false
+        },
+        {
+          "id": "run-knobs",
+          "hasHidden": true,
+          "display": "none",
+          "visibility": "visible",
+          "lie": false
+        },
+        {
+          "id": "action-dock",
+          "hasHidden": true,
+          "display": "none",
+          "visibility": "visible",
+          "lie": false
+        },
+        {
+          "id": "cite-picker",
+          "hasHidden": true,
+          "display": "none",
+          "visibility": "visible",
+          "lie": false
+        }
+      ]
+    },
+    {
+      "t": "2026-09-15T13:27:24.603Z",
+      "id": "api-/health",
+      "ok": true,
+      "status": 200,
+      "body": "{\"status\":\"ok\",\"uptimeMs\":123007}"
+    },
+    {
+      "t": "2026-09-15T13:27:24.606Z",
+      "id": "api-/ready",
+      "ok": true,
+      "status": 200,
+      "body": "{\"status\":\"ready\",\"uptimeMs\":123013,\"shuttingDown\":false,\"activeRuns\":0,\"history\":{\"enabled\":true,\"healthy\":true,\"error\":null},\"execution\":{\"enabled\":true,\"healthy\":true,\"status\":{\"requestedMode\":\"report\",\"requestedBackend\":\"auto\",\"effectiveState\":\"report-only\",\"resolvedBackend\":\"host\",\"probe\":{\"state\":\"unavailable\",\"candidate\":null,\"code\":null},\"coverage\":[]}}}"
+    },
+    {
+      "t": "2026-09-15T13:27:24.610Z",
+      "id": "api-/api/harness",
+      "ok": true,
+      "status": 200,
+      "body": "{\"model\":\"deepseek-v4-flash\",\"provider\":\"anthropic\",\"compat\":true,\"effort\":null,\"effortApplies\":false,\"shell\":\"bash (Git Bash) — host execution is REPORT-ONLY / UNISOLATED\",\"executionIsolation\":{\"schemaVersion\":1,\"boundaryId\":\"process-capability-probe\",\"requestedMode\":\"report\",\"requestedBackend\":\"auto\",\"effectiveState\":\"report-only\",\"resolvedBackend\":\"host\",\"policyDigest\":\"cca6486193de4da3eb4dcedeca67fc1c9c5f835c07ac6025ce14a6cc57c512e6\",\"probe\":{\"state\":\"unavailable\",\"candidate\":null,\"reason\":\"No isolation candidate is configured (set a digest-pinned AGENT_EXECUTION_OCI_IMAGE)\"},\"coverage\":[],\"filesystem\":\"host filesystem visible to the approved command\",\"network\":\"host network\",\"identity\":\"host user\",\"resources\":\"wall/output limits only; candidate probe does not isolate execution\"},\"work"
+    },
+    {
+      "t": "2026-09-15T13:27:24.612Z",
+      "id": "api-/api/runs",
+      "ok": true,
+      "status": 200,
+      "body": "[]"
+    },
+    {
+      "t": "2026-09-15T13:27:24.616Z",
+      "id": "api-/api/usage",
+      "ok": true,
+      "status": 200,
+      "body": "{\"totalRuns\":134,\"totalTurns\":1329,\"totalUsd\":2.7462411704,\"unpricedRuns\":26,\"byDay\":[{\"day\":\"2026-09-15\",\"runs\":20,\"turns\":713,\"usd\":1.9820125024000002,\"unpricedRuns\":0},{\"day\":\"2026-09-14\",\"runs\":99,\"turns\":425,\"usd\":0.26899981359999997,\"unpricedRuns\":14},{\"day\":\"2026-09-13\",\"runs\":15,\"turns\":191,\"usd\":0.49522885440000003,\"unpricedRuns\":12}],\"byModel\":[{\"model\":\"deepseek-v4-flash\",\"runs\":134,\"turns\":1329,\"usd\":2.7462411704,\"unpricedRuns\":26}],\"byDayModel\":[{\"day\":\"2026-09-15\",\"model\":\"deepseek-v4-flash\",\"runs\":20,\"turns\":713,\"usd\":1.9820125024000002,\"unpricedRuns\":0},{\"day\":\"2026-09-14\",\"model\":\"deepseek-v4-flash\",\"runs\":99,\"turns\":425,\"usd\":0.26899981359999997,\"unpricedRuns\":14},{\"day\":\"2026-09-13\",\"model\":\"deepseek-v4-flash\",\"runs\":15,\"turns\":191,\"usd\":0.49522885440000003,\"unpricedRuns"
+    }
+  ]
+}

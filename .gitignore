@@ -86,6 +86,8 @@ eval/persona-ux/walks/_*
 eval/persona-ux/_verify-live*
 eval/persona-ux/_tmp-*
 eval/persona-ux/_api-usage.json
+# 走查录像（.webm 单条数 MB）：留本机，不进仓；报告/截图/脚本/JSON 照常入库
+eval/persona-ux/_audit-*/video/
 /hello-*.txt
 /*-cli-*.txt
 /approve-chatgpt.txt

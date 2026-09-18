@@ -1,0 +1,15 @@
+[2mcompat mode [anthropic]: model=deepseek-v4-flash via https://api.deepseek.com/anthropic (thinking/effort/cache_control disabled)[0m
+[2m上下文：水位 963k（跟窗口） / 窗口 1,048k（来源：registry）[0m
+[2mvision model: kimi-k3[0m
+[2mdescribe_image: vision-role (kimi-k3)[0m
+[33mexecution: report-only / host (mode=report, probe=unavailable) — shell commands are not run-isolated[0m
+[2m飞书/微信宿主未开[0m
+[2mdurable: cli-1789478967544 → .agent-run-history/cli-1789478967544/state.json[0m
+[2mpermissionMode: 手动 · 危险动作会先问你，不会自动放行 (approval=ask plan=false gate=false yes=false)[0m
+[2mrecovery: extension=8(default) stagnation=3(default) recoveries=1(default)[0m
+[2m─── turn 1 ───[0m
+[2m▷ 模型请求 #0（第 1 轮）[0m
+[2m■ 模型请求 ok 2160ms[0m
+[2m  tokens: in=307 cacheW=0 cacheR=5248 out=283[0m
+[35m✽ 思考过程 916 字：The user wants a simple file write. Let me do it. The task: …[0m
+[36m→ tool[0m write_file [2m{"path":"hello-cli-noyes.txt","content":"ping\n"}[0m

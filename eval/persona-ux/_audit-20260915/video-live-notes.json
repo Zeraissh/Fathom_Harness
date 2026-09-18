@@ -1,0 +1,78 @@
+[
+  {
+    "name": "c1-stream-live",
+    "dest": "video/c1-stream-live/8e56da7baf13edc7862d2780d0376212.webm",
+    "timeline": [
+      {
+        "s": 0.5,
+        "label": "open-c1",
+        "text": "FATHOM · 产物 FATHOM. 今日 $2.17 Work Code 新建对话 筛选对话列表，回车按正文全局搜索 Enter web-a 写 hello-http-work.txt 一… 只做计划：把当前目录里已有的 txt 列成两步… 先列出当前目录的文件名，再用一句话慢慢解释每个… 写 hello-b2-denied.txt 文件 在当前工作目录写 hello-b1.txt，内… 产物画布已打开：hello-c1.txt FATHOM · RUN 018691 只写 hello-c1.txt，一行 stream-ok。不要读仓库，不要跑命令…"
+      },
+      {
+        "s": 1,
+        "label": "signal",
+        "text": "FATHOM · 产物 FATHOM. 1 今日 $2.17 Work Code 新建对话 筛选对话列表，回车按正文全局搜索 Enter web-a 写 hello-http-work.txt 一… 只做计划：把当前目录里已有的 txt 列成两步… 先列出当前目录的文件名，再用一句话慢慢解释每个… 写 hello-b2-denied.txt 文件 在当前工作目录写 hello-b1.txt，内… 产物画布已打开：hello-c1.txt FATHOM · RUN 018691 只写 hello-c1.txt，一行 stream-ok。不要读仓库，不要跑命"
+      },
+      {
+        "s": 31.1,
+        "label": "typed-reason",
+        "text": "FATHOM · 产物 FATHOM. 1 今日 $2.17 Work Code 新建对话 筛选对话列表，回车按正文全局搜索 Enter web-a 写 hello-http-work.txt 一… 只做计划：把当前目录里已有的 txt 列成两步… 先列出当前目录的文件名，再用一句话慢慢解释每个… 写 hello-b2-denied.txt 文件 在当前工作目录写 hello-b1.txt，内… 产物画布已打开：hello-c1.txt FATHOM · RUN 018691 只写 hello-c1.txt，一行 stream-ok。不要读仓库，不要跑命"
+      },
+      {
+        "s": 61.1,
+        "label": "error",
+        "text": "TimeoutError: locator.click: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('button').filter({ hasText: /^允许$/ }).first()\n    - locator resolved to <button type=\"button\" data-action=\"allow\" class=\"btn btn--allow\">允许</button>\n  "
+      }
+    ],
+    "ms": 61231
+  },
+  {
+    "name": "c2-tools-live",
+    "dest": "video/c2-tools-live/8a64b349abc2425cb472f169f23163cc.webm",
+    "timeline": [
+      {
+        "s": 0.4,
+        "label": "open-b1",
+        "text": "FATHOM · 对话 FATHOM. 今日 $2.17 Work Code 新建对话 筛选对话列表，回车按正文全局搜索 Enter web-a 写 hello-http-work.txt 一… 只做计划：把当前目录里已有的 txt 列成两步… 先列出当前目录的文件名，再用一句话慢慢解释每个… 写 hello-b2-denied.txt 文件 在当前工作目录写 hello-b1.txt，内… 运行已完成：在当前工作目录写 hello-b1.txt，内容只有一行 ping。不要读别的文件，不要跑命令。 FATHOM · RUN 8AEBF6 在当前工作目录"
+      },
+      {
+        "s": 1.9,
+        "label": "clicked-toolish",
+        "text": "FATHOM · 产物 FATHOM. 这次约 $0.0003 · 今日 $2.17 Work Code 新建对话 筛选对话列表，回车按正文全局搜索 Enter web-a 写 hello-http-work.txt 一… 只做计划：把当前目录里已有的 txt 列成两步… 先列出当前目录的文件名，再用一句话慢慢解释每个… 写 hello-b2-denied.txt 文件 在当前工作目录写 hello-b1.txt，内… 产物画布已打开：hello-b1.txt FATHOM · RUN 8AEBF6 在当前工作目录写 hello-b1.txt，内容只有一"
+      },
+      {
+        "s": 2.6,
+        "label": "scrolled",
+        "text": "FATHOM · 产物 FATHOM. 这次约 $0.0003 · 今日 $2.17 Work Code 新建对话 筛选对话列表，回车按正文全局搜索 Enter web-a 写 hello-http-work.txt 一… 只做计划：把当前目录里已有的 txt 列成两步… 先列出当前目录的文件名，再用一句话慢慢解释每个… 写 hello-b2-denied.txt 文件 在当前工作目录写 hello-b1.txt，内… 产物画布已打开：hello-b1.txt FATHOM · RUN 8AEBF6 在当前工作目录写 hello-b1.txt，内容只有一"
+      },
+      {
+        "s": 32.6,
+        "label": "clicked-hello-b1",
+        "text": "FATHOM · 产物 FATHOM. 这次约 $0.0003 · 今日 $2.17 Work Code 新建对话 筛选对话列表，回车按正文全局搜索 Enter web-a 写 hello-http-work.txt 一… 只做计划：把当前目录里已有的 txt 列成两步… 先列出当前目录的文件名，再用一句话慢慢解释每个… 写 hello-b2-denied.txt 文件 在当前工作目录写 hello-b1.txt，内… 产物画布已打开：hello-b1.txt FATHOM · RUN 8AEBF6 在当前工作目录写 hello-b1.txt，内容只有一"
+      }
+    ],
+    "ms": 37893
+  },
+  {
+    "name": "c7-preview-seed",
+    "dest": "video/c7-preview-seed/992b7e6f73893159f3205da3ec20a207.webm",
+    "timeline": [
+      {
+        "s": 0.2,
+        "label": "open-b1-preview",
+        "text": "FATHOM · 对话 FATHOM. 今日还没花费 Work Code 新建对话 筛选对话列表，回车按正文全局搜索 Enter web-a 写 hello-http-work.txt 一… 只做计划：把当前目录里已有的 txt 列成两步… 先列出当前目录的文件名，再用一句话慢慢解释每个… 写 hello-b2-denied.txt 文件 在当前工作目录写 hello-b1.txt，内… 已选择运行：在当前工作目录写 hello-b1.txt，内容只有一行 ping。不要读别的文件，不要跑命令。 FATHOM · RUN 8AEBF6 在当前工作目录写 "
+      },
+      {
+        "s": 30.3,
+        "label": "opened-hello-instead",
+        "text": "FATHOM · 产物 FATHOM. 这次约 $0.0003 · 今日 $2.17 Work Code 新建对话 筛选对话列表，回车按正文全局搜索 Enter web-a 写 hello-http-work.txt 一… 只做计划：把当前目录里已有的 txt 列成两步… 先列出当前目录的文件名，再用一句话慢慢解释每个… 写 hello-b2-denied.txt 文件 在当前工作目录写 hello-b1.txt，内… 产物画布已打开：hello-b1.txt FATHOM · RUN 8AEBF6 在当前工作目录写 hello-b1.txt，内容只有一"
+      },
+      {
+        "s": 31.5,
+        "label": "no-review",
+        "text": "FATHOM · 产物 FATHOM. 这次约 $0.0003 · 今日 $2.17 Work Code 新建对话 筛选对话列表，回车按正文全局搜索 Enter web-a 写 hello-http-work.txt 一… 只做计划：把当前目录里已有的 txt 列成两步… 先列出当前目录的文件名，再用一句话慢慢解释每个… 写 hello-b2-denied.txt 文件 在当前工作目录写 hello-b1.txt，内… 产物画布已打开：hello-b1.txt FATHOM · RUN 8AEBF6 在当前工作目录写 hello-b1.txt，内容只有一"
+      }
+    ],
+    "ms": 35577
+  }
+]

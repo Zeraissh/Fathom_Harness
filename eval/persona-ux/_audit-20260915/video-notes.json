@@ -1,0 +1,225 @@
+[
+  {
+    "name": "preflight-stop-stuck-b2",
+    "dest": null,
+    "timeline": [
+      {
+        "s": 0,
+        "label": "stop",
+        "text": "409 {\"error\":\"Run already finished\"}"
+      }
+    ],
+    "ms": 0
+  },
+  {
+    "name": "c1-stream",
+    "dest": "video/c1-stream/f0ba01f9d2c3375824eb9990a042e2e0.webm",
+    "timeline": [
+      {
+        "s": 0.5,
+        "label": "open completed write",
+        "text": "FATHOM · 产物 FATHOM. 这次约 $0.0003 · 今日 $2.01 Work Code 新建对话 筛选对话列表，回车按正文全局搜索 Enter web-a 写 hello-http-work.txt 一… 只做计划：把当前目录里已有的 txt 列成两步… 先列出当前目录的文件名，再用一句话慢慢解释每个… 写 hello-b2-denied.txt 文件 在当前工作目录写 hello-b1.txt，内… 已跳过引导 FATHOM · RUN 8AEBF6 在当"
+      },
+      {
+        "s": 2.2,
+        "label": "before submit",
+        "text": "FATHOM FATHOM. 这次约 $0.0003 · 今日 $2.01 Work Code 新建对话 筛选对话列表，回车按正文全局搜索 Enter web-a 写 hello-http-code.txt 一… web-b 创建 hello-code.txt 文件 已开始新对话，说要做什么 AGENT CONSOLE FATHOM. 说要做什么，回车就发。 稿件、纪要、问答都可以从这里开始。 现在只能在这个窗口下指令。 输入 @ 可按文件名找这个文件夹里的文件。旧对话用「引"
+      },
+      {
+        "s": 2.3,
+        "label": "submitted",
+        "text": "FATHOM FATHOM. 这次约 $0.0003 · 今日 $2.01 Work Code 新建对话 筛选对话列表，回车按正文全局搜索 Enter web-a 写 hello-http-code.txt 一… web-b 创建 hello-code.txt 文件 已开始新对话，说要做什么 AGENT CONSOLE FATHOM. 说要做什么，回车就发。 稿件、纪要、问答都可以从这里开始。 现在只能在这个窗口下指令。 输入 @ 可按文件名找这个文件夹里的文件。旧对话用「引"
+      },
+      {
+        "s": 2.7,
+        "label": "live-signal",
+        "text": "FATHOM · 对话 FATHOM. 今日 $2.01 Work Code 新建对话 筛选对话列表，回车按正文全局搜索 Enter web-a 只写 hello-c1.txt，一行 stre… 写 hello-http-code.txt 一… web-b 创建 hello-code.txt 文件 新任务已提交：只写 hello-c1.txt，一行 stream-ok。不要读仓库，不要跑命令。 FATHOM · RUN 018691 只写 hello-c1.txt，一行 st"
+      },
+      {
+        "s": 2.7,
+        "label": "after",
+        "text": "FATHOM · 对话 FATHOM. 今日 $2.01 Work Code 新建对话 筛选对话列表，回车按正文全局搜索 Enter web-a 只写 hello-c1.txt，一行 stre… 写 hello-http-code.txt 一… web-b 创建 hello-code.txt 文件 新任务已提交：只写 hello-c1.txt，一行 stream-ok。不要读仓库，不要跑命令。 FATHOM · RUN 018691 只写 hello-c1.txt，一行 st"
+      }
+    ],
+    "ms": 3708
+  },
+  {
+    "name": "c2-tools",
+    "dest": "video/c2-tools/0750dfd1ae1192691066730b73954cac.webm",
+    "timeline": [
+      {
+        "s": 0.4,
+        "label": "open-b1",
+        "text": "FATHOM · 产物 FATHOM. 这次约 $0.0003 · 今日 $2.01 Work Code 新建对话 筛选对话列表，回车按正文全局搜索 Enter web-a 写 hello-http-work.txt 一… 只做计划：把当前目录里已有的 txt 列成两步… 先列出当前目录的文件名，再用一句话慢慢解释每个… 写 hello-b2-denied.txt 文件 在当前工作目录写 hello-b1.txt，内… 已跳过引导 FATHOM · RUN 8AEBF6 在当"
+      },
+      {
+        "s": 1.3,
+        "label": "scrolled-down",
+        "text": "FATHOM · 产物 FATHOM. 这次约 $0.0003 · 今日 $2.01 Work Code 新建对话 筛选对话列表，回车按正文全局搜索 Enter web-a 写 hello-http-work.txt 一… 只做计划：把当前目录里已有的 txt 列成两步… 先列出当前目录的文件名，再用一句话慢慢解释每个… 写 hello-b2-denied.txt 文件 在当前工作目录写 hello-b1.txt，内… 已跳过引导 FATHOM · RUN 8AEBF6 在当"
+      },
+      {
+        "s": 1.3,
+        "label": "scrolled-up",
+        "text": "FATHOM · 产物 FATHOM. 这次约 $0.0003 · 今日 $2.01 Work Code 新建对话 筛选对话列表，回车按正文全局搜索 Enter web-a 写 hello-http-work.txt 一… 只做计划：把当前目录里已有的 txt 列成两步… 先列出当前目录的文件名，再用一句话慢慢解释每个… 写 hello-b2-denied.txt 文件 在当前工作目录写 hello-b1.txt，内… 已跳过引导 FATHOM · RUN 8AEBF6 在当"
+      },
+      {
+        "s": 1.3,
+        "label": "no-fold-control",
+        "text": "FATHOM · 产物 FATHOM. 这次约 $0.0003 · 今日 $2.01 Work Code 新建对话 筛选对话列表，回车按正文全局搜索 Enter web-a 写 hello-http-work.txt 一… 只做计划：把当前目录里已有的 txt 列成两步… 先列出当前目录的文件名，再用一句话慢慢解释每个… 写 hello-b2-denied.txt 文件 在当前工作目录写 hello-b1.txt，内… 已跳过引导 FATHOM · RUN 8AEBF6 在当"
+      }
+    ],
+    "ms": 3119
+  },
+  {
+    "name": "c3-approval",
+    "dest": "video/c3-approval/549965243e01bde330e572584458f3b9.webm",
+    "timeline": [
+      {
+        "s": 5.3,
+        "label": "ask-or-approval-card",
+        "text": "FATHOM · 对话 FATHOM. 1 今日 $2.01 Work Code 新建对话 筛选对话列表，回车按正文全局搜索 Enter web-a 写 hello-http-work.txt 一… 只做计划：把当前目录里已有的 txt 列成两步… 先列出当前目录的文件名，再用一句话慢慢解释每个… 写 hello-b2-denied.txt 文件 在当前工作目录写 hello-b1.txt，内… 已跳过引导 FATHOM · RUN 41C7AA 只做计划：把当前目录里已有的"
+      },
+      {
+        "s": 7.4,
+        "label": "existing-card-visible",
+        "text": "FATHOM · 对话 FATHOM. 1 今日 $2.01 Work Code 新建对话 筛选对话列表，回车按正文全局搜索 Enter web-a 写 hello-http-work.txt 一… 只做计划：把当前目录里已有的 txt 列成两步… 先列出当前目录的文件名，再用一句话慢慢解释每个… 写 hello-b2-denied.txt 文件 在当前工作目录写 hello-b1.txt，内… 已跳过引导 FATHOM · RUN 41C7AA 只做计划：把当前目录里已有的"
+      }
+    ],
+    "ms": 11812
+  },
+  {
+    "name": "c4-plan-parallel",
+    "dest": "video/c4-plan-parallel/672cdd64c0171affd6a98d702940dd10.webm",
+    "timeline": [
+      {
+        "s": 0.6,
+        "label": "existing-plan-ask",
+        "text": "FATHOM · 对话 FATHOM. 1 今日 $2.01 Work Code 新建对话 筛选对话列表，回车按正文全局搜索 Enter web-a 写 hello-http-work.txt 一… 只做计划：把当前目录里已有的 txt 列成两步… 先列出当前目录的文件名，再用一句话慢慢解释每个… 写 hello-b2-denied.txt 文件 在当前工作目录写 hello-b1.txt，内… 已跳过引导 FATHOM · RUN 41C7AA 只做计划：把当前目录里已有的"
+      },
+      {
+        "s": 1.9,
+        "label": "board-during-plan",
+        "text": "FATHOM · 指挥中心 FATHOM. 1 今日 $2.01 Work Code 新建对话 筛选对话列表，回车按正文全局搜索 Enter web-a 写 hello-http-work.txt 一… 只做计划：把当前目录里已有的 txt 列成两步… 先列出当前目录的文件名，再用一句话慢慢解释每个… 写 hello-b2-denied.txt 文件 在当前工作目录写 hello-b1.txt，内… 指挥中心已打开 FATHOM · RUN 41C7AA 只做计划：把当前目录"
+      }
+    ],
+    "ms": 3590,
+    "completedLie": false
+  },
+  {
+    "name": "c5-stop",
+    "dest": "video/c5-stop/2c338324c5f9ca2f176dcc5cf9959243.webm",
+    "timeline": [
+      {
+        "s": 1,
+        "label": "submitted",
+        "text": "FATHOM FATHOM. 今日 $2.01 Work Code 新建对话 筛选对话列表，回车按正文全局搜索 Enter web-a 只写 hello-c1.txt，一行 stre… 写 hello-http-code.txt 一… web-b 创建 hello-code.txt 文件 已开始新对话，说要做什么 AGENT CONSOLE FATHOM. 说要做什么，回车就发。 稿件、纪要、问答都可以从这里开始。 现在只能在这个窗口下指令。 输入 @ 可按文件名找这个文件夹"
+      },
+      {
+        "s": 2.9,
+        "label": "clicked-stop",
+        "text": "FATHOM · 对话 FATHOM. 今日 $2.01 Work Code 新建对话 筛选对话列表，回车按正文全局搜索 Enter web-a 先列出当前目录文件名，再用很长的一段话慢慢解释… 只写 hello-c1.txt，一行 stre… 写 hello-http-code.txt 一… web-b 创建 hello-code.txt 文件 连接中断，正在重连… 连接中断，正在重连…（运行仍在服务端继续） FATHOM · RUN 457186 先列出当前目录文件名，再"
+      },
+      {
+        "s": 3,
+        "label": "after-stop",
+        "text": "FATHOM · 对话 FATHOM. 今日 $2.01 Work Code 新建对话 筛选对话列表，回车按正文全局搜索 Enter web-a 先列出当前目录文件名，再用很长的一段话慢慢解释… 只写 hello-c1.txt，一行 stre… 写 hello-http-code.txt 一… web-b 创建 hello-code.txt 文件 已停止：先列出当前目录文件名，再用很长的一段话慢慢解释每个文件。不要写新文件。 FATHOM · RUN 457186 先列出当前"
+      }
+    ],
+    "ms": 3891
+  },
+  {
+    "name": "c6-sse",
+    "dest": "video/c6-sse/360d9e79801bbeea56af0e08546e4dc8.webm",
+    "timeline": [
+      {
+        "s": 0.4,
+        "label": "events-aborted",
+        "text": "FATHOM · 对话 FATHOM. 今日还没花费 Work Code 新建对话 筛选对话列表，回车按正文全局搜索 Enter web-a 写 hello-http-work.txt 一… 只做计划：把当前目录里已有的 txt 列成两步… 先列出当前目录的文件名，再用一句话慢慢解释每个… 写 hello-b2-denied.txt 文件 在当前工作目录写 hello-b1.txt，内… 已跳过引导 连接中断，正在重连…（运行仍在服务端继续） FATHOM · RUN 41C"
+      },
+      {
+        "s": 2.9,
+        "label": "after-wait",
+        "text": "FATHOM · 对话 FATHOM. 今日 $2.01 Work Code 新建对话 筛选对话列表，回车按正文全局搜索 Enter web-a 写 hello-http-work.txt 一… 只做计划：把当前目录里已有的 txt 列成两步… 先列出当前目录的文件名，再用一句话慢慢解释每个… 写 hello-b2-denied.txt 文件 在当前工作目录写 hello-b1.txt，内… 已跳过引导 连接中断，正在重连…（运行仍在服务端继续） FATHOM · RUN 4"
+      }
+    ],
+    "ms": 3938
+  },
+  {
+    "name": "c7-review-3d",
+    "dest": "video/c7-review-3d/339d69de0bd0fca1342b974d2eb2c37e.webm",
+    "timeline": [
+      {
+        "s": 0.6,
+        "label": "work-face",
+        "text": "FATHOM FATHOM. 今日 $2.01 Work Code 新建对话 筛选对话列表，回车按正文全局搜索 Enter web-a 写 hello-http-work.txt 一… 只做计划：把当前目录里已有的 txt 列成两步… 先列出当前目录的文件名，再用一句话慢慢解释每个… 写 hello-b2-denied.txt 文件 在当前工作目录写 hello-b1.txt，内… 已跳过引导 AGENT CONSOLE FATHOM. 说要做什么，回车就发。 稿件、纪要、问"
+      },
+      {
+        "s": 0.6,
+        "label": "artifacts-fallback",
+        "text": "FATHOM · 产物 FATHOM. 今日 $2.01 Work Code 新建对话 筛选对话列表，回车按正文全局搜索 Enter web-a 写 hello-http-work.txt 一… 只做计划：把当前目录里已有的 txt 列成两步… 先列出当前目录的文件名，再用一句话慢慢解释每个… 写 hello-b2-denied.txt 文件 在当前工作目录写 hello-b1.txt，内… 产物已打开 AGENT CONSOLE FATHOM. 说要做什么，回车就发。 稿件"
+      },
+      {
+        "s": 1.4,
+        "label": "no-review-button",
+        "text": "FATHOM · 产物 FATHOM. 今日 $2.01 Work Code 新建对话 筛选对话列表，回车按正文全局搜索 Enter web-a 写 hello-http-work.txt 一… 只做计划：把当前目录里已有的 txt 列成两步… 先列出当前目录的文件名，再用一句话慢慢解释每个… 写 hello-b2-denied.txt 文件 在当前工作目录写 hello-b1.txt，内… 产物已打开 AGENT CONSOLE FATHOM. 说要做什么，回车就发。 稿件"
+      }
+    ],
+    "ms": 2701
+  },
+  {
+    "name": "c8-board-text",
+    "dest": null,
+    "timeline": [
+      {
+        "s": 0,
+        "label": "board",
+        "text": "FATHOM · 指挥中心 FATHOM. 今日 $2.17 Work Code 新建对话 筛选对话列表，回车按正文全局搜索 Enter web-a 写 hello-http-work.txt 一… 只做计划：把当前目录里已有的 txt 列成两步… 先列出当前目录的文件名，再用一句话慢慢解释每个… 写 hello-b2-denied.txt 文件 在当前工作目录写 hello-b1.txt，内… 已请求停止：只做计划：把当前目录里已有的 txt 列成两步检查清单，每步一句话。不要写文件，不要跑命令。 AGENT CONSOLE FATHOM. 说要做什么，回车就发。 稿件、纪要、问答都可以从这里开始。 现在只能在这个窗口下指令。 输入 @ 可按文件名找这个文件夹里的文件。旧对话用「引用会话」。 文件 文件 ⟩ 先选一个工作目录。 项目 未入项（按目录） ＋ 新建项目… 未入项（按目录） 工"
+      }
+    ],
+    "ms": 0
+  },
+  {
+    "name": "c8-dual",
+    "dest": "video/c8-dual/227effe3ef6c31802947a49be1fd782c.webm",
+    "timeline": [
+      {
+        "s": 0.6,
+        "label": "role-b-board",
+        "text": "FATHOM · 指挥中心 FATHOM. 今日 $2.17 Work Code 新建对话 筛选对话列表，回车按正文全局搜索 Enter web-a 写 hello-http-work.txt 一… 只做计划：把当前目录里已有的 txt 列成两步… 先列出当前目录的文件名，再用一句话慢慢解释每个… 写 hello-b2-denied.txt 文件 在当前工作目录写 hello-b1.txt，内… 已跳过引导 AGENT CONSOLE FATHOM. 说要做什么，回车就发。 "
+      },
+      {
+        "s": 1.5,
+        "label": "role-a-ask-opened-second-tab",
+        "text": "FATHOM · 指挥中心 FATHOM. 今日 $2.17 Work Code 新建对话 筛选对话列表，回车按正文全局搜索 Enter web-a 写 hello-http-work.txt 一… 只做计划：把当前目录里已有的 txt 列成两步… 先列出当前目录的文件名，再用一句话慢慢解释每个… 写 hello-b2-denied.txt 文件 在当前工作目录写 hello-b1.txt，内… 已跳过引导 AGENT CONSOLE FATHOM. 说要做什么，回车就发。 "
+      },
+      {
+        "s": 2.4,
+        "label": "board-clicked-stop",
+        "text": "FATHOM · 指挥中心 FATHOM. 今日 $2.17 Work Code 新建对话 筛选对话列表，回车按正文全局搜索 Enter web-a 写 hello-http-work.txt 一… 只做计划：把当前目录里已有的 txt 列成两步… 先列出当前目录的文件名，再用一句话慢慢解释每个… 写 hello-b2-denied.txt 文件 在当前工作目录写 hello-b1.txt，内… 已请求停止：只做计划：把当前目录里已有的 txt 列成两步检查清单，每步一句话。"
+      }
+    ],
+    "ms": 3637
+  },
+  {
+    "name": "c1b-hidden-tab",
+    "dest": "video/c1b-hidden-tab/50c8ed9bc2652fe2ee9fd76c79b6e88b.webm",
+    "timeline": [
+      {
+        "s": 0.7,
+        "label": "visible",
+        "text": "FATHOM · 产物 FATHOM. 这次约 $0.0003 · 今日 $2.17 Work Code 新建对话 筛选对话列表，回车按正文全局搜索 Enter web-a 写 hello-http-work.txt 一… 只做计划：把当前目录里已有的 txt 列成两步… 先列出当前目录的文件名，再用一句话慢慢解释每个… 写 hello-b2-denied.txt 文件 在当前工作目录写 hello-b1.txt，内… 已跳过引导 FATHOM · RUN 8AEBF6 在当"
+      },
+      {
+        "s": 0.7,
+        "label": "hidden-20s-start",
+        "text": "FATHOM · 产物 FATHOM. 这次约 $0.0003 · 今日 $2.17 Work Code 新建对话 筛选对话列表，回车按正文全局搜索 Enter web-a 写 hello-http-work.txt 一… 只做计划：把当前目录里已有的 txt 列成两步… 先列出当前目录的文件名，再用一句话慢慢解释每个… 写 hello-b2-denied.txt 文件 在当前工作目录写 hello-b1.txt，内… 已跳过引导 FATHOM · RUN 8AEBF6 在当"
+      },
+      {
+        "s": 8.7,
+        "label": "visible-again",
+        "text": "FATHOM · 产物 FATHOM. 这次约 $0.0003 · 今日 $2.17 Work Code 新建对话 筛选对话列表，回车按正文全局搜索 Enter web-a 写 hello-http-work.txt 一… 只做计划：把当前目录里已有的 txt 列成两步… 先列出当前目录的文件名，再用一句话慢慢解释每个… 写 hello-b2-denied.txt 文件 在当前工作目录写 hello-b1.txt，内… 已跳过引导 FATHOM · RUN 8AEBF6 在当"
+      }
+    ],
+    "ms": 11388
+  }
+]

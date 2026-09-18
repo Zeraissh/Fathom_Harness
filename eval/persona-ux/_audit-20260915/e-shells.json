@@ -1,0 +1,56 @@
+{
+  "generatedAt": "2026-09-15T13:40:00.000Z",
+  "web": {
+    "port": 4174,
+    "health": { "status": "ok" },
+    "ready": { "status": "ready", "historyHealthy": true },
+    "workdir": "D:\\Work\\scratch\\fathom-ux-20260915\\web-a",
+    "didNotKill4173": { "listen": true, "owningProcess": 48036 }
+  },
+  "desktop": {
+    "launch": "npm run desktop with AGENT_UI_URL=http://127.0.0.1:4174/",
+    "mainWindowTitle": "FATHOM",
+    "userDataDir": "C:\\Users\\rk302\\AppData\\Roaming\\Agent Harness",
+    "menuFromSource": ["添加工作目录…", "模型与运行设置…"],
+    "menuClickedLive": false,
+    "closeWindow": {
+      "stoppedElectronPid": 9448,
+      "port4174StillListen": true,
+      "owningProcess": 28600,
+      "healthAfterClose": "ok"
+    },
+    "startMenuHits": 0,
+    "desktopShortcutHits": 0,
+    "note": "npm run desktop 开发态无开始菜单快捷方式；NSIS 安装包测试锁写了 FATHOM 快捷方式，本机未装包。"
+  },
+  "cli": {
+    "cwd": "D:\\Work\\scratch\\fathom-ux-20260915\\cli",
+    "helpDocuments": ["--yes", "--plan 非 TTY 退出码 2", "--resume-run", "run --help", "doctor", "不能 --model"],
+    "noYes": {
+      "yesFlag": false,
+      "banner": "permissionMode: 手动 · 危险动作会先问你，不会自动放行 (approval=ask plan=false gate=false yes=false)",
+      "stoppedAt": "write_file hello-cli-noyes.txt",
+      "fileCreated": false
+    },
+    "yes": {
+      "bannerHasYesTrue": true,
+      "autoApproved": true,
+      "file": "hello-yes-banner.txt"
+    },
+    "planNonTty": {
+      "printedPlanTable": true,
+      "s1Title": "列出两个文件并停止",
+      "ttyEditTitleNotExercised": true
+    },
+    "resumeCompleted": {
+      "didNotRestartAsNewTask": true,
+      "printedOriginalTask": true,
+      "exitStop": true
+    },
+    "imTunnel": {
+      "printsOnly": true,
+      "examplePortStill4173": true,
+      "feishuCloudNotTested": true
+    }
+  }
+}
