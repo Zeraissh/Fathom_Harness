@@ -233,10 +233,10 @@ describe("deriveSpendFace 今日 / 本次花费", () => {
       },
     });
     expect(todayUsageOf({ byDay: [{ day: "2026-09-14", runs: 110, usd: 0.71, unpricedRuns: 26 }] }, noon).usd).toBe(0.71);
-    expect(face.todayMoney).toBe("今日 $0.71");
+    expect(face.todayMoney).toBe("本机今日 $0.71");
     expect(face.todayUsed).toBe("今日已用 110 次");
     expect(face.todayLine).toContain("26 未计价");
-    expect(face.chipText).toBe("今日 $0.71");
+    expect(face.chipText).toBe("本机今日 $0.71");
     expect(face.chipTitle).not.toMatch(/还剩|套餐|token/i);
     expect(face.chipTitle).toContain("本机全部工作目录");
     expect(face.chipAria).toBe("本机今日 $0.71（全部工作目录） · 今日已用 110 次 · 26 未计价");
@@ -253,7 +253,7 @@ describe("deriveSpendFace 今日 / 本次花费", () => {
     const empty = deriveSpendFace({ now: noon, usage: { byDay: [] } });
     expect(empty.usageReady).toBe(true);
     expect(empty.todayUsd).toBeNull();
-    expect(empty.todayMoney).toBe("今日还没花费");
+    expect(empty.todayMoney).toBe("本机今日还没花费");
     expect(empty.todayUsed).toBe("今日已用 0 次");
     expect(empty.thisRunText).toBeNull();
     expect(empty.chipAria).toBe("本机今日 还没花费（全部工作目录） · 今日已用 0 次");
@@ -262,7 +262,7 @@ describe("deriveSpendFace 今日 / 本次花费", () => {
       now: noon,
       usage: { byDay: [{ day: "2026-09-14", runs: 3, usd: null, unpricedRuns: 3 }] },
     });
-    expect(unpricedDay.todayMoney).toBe("今日未计价");
+    expect(unpricedDay.todayMoney).toBe("本机今日未计价");
     expect(unpricedDay.todayMoney).not.toBe("$0.00");
 
     expect(formatThisRunSpend({ usd: 0.04 })).toBe("这次 $0.04");
@@ -275,7 +275,7 @@ describe("deriveSpendFace 今日 / 本次花费", () => {
       usage: { byDay: [{ day: "2026-09-14", runs: 1, usd: 0.71, unpricedRuns: 0 }] },
       runCost: { usd: 0.04 },
     });
-    expect(withRun.chipText).toBe("这次 $0.04 · 今日 $0.71");
+    expect(withRun.chipText).toBe("这次 $0.04 · 本机今日 $0.71");
   });
 
   it("宿主断线刷新不把已有台账抹成空", () => {

@@ -117,12 +117,14 @@ export function deriveSpendFace(input = {}) {
     };
   }
   const today = todayUsageOf(input.usage, now);
+  // 可见文字也带「本机」：台账是本机全局的（含其他工作目录/其他 run），
+  // 只说「今日 $X」会让人以为是这一圈的开销（2026-09-18 回走基线 §2.2）。
   const todayMoney =
     today.usd == null
       ? today.runs === 0
-        ? "今日还没花费"
-        : "今日未计价"
-      : `今日 ${formatUsd(today.usd)}`;
+        ? "本机今日还没花费"
+        : "本机今日未计价"
+      : `本机今日 ${formatUsd(today.usd)}`;
   const todayUsed = `今日已用 ${today.runs} 次`;
   const unpriced = today.unpricedRuns ? `${today.unpricedRuns} 未计价` : "";
   const thisRunText = formatThisRunSpend(input.runCost ?? null);
