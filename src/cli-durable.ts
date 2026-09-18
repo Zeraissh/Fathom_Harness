@@ -6,6 +6,7 @@
  */
 import { existsSync, readFileSync } from "node:fs";
 import { mkdir } from "node:fs/promises";
+import { hostname } from "node:os";
 import { join, resolve } from "node:path";
 import {
   canRestorePlanGate,
@@ -13,6 +14,7 @@ import {
   durableBudgetExhausted,
   initialRunState,
   planResumeFacts,
+  recoverDurableStateOnCrash,
   snapshotDurableBudget,
   transitionRunState,
   type DurableBudgetSnapshot,
@@ -29,6 +31,10 @@ import {
 } from "./tool-tx.js";
 import {
   RunHistoryWriter,
+  archiveOwnerLiveness,
+  loadArchivedMetas,
+  pidIsAlive,
+  readArchivedState,
   type ArchivedCheckpoint,
   type ArchivedMeta,
 } from "../ui/history.js";
@@ -636,4 +642,64 @@ export async function ensureCliHistoryRoot(cwd = process.cwd()): Promise<string>
   const root = resolve(cwd, ".agent-run-history");
   await mkdir(root, { recursive: true });
   return root;
+}
+
+/**
+ * 僵尸档案收殓（2026-09-18 走查 F4-B）：硬杀/断电过的 run 在盘上永远
+ * status=running、phase=executing——堆积、且任何直读档案的工具都被骗。
+ * 收殓**只看「可证已死」**：同机 + owner pid 不在（见 archiveOwnerLiveness）。
+ * 并行 CLI 的活档案、他机的共享目录、无章老档案一律不碰（fail-safe：只漏收，
+ * 不误收）。返回被收殓的 runId，调用方决定要不要打印。
+ */
+export async function reconcileCliHistoryRoot(
+  root: string,
+  deps: { host: string; alive: (pid: number) => boolean } = {
+    host: hostname(),
+    alive: pidIsAlive,
+  },
+): Promise<string[]> {
+  const reaped: string[] = [];
+  let metas: Awaited<ReturnType<typeof loadArchivedMetas>>;
+  try {
+    metas = await loadArchivedMetas(root);
+  } catch {
+    return reaped; // 档案目录不可读：不阻断启动
+  }
+  for (const a of metas) {
+    if (a.meta.status !== "running") continue;
+    if (archiveOwnerLiveness(a.meta, deps) !== "self-dead") continue;
+    try {
+      await reapDeadArchive(a.dir, a.meta);
+      reaped.push(a.meta.runId);
+    } catch {
+      // 单条收殓失败不阻断启动；下次启动再来
+    }
+  }
+  return reaped;
+}
+
+/**
+ * 把一条「确死」档案收成终态：state 按 ADR 表迁移、meta 落 done/aborted、
+ * events.jsonl 补一条 run_end——与信号中断（markInterrupted）同形，
+ * 口径是"被中断"，不是"跑完了"。
+ */
+async function reapDeadArchive(dir: string, meta: ArchivedMeta): Promise<void> {
+  const writer = new RunHistoryWriter(dir, () => {});
+  const at = Date.now();
+  const state = await readArchivedState(dir);
+  if (state) writer.writeState(recoverDurableStateOnCrash(state, at));
+  writer.writeMeta({ ...meta, status: "done", finishedAt: at, mainStopReason: "aborted" });
+  writer.appendEvent({
+    seq: nextArchiveEventSeq(dir),
+    source: "host",
+    ts: at,
+    event: {
+      type: "run_end",
+      outcome: "closed",
+      mainStopReason: "aborted",
+      finishedAt: at,
+      host: "cli",
+    },
+  });
+  await writer.flush();
 }

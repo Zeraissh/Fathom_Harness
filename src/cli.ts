@@ -257,6 +257,7 @@ import {
   cliDurableEnabled,
   createCliDurable,
   ensureCliHistoryRoot,
+  reconcileCliHistoryRoot,
   formatCliResumeStop,
   lastExecutorTranscriptMessages,
   prepareCliPlanResume,
@@ -1294,6 +1295,14 @@ async function main(): Promise<void> {
     | undefined;
   const historyRoot =
     resumeRun || cliDurableEnabled() ? await ensureCliHistoryRoot(process.cwd()) : undefined;
+  if (historyRoot) {
+    // F4-B 僵尸收殓：只看"可证已死"（同机+pid 不在）——并行 CLI 的活档案、
+    // 他机共享目录、无章老档案一律不碰。失败静默（收殓是顺手，不是启动门）。
+    const reaped = await reconcileCliHistoryRoot(historyRoot).catch(() => [] as string[]);
+    if (reaped.length > 0) {
+      console.log(c.dim(`已收殓 ${reaped.length} 个僵尸档案（进程已死）：${reaped.join(", ")}`));
+    }
+  }
   if (resumeRun) {
     if (!cliDurableEnabled()) {
       console.error(c.red("--resume-run 需要 durable state（不要设 AGENT_CLI_DURABLE=0）"));

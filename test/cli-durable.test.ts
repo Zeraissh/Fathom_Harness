@@ -1,12 +1,12 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import {
   extractPendingToolUses,
   planMidToolReplay,
 } from "../src/mid-tool-replay.js";
 import { canonicalInputHash, type DurableToolTx } from "../src/tool-tx.js";
 import { mkdtemp, readFile, rm } from "node:fs/promises";
-import { readFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { readFileSync, writeFileSync } from "node:fs";
+import os, { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
@@ -27,10 +27,11 @@ import {
   nextArchiveEventSeq,
   prepareCliPlanResume,
   prepareCliSingleResume,
+  reconcileCliHistoryRoot,
 } from "../src/cli-durable.js";
 import type { TurnEvent } from "../src/types.js";
 import { STOP_REASONS } from "../src/types.js";
-import { loadArchivedMetas } from "../ui/history.js";
+import { archiveOwnerLiveness, loadArchivedMetas } from "../ui/history.js";
 import { durablePlanFromPlan, planNodesFromSubtasks } from "../src/planner.js";
 import { initialRunState, transitionRunState } from "../src/run-state.js";
 import type { Plan } from "../src/planner.js";
@@ -874,5 +875,121 @@ describe("终态口径：markEnded 写真话（U1/H3）", () => {
     expect(cli).toMatch(/cliDurable\?\.markEnded\(plannedStopReason\(outcome\)\)/);
     // 退出码：终态事实来自 ledgerFacts，不许被别的分支静默盖掉
     expect(cli).toMatch(/cliExitCodeForRun\(ledgerFacts\)/);
+  });
+});
+
+/**
+ * 僵尸档案收殓（2026-09-18 走查 F4-B）：被硬杀的 run 在盘上永远 status=running /
+ * phase=executing，堆积无清理，任何直读档案的工具都被骗。修法：档案创建时盖
+ * owner{pid,host} 章（writer 单点）→ 收殓只看"可证已死"：同机 + pid 不在。
+ * **并行 CLI（pid 活）/ 他机（共享目录）/ 老档案（无章）一律不碰**——这正是
+ * 当初设计这一刀时拦下 naive 扫描的原因。
+ */
+describe("僵尸档案收殓（owner 门控）", () => {
+  const OTHER_META_OWNER = { pid: 999999999, host: "some-other-host", startedAt: 1 };
+
+  async function freshRoot(): Promise<string> {
+    const root = await mkdtemp(path.join(tmpdir(), "cli-reap-"));
+    rootDirs.push(root);
+    return root;
+  }
+  const rootDirs: string[] = [];
+  afterEach(async () => {
+    for (const d of rootDirs.splice(0)) await rm(d, { recursive: true, force: true });
+  });
+
+  it("archiveOwnerLiveness：无章=unknown、他机=foreign、同机按 alive 分死活", () => {
+    const me = "test-host";
+    expect(archiveOwnerLiveness({ owner: undefined }, { host: me, alive: () => true })).toBe("unknown");
+    expect(
+      archiveOwnerLiveness({ owner: OTHER_META_OWNER }, { host: me, alive: () => true }),
+    ).toBe("foreign");
+    expect(
+      archiveOwnerLiveness(
+        { owner: { pid: 4242, host: me, startedAt: 1 } },
+        { host: me, alive: () => true },
+      ),
+    ).toBe("self-alive");
+    expect(
+      archiveOwnerLiveness(
+        { owner: { pid: 4242, host: me, startedAt: 1 } },
+        { host: me, alive: () => false },
+      ),
+    ).toBe("self-dead");
+  });
+
+  it("收殓：同机死 pid → state 收成终态、meta 落 done/aborted、run_end 补进事件流", async () => {
+    const root = await freshRoot();
+    const handle = createCliDurable({ runId: "cli-zombie", historyRoot: root });
+    handle.apply({ type: "start" }); // executing
+    await handle.writer.flush();
+    // 伪造"已被硬杀"：owner 换成一个死 pid（同机）
+    const metaPath = path.join(root, "cli-zombie", "meta.json");
+    const meta = JSON.parse(readFileSync(metaPath, "utf8")) as Record<string, unknown>;
+    meta.owner = { pid: 4242, host: os.hostname(), startedAt: meta.createdAt };
+    writeFileSync(metaPath, JSON.stringify(meta), "utf8");
+
+    const reaped = await reconcileCliHistoryRoot(root, { host: os.hostname(), alive: () => false });
+    expect(reaped).toEqual(["cli-zombie"]);
+
+    const after = JSON.parse(readFileSync(metaPath, "utf8")) as Record<string, unknown>;
+    expect(after.status).toBe("done");
+    expect(after.mainStopReason).toBe("aborted");
+    expect(typeof after.finishedAt).toBe("number");
+    const state = JSON.parse(
+      readFileSync(path.join(root, "cli-zombie", "state.json"), "utf8"),
+    ) as { phase: string };
+    expect(state.phase).toBe("interrupted");
+    const ends = readFileSync(path.join(root, "cli-zombie", "events.jsonl"), "utf8")
+      .trim()
+      .split("\n")
+      .map((l) => (JSON.parse(l) as { event: { type: string; outcome?: string; mainStopReason?: string } }).event)
+      .filter((e) => e.type === "run_end");
+    expect(ends.some((e) => e.outcome === "closed" && e.mainStopReason === "aborted")).toBe(true);
+  });
+
+  it("不碰：活 owner（并行 CLI）/ 他机 owner / 无章老档案 / 已终态", async () => {
+    const root = await freshRoot();
+    const mk = async (runId: string, status: string) => {
+      const h = createCliDurable({ runId, historyRoot: root });
+      h.apply({ type: "start" });
+      await h.writer.flush();
+      if (status === "done") {
+        h.markEnded("completed");
+        await h.writer.flush();
+      }
+      return path.join(root, runId, "meta.json");
+    };
+    const setOwner = (p: string, owner: unknown | null) => {
+      const m = JSON.parse(readFileSync(p, "utf8")) as Record<string, unknown>;
+      if (owner === null) delete m.owner;
+      else m.owner = owner;
+      writeFileSync(p, JSON.stringify(m), "utf8");
+    };
+    const alivePath = await mk("cli-live", "running");
+    setOwner(alivePath, { pid: process.pid, host: os.hostname(), startedAt: Date.now() });
+    const foreignPath = await mk("cli-foreign", "running");
+    setOwner(foreignPath, OTHER_META_OWNER);
+    const legacyPath = await mk("cli-legacy", "running");
+    setOwner(legacyPath, null);
+    const donePath = await mk("cli-done", "done");
+    setOwner(donePath, { pid: process.pid, host: os.hostname(), startedAt: Date.now() });
+
+    const reaped = await reconcileCliHistoryRoot(root, { host: os.hostname(), alive: () => true });
+    expect(reaped).toEqual([]);
+    for (const p of [alivePath, foreignPath, legacyPath]) {
+      const m = JSON.parse(readFileSync(p, "utf8")) as { status: string };
+      expect(m.status, p).toBe("running");
+    }
+    expect((JSON.parse(readFileSync(donePath, "utf8")) as { status: string }).status).toBe("done");
+  });
+
+  it("接线锁：writer 单点盖章 + CLI 启动收殓 + server 收殓前查 owner", () => {
+    const hist = readFileSync(path.join(__dirname, "..", "ui", "history.ts"), "utf8");
+    expect(hist).toMatch(/status === "running"[\s\S]{0,120}?owner/);
+    const cli = readFileSync(path.join(__dirname, "..", "src", "cli.ts"), "utf8");
+    expect(cli).toMatch(/reconcileCliHistoryRoot\(/);
+    const server = readFileSync(path.join(__dirname, "..", "ui", "server.ts"), "utf8");
+    expect(server).toMatch(/archiveOwnerLiveness\(/);
   });
 });

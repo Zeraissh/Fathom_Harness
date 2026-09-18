@@ -8,7 +8,7 @@ import { spawn, execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { existsSync, readFileSync } from "node:fs";
 import { join, extname, dirname, delimiter, resolve, basename, relative, sep, isAbsolute } from "node:path";
-import { homedir } from "node:os";
+import { homedir, hostname } from "node:os";
 import { fileURLToPath } from "node:url";
 import { createHash, randomUUID, timingSafeEqual } from "node:crypto";
 import { AsyncLocalStorage } from "node:async_hooks";
@@ -432,6 +432,8 @@ import {
   readArchivedState,
   readArchivedTranscript,
   readArchivedTrace,
+  archiveOwnerLiveness,
+  pidIsAlive,
   type ArchivedApprovalGrant,
   type ArchivedCheckpoint,
   type ArchivedMeta,
@@ -470,6 +472,7 @@ import {
   canSameRunResume,
   initialRunState,
   planResumeFacts,
+  recoverDurableStateOnCrash,
   recoveryActionForPhase,
   transitionRunState,
   type DurableBudgetSnapshot,
@@ -1813,26 +1816,11 @@ export function planNodesFromOutcome(input: {
  * Phase 2：executing→interrupted 后，若有 checkpoint 可由 canSameRunResume
  * 在同 runId 续跑；本函数只负责相迁移，不执行续跑。
  * 返回应用后的 state（调用方落盘）；只读相原样返回。
+ *
+ * 2026-09-18（僵尸收殓刀）：实现迁去 src/run-state.ts——CLI 收殓器与这里共用
+ * 同一张表；此处 re-export，既有导入面（测试/其它模块）不变。
  */
-export function recoverDurableStateOnCrash(
-  state: DurableRunState,
-  at = Date.now(),
-): DurableRunState {
-  const action = recoveryActionForPhase(state.phase);
-  if (action === "readonly" || action === "restore_gate") return state;
-  if (action === "close_archive") {
-    return transitionRunState(state, { type: "close" }, at) ?? { ...state, phase: "closed", updatedAt: at };
-  }
-  return (
-    transitionRunState(state, { type: "interrupt" }, at) ?? {
-      ...state,
-      phase: "interrupted",
-      updatedAt: at,
-      pendingApprovalIds: [],
-      pendingQuestionIds: [],
-    }
-  );
-}
+export { recoverDurableStateOnCrash } from "../src/run-state.js";
 
 export interface UiServerHandle {
   server: Server;
@@ -3992,6 +3980,11 @@ export function createUiServer(options: UiServerOptions = {}): UiServerHandle {
       for (const a of await loadArchivedMetas(historyRoot)) {
         if (runs.has(a.meta.runId)) continue;
         const crashed = a.meta.status === "running";
+        // F4-B 门控（僵尸收殓刀）：owner 章说它**还活着**（同机 pid 在）→ 不动盘上
+        // 状态——那是并行 CLI 的活档案（共享根目录时会发生）。他机/无章保持既有行为。
+        const ownerLive =
+          archiveOwnerLiveness(a.meta, { host: hostname(), alive: pidIsAlive }) === "self-alive";
+        const treatAsCrashed = crashed && !ownerLive;
         const parsedCheckpoint = checkpointFromUnknown(a.meta.checkpoint);
         // checkpoint 中夹入其它 run 的 grant 只能作为篡改/复制痕迹丢弃；预算与正史仍可恢复。
         const archivedApprovalGrantAudit = parsedCheckpoint?.approvalGrants
@@ -4007,7 +4000,7 @@ export function createUiServer(options: UiServerOptions = {}): UiServerHandle {
           : undefined;
         // RUN-01：读 state.json；崩溃相按 ADR 表收成 closed/interrupted 并回写。
         let durableState = await readArchivedState(a.dir);
-        if (durableState && crashed) {
+        if (durableState && treatAsCrashed) {
           let recovered = recoverDurableStateOnCrash(durableState);
           // meta 说在跑、盘上 state 却已是终态：新一轮的 reopen 还没落盘就崩了（meta 先写、
           // 先到）。按 meta 走——它是"当时在跑"的事实源；有检查点就能同 run 热恢复。
@@ -4033,7 +4026,7 @@ export function createUiServer(options: UiServerOptions = {}): UiServerHandle {
           } else {
             durableState = recovered;
           }
-        } else if (!durableState && crashed) {
+        } else if (!durableState && treatAsCrashed) {
           // 旧档案无 state.json：合成 interrupted，仍不冒充在跑
           durableState = recoverDurableStateOnCrash(initialRunState(a.meta.runId, a.meta.createdAt));
         }

@@ -517,3 +517,30 @@ export function parseToolTxList(raw: unknown): DurableToolTx[] | null {
   }
   return out;
 }
+
+/**
+ * 崩溃档案的收口（ADR 表）：crash 相 → interrupted，gate 相 → closed；
+ * 只读相与 plan_gated（restore_gate）原样返回。
+ *
+ * 2026-09-18 从 ui/server.ts 迁来（僵尸收殓刀）：CLI 收殓器与 Web 启动恢复
+ * 共用同一张表，不允许两处各写一份。Web 侧原样 re-export，导入面不变。
+ */
+export function recoverDurableStateOnCrash(
+  state: DurableRunState,
+  at = Date.now(),
+): DurableRunState {
+  const action = recoveryActionForPhase(state.phase);
+  if (action === "readonly" || action === "restore_gate") return state;
+  if (action === "close_archive") {
+    return transitionRunState(state, { type: "close" }, at) ?? { ...state, phase: "closed", updatedAt: at };
+  }
+  return (
+    transitionRunState(state, { type: "interrupt" }, at) ?? {
+      ...state,
+      phase: "interrupted",
+      updatedAt: at,
+      pendingApprovalIds: [],
+      pendingQuestionIds: [],
+    }
+  );
+}
