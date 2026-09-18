@@ -211,6 +211,18 @@ Image-lazy discipline:
 - For many images, extract with repeated summaries or structured text. Do not view_image a batch.
 - Use detail=full or view_image only when the question is about pixels, contrast, or layout. view_image is only on the tool surface when the executor can see images; uploading a file never describes it automatically.`;
 
+/**
+ * 视觉优先（2026-09-18 走查纲领，委托方原话）：「能图形化来解释的事情绝不
+ * 用语言文字生硬描述——统计图、函数图像、演示，可以用 Canvas 画布生成来作」。
+ * 产物 = 自包含 HTML 写进工作目录，宿主画布就地渲染；无法成图时才退化文字。
+ */
+export const VISUAL_FIRST_DISCIPLINE = `
+
+Visual-first discipline:
+- When the substance is inherently visual — statistics, distributions, trends, comparisons, function plots, flows, or a demo — produce a self-contained HTML artifact (inline CSS/SVG/canvas and inline data; no external requests) and say which file it is. The host renders it beside the chat, so do not re-describe the numbers in long prose.
+- Keep it honest: if the data is too thin for a chart, say so in one line instead of drawing a decorative one.
+- In pure-terminal or otherwise unrenderable contexts, fall back to a compact text summary.`;
+
 /** 默认宿主（无领域包）与咨询包共用：先分清对话/任务，再谈口径、出处与进度。 */
 export const DEFAULT_HOST_DISCIPLINES =
   CONVERSATION_DISCIPLINE +
@@ -218,7 +230,8 @@ export const DEFAULT_HOST_DISCIPLINES =
   GROUNDED_CONSULTATION_DISCIPLINE +
   PRESENTATION_DISCIPLINE +
   PROGRESS_DISCIPLINE +
-  IMAGE_LAZY_DISCIPLINE;
+  IMAGE_LAZY_DISCIPLINE +
+  VISUAL_FIRST_DISCIPLINE;
 
 const CONSULT_SYSTEM = `你是有据可查的技术咨询 agent：回答标准、校准、选型、原理与操作步骤时，以本轮工具取到的一手资料为准。
 

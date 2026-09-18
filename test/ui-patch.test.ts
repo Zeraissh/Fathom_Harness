@@ -5752,6 +5752,30 @@ describe("展开/隐藏批（UX-B4）", () => {
     expect(card()?.open, "重建把用户收起的卡弹开了").toBe(false);
   });
 
+  /** G2 · Progress 图形化（2026-09-18 走查纲领）：摘要行给 done/total 进度条。 */
+  it("G2：Progress 摘要带进度条与 done/total——逐条清单仍保留", () => {
+    let s = createInitialState("run-pb", "任务", true);
+    s = reduceEvents(s, [
+      sse(0, "main", "turn_start", { turn: 1 }),
+      sse(1, "main", "progress", {
+        items: [
+          { id: "1", title: "a", status: "done" },
+          { id: "2", title: "b", status: "done" },
+          { id: "3", title: "c", status: "running" },
+          { id: "4", title: "d", status: "pending" },
+        ],
+      }),
+    ]);
+    renderRunDetail(s, { activeTab: "loop" });
+    const summary = document.querySelector(".progress-card-summary")!;
+    expect(summary.textContent).toContain("Progress");
+    expect(summary.textContent).toContain("2/4");
+    const fill = summary.querySelector(".progress-bar-fill")!;
+    expect(fill).toBeTruthy();
+    expect(fill.getAttribute("style")).toContain("--fill:50%");
+    expect(document.querySelectorAll(".progress-item")).toHaveLength(4);
+  });
+
   it("E15：会话项目分组标题键盘可达（真按钮 + aria-expanded + 点击切换）", () => {
     const toggled = [];
     const runs = [

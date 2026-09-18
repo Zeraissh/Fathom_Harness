@@ -323,3 +323,51 @@ describe("deriveSpendFace 今日 / 本次花费", () => {
     expect(html).toContain("本机今日花费（全部工作目录）还在加载");
   });
 });
+
+/**
+ * G3 · 消耗图形化（2026-09-18 走查纲领）：图表加「轮次 | 成本」视角——
+ * 数据里的 usd/unpricedRuns 一直在，只是没画；未计价绝不画成 $0（既有脚注口径）。
+ */
+describe("G3 · 消耗图表：轮次/成本 视角", () => {
+  let host;
+  beforeEach(() => {
+    document.body.innerHTML = "";
+    host = document.createElement("div");
+    document.body.appendChild(host);
+  });
+  const boot = () => {
+    const api = initUsageView(host, {
+      fetchUsage: async () => SAMPLE,
+      onClose: vi.fn(),
+      now: () => NOW,
+    });
+    api.open();
+    return api;
+  };
+
+  it("切换钮在；默认轮次口径不动（副标题保持原文案）", async () => {
+    const api = boot();
+    await Promise.resolve();
+    const btns = [...api.el.querySelectorAll("[data-metric]")];
+    expect(btns.map((b) => b.getAttribute("data-metric"))).toEqual(["turns", "usd"]);
+    expect(api.el.querySelector("#usage-chart-sub")?.textContent).toBe("按模型堆叠，近 7 天");
+  });
+
+  it("切到成本：副标题改口、轴换金额；纯未计价的一天不画成 $0、aria 直说未计价", async () => {
+    const api = boot();
+    await Promise.resolve();
+    // NOW=09-09：09-02 只在 30d 窗口里（既有口径），先切区间再切视角
+    api.el.querySelector('[data-days="30"]').click();
+    api.el.querySelector('[data-metric="usd"]').click();
+    await Promise.resolve();
+    expect(api.el.querySelector("#usage-chart-sub")?.textContent).toContain("成本");
+    expect(api.el.querySelector(".usage-y")?.textContent).toContain("$");
+    expect(api.el.querySelectorAll(".usage-col"), "切到成本后柱子不该消失").toHaveLength(30);
+    // 2026-09-02 当天只有未计价运行（usd=null）：成本视角不冒充金额
+    const unpriced = api.el.querySelector('.usage-col[data-day="2026-09-02"]');
+    expect(unpriced?.getAttribute("aria-label") ?? "").toContain("未计价");
+    // 有价的那天给出金额口径
+    const priced = api.el.querySelector('.usage-col[data-day="2026-09-07"]');
+    expect(priced?.getAttribute("aria-label") ?? "").toMatch(/成本 \$/);
+  });
+});

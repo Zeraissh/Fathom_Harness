@@ -4165,6 +4165,31 @@ body.sidebar-collapsed .sidebar {
   outline: 2px solid var(--focus);
   outline-offset: 1px;
 }
+/* G3 · 视角切换（轮次|成本）：文本钮，与图标钮同族的安静风格 */
+.usage-metric-toggle {
+  display: inline-flex;
+  gap: 2px;
+  align-items: center;
+}
+.usage-metric-btn {
+  height: 28px;
+  padding: 0 10px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-3);
+  font-size: var(--font-sm);
+  cursor: pointer;
+}
+.usage-metric-btn:hover { color: var(--text-1); }
+.usage-metric-btn[aria-pressed="true"] {
+  background: var(--surface-2);
+  color: var(--text-1);
+}
+.usage-metric-btn:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
 .usage-legend {
   display: flex;
   flex-wrap: wrap;
@@ -6635,6 +6660,31 @@ body.sidebar-collapsed .sidebar {
   font-weight: 400;
 }
 .progress-card:not([open]) .progress-card-summary::after { content: "▸"; }
+
+/* G2 · 视觉优先（走查纲领）：摘要行的 done/total 与细进度条（逐条清单仍在下面） */
+.progress-count {
+  margin-left: 8px;
+  color: var(--text-2);
+  font-weight: 500;
+  font-size: var(--font-sm);
+}
+.progress-bar {
+  display: inline-flex;
+  vertical-align: middle;
+  width: 84px;
+  height: 6px;
+  margin-left: 8px;
+  border-radius: 999px;
+  background: var(--border-2);
+  overflow: hidden;
+}
+.progress-bar-fill {
+  --fill: 0%; /* 定义在这：行内 style 覆盖它（CSS 变量 lint 要求引用必有定义） */
+  width: var(--fill, 0%);
+  background: var(--accent);
+  border-radius: 999px;
+  transition: width 0.2s ease;
+}
 .progress-list {
   list-style: none;
   margin: 0;

@@ -7868,9 +7868,21 @@ function patchProgressPanel(parts, progress, extras) {
   }
   setAttr(host, "hidden", null);
 
+  // G2 · 视觉优先（走查纲领）：摘要行给一眼可见的进度——数字 + 一条细条；
+  // 逐条清单照旧在下面（图形是入口，细节仍是文字）。
+  const pbItems = Array.isArray(progress.items) ? progress.items : [];
+  const pbResolved = pbItems.filter((it) => it.status === "done" || it.status === "skipped").length;
+  const pbTotal = pbItems.length;
+  const pbPct = pbTotal > 0 ? Math.round((pbResolved / pbTotal) * 100) : 0;
+
   let html =
     '<details class="progress-card" open>' +
-    '<summary class="progress-card-summary">Progress</summary>';
+    '<summary class="progress-card-summary"><span class="progress-summary-text">Progress</span>' +
+    (pbTotal > 0
+      ? `<span class="progress-count">${pbResolved}/${pbTotal}</span>` +
+        `<span class="progress-bar" aria-hidden="true"><span class="progress-bar-fill" style="--fill:${pbPct}%"></span></span>`
+      : "") +
+    "</summary>";
 
   if (progress.items && progress.items.length > 0) {
     html += '<ul class="progress-list" role="list">';

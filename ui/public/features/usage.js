@@ -399,6 +399,12 @@ export function attachUsagePanel(container, env = {}) {
     '<i class="ph ph-chart-bar" aria-hidden="true"></i></button>' +
     '<button type="button" class="usage-view-btn" data-view="table" aria-pressed="false" aria-label="表格">' +
     '<i class="ph ph-table" aria-hidden="true"></i></button>' +
+    "</div>" +
+    // G3 · 视觉优先（走查纲领）：数据里的 usd/unpricedRuns 一直在，只是没画。
+    // 轮次看量、成本看钱——同一份堆叠换高的口径（未计价绝不画成 $0，见脚注）。
+    '<div class="usage-metric-toggle" role="group" aria-label="视角">' +
+    '<button type="button" class="usage-metric-btn" data-metric="turns" aria-pressed="true">轮次</button>' +
+    '<button type="button" class="usage-metric-btn" data-metric="usd" aria-pressed="false">成本</button>' +
     "</div></header>" +
     `<div class="usage-legend" id="${prefix}-legend"></div>` +
     `<div class="usage-plot" id="${prefix}-plot"></div>` +
@@ -411,6 +417,7 @@ export function attachUsagePanel(container, env = {}) {
   let report = parseUsageReport(null);
   let periodDays = 7;
   let viewMode = "chart";
+  let metric = "turns"; // G3：轮次 | 成本（同一份堆叠，换的是高的口径）
 
   root.querySelector(".usage-period")?.addEventListener("click", (ev) => {
     const btn = ev.target instanceof Element ? ev.target.closest("[data-days]") : null;
@@ -430,6 +437,15 @@ export function attachUsagePanel(container, env = {}) {
     paint();
   });
 
+  root.querySelector(".usage-metric-toggle")?.addEventListener("click", (ev) => {
+    const btn = ev.target instanceof Element ? ev.target.closest("[data-metric]") : null;
+    if (!btn) return;
+    const next = btn.getAttribute("data-metric") === "usd" ? "usd" : "turns";
+    if (next === metric) return;
+    metric = next;
+    paint();
+  });
+
   function nowMs() {
     return typeof env.now === "function" ? Number(env.now()) : Date.now();
   }
@@ -442,11 +458,14 @@ export function attachUsagePanel(container, env = {}) {
     for (const btn of root.querySelectorAll(".usage-view-btn")) {
       btn.setAttribute("aria-pressed", String(btn.getAttribute("data-view") === viewMode));
     }
+    for (const btn of root.querySelectorAll(".usage-metric-btn")) {
+      btn.setAttribute("aria-pressed", String(btn.getAttribute("data-metric") === metric));
+    }
     const sub = root.querySelector(`#${prefix}-chart-sub`);
-    if (sub) sub.textContent = `按模型堆叠，近 ${periodDays} 天`;
+    if (sub) sub.textContent = `按模型堆叠，近 ${periodDays} 天${metric === "usd" ? "（成本）" : ""}`;
     renderCards(root.querySelector(`#${prefix}-cards`), win);
     renderLegend(root.querySelector(`#${prefix}-legend`), win);
-    renderPlot(root.querySelector(`#${prefix}-plot`), win);
+    renderPlot(root.querySelector(`#${prefix}-plot`), win, metric);
     renderTable(root.querySelector(`#${prefix}-table-wrap`), win);
     const plot = root.querySelector(`#${prefix}-plot`);
     const table = root.querySelector(`#${prefix}-table-wrap`);
@@ -540,9 +559,14 @@ function renderLegend(el, win) {
     .join("");
 }
 
-function renderPlot(el, win) {
+function renderPlot(el, win, metric = "turns") {
   if (!el) return;
-  const axisMax = niceAxisMax(Math.max(0, ...win.columns.map((c) => c.turns)));
+  // G3（走查纲领）：轮次看量、成本看钱——同一份堆叠换高与轴的口径。
+  // 未计价（usd=null）在成本视角按 0 高画，但 aria/tooltip 写明「未计价」，
+  // 绝不把没报价画成 $0（既有脚注口径）。
+  const metricVal = (b) => (metric === "usd" ? (typeof b.usd === "number" ? b.usd : 0) : b.turns);
+  const metricFmt = (n) => (metric === "usd" ? formatUsd(n) : formatCompactCount(n));
+  const axisMax = niceAxisMax(Math.max(0, ...win.columns.map((c) => metricVal(c))));
   // 量的是上次渲染留下的列区（首次没有就退整块宽度）——y 轴那截 24px 会高估
   // 列宽，但 58px 的全日期宽度本就保守，少一枚标签好过互相压字。
   const measured = el.querySelector(".usage-cols")?.clientWidth || el.clientWidth;
@@ -551,20 +575,31 @@ function renderPlot(el, win) {
   const dayLabel = plan.form === "full" ? formatChartDay : formatChartDayShort;
   const ticks = [axisMax, axisMax / 2, 0];
   const yHtml = ticks
-    .map((t) => `<span>${escapeHtml(formatCompactCount(t))}</span>`)
+    .map((t) => `<span>${escapeHtml(metricFmt(t))}</span>`)
     .join("");
   const colsHtml = win.columns
     .map((col, index) => {
-      const heightPct = axisMax > 0 ? Math.min(100, (col.turns / axisMax) * 100) : 0;
+      const heightPct = axisMax > 0 ? Math.min(100, (metricVal(col) / axisMax) * 100) : 0;
       const segs = col.parts
         .map((part, i) => {
-          if (!part.turns) return "";
-          const grow = part.turns;
+          const grow = metricVal(part);
+          if (!grow) return "";
           return `<span class="usage-seg" data-series="${i}" style="flex-grow:${grow}"></span>`;
         })
         .join("");
       const showLabel = index === 0 || index === win.columns.length - 1 || index % step === 0;
-      const aria = `${formatChartDayFull(col.day)}，${col.turns} 轮，${col.runs} 次运行`;
+      const aria =
+        metric === "usd"
+          ? `${formatChartDayFull(col.day)}，${
+              col.runs === 0
+                ? "没有运行"
+                : col.usd == null
+                  ? `未计价，${col.runs} 次运行`
+                  : `成本 ${metricFmt(col.usd)}，${col.runs} 次运行${
+                      col.unpricedRuns ? `（另有 ${col.unpricedRuns} 次未计价）` : ""
+                    }`
+            }`
+          : `${formatChartDayFull(col.day)}，${col.turns} 轮，${col.runs} 次运行`;
       return (
         `<button type="button" class="usage-col" data-day="${escapeHtml(col.day)}" aria-label="${escapeHtml(aria)}">` +
         `<span class="usage-col-track"><span class="usage-col-stack" style="height:${heightPct}%">${segs}</span></span>` +
@@ -575,9 +610,17 @@ function renderPlot(el, win) {
               .filter((p) => p.turns || p.runs)
               .map((p, i) => {
                 const series = win.series.findIndex((s) => s.model === p.model);
+                const valueText =
+                  metric === "usd"
+                    ? p.usd == null
+                      ? "未计价"
+                      : `${escapeHtml(metricFmt(p.usd))}${
+                          p.unpricedRuns ? `（另有 ${p.unpricedRuns} 次未计价）` : ""
+                        }`
+                    : escapeHtml(metricFmt(p.turns));
                 return (
                   `<span class="usage-tip-row"><i class="usage-swatch" data-series="${series < 0 ? i : series}" aria-hidden="true"></i>` +
-                  `${escapeHtml(displayModelName(p.model))} <b>${escapeHtml(formatCompactCount(p.turns))}</b></span>`
+                  `${escapeHtml(displayModelName(p.model))} <b>${valueText}</b></span>`
                 );
               })
               .join("")
@@ -621,7 +664,7 @@ function renderPlot(el, win) {
         const nowW = el.querySelector(".usage-cols")?.clientWidth || el.clientWidth;
         if (Math.abs(nowW - (el.__usagePlotLastW ?? 0)) < 8) return;
         el.__usagePlotLastW = nowW;
-        renderPlot(el, el.__usagePlotWin ?? win);
+        renderPlot(el, el.__usagePlotWin ?? win, metric);
       });
       el.__usagePlotRO.observe(el);
     } else {
