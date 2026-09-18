@@ -11,7 +11,7 @@ export const ONBOARDING_STEPS = [
   {
     id: "composer",
     title: "打一句话，回车",
-    body: "在输入框里写下要做的事，按 Enter 发送。Shift+Enter 换行。下面的例子只填进输入框，由你确认后再跑。",
+    body: "在输入框里写下要做的事，按 Enter 发送。Shift+Enter 换行。",
     target: "#task-input",
   },
   {

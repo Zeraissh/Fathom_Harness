@@ -4181,8 +4181,9 @@ describe("空态给的是能点的例子", () => {
     paintWelcome({ hasRuns: true });
     expect(document.querySelectorAll("[data-example]").length).toBe(3);
     expect(document.querySelector(".empty-brand")!.textContent).toMatch(/FATHOM/);
-    expect(document.querySelector(".empty-tagline")!.textContent).toContain("说要做什么");
-    expect(document.querySelector(".empty-tagline-cn")!.textContent).toContain("稿件");
+    // 二轮走查：欢迎面只留标识与输入框（说明书式文案全撤）
+    expect(document.querySelector(".empty-state--welcome .empty-tagline")).toBeNull();
+    expect(document.querySelector(".empty-state--welcome .empty-window-note")).toBeNull();
   });
 
   it("空态不再放工作目录/引导入口——composer 与设置里已有", () => {
@@ -4211,23 +4212,19 @@ describe("空态给的是能点的例子", () => {
     expect(byPrompt(/做一页介绍/)?.hasAttribute("data-starter-design")).toBe(true);
     expect(byPrompt(/每个要点都带来源/)?.hasAttribute("data-starter-design")).toBe(false);
     expect(document.querySelector(".empty-state--design")).toBeNull();
-    expect(document.querySelector(".empty-tagline")?.textContent).toContain("说要做什么");
-    expect(document.querySelector(".empty-window-note")?.textContent).toContain("现在只能在这个窗口下指令");
+    // 二轮走查：欢迎面文案全撤（两个脸一致）——标识 + 输入框，其余交给引导
+    expect(document.querySelector(".empty-tagline")).toBeNull();
+    expect(document.querySelector(".empty-window-note")).toBeNull();
     const html = readFileSync(join(UI_DIR, "index.html"), "utf-8");
     expect(html).toMatch(/designModeActive:\s*officeCatalogOpen/);
   });
 
-  it("空态有下一步建议，且是可点的按钮", () => {
+  it("空态不再画下一步建议（二轮走查：欢迎面只留标识与输入框；建议只属于对话态）", () => {
     paintWelcome({ workdir: "D:/proj" });
-    const chips = [...document.querySelectorAll(".empty-state [data-next-id]")];
-    expect(chips.length).toBeGreaterThanOrEqual(3);
-    expect(chips.length).toBeLessThanOrEqual(NEXT_ACTION_LIMIT);
-    expect(chips.every((el) => el.tagName === "BUTTON")).toBe(true);
-    const ids = chips.map((el) => el.getAttribute("data-next-id"));
-    expect(ids).toEqual(expect.arrayContaining(["plan", "mention", "files", "schedule"]));
-    const text = document.querySelector(".empty-state .next-actions")?.textContent ?? "";
-    expect(text).toContain("下一步");
-    expect(text).not.toMatch(/\/api\/|HTTP|describe_image|view_image|AGENT_|领域包/);
+    expect(document.querySelector(".empty-state [data-next-id]")).toBeNull();
+    expect(document.querySelector(".empty-state .next-actions")).toBeNull();
+    // 函数层仍为对话后场景服务（见「刚结束的对话露出下一步」）
+    expect(suggestNextActions({ surface: "empty", workdir: "D:/proj" }).length).toBeGreaterThanOrEqual(3);
   });
 
   it("设计目录打开时不画下一步芯片", () => {
@@ -5527,7 +5524,7 @@ describe("deriveScopeSummary：上排控件的一行摘要", () => {
   it("项目/目录/模型各留名字；「环境变量 ·」前缀剥掉；默认项跳过", () => {
     expect(deriveScopeSummary({ project: "看板", workdir: "web-a", model: "环境变量 · deepseek-flash" }))
       .toBe("看板 · web-a · deepseek-flash");
-    expect(deriveScopeSummary({ project: "未入项（按目录）", workdir: "web-a", model: "deepseek-flash" }))
+    expect(deriveScopeSummary({ project: "创建项目", workdir: "web-a", model: "deepseek-flash" }))
       .toBe("web-a · deepseek-flash");
     expect(deriveScopeSummary({ workdir: "选择目录", model: "加载中" })).toBe("选项目、目录与模型");
     expect(deriveScopeSummary({})).toBe("选项目、目录与模型");

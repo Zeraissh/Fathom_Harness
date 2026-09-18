@@ -647,16 +647,17 @@ describe("reduceEvent", () => {
   });
 
   // ---- 14. 空态文案 ----
-  it("14. 空态文案: 欢迎面去说明书，模板进 starter gallery", () => {
+  it("14. 空态文案: 欢迎面只留标识与输入框（二轮走查：说明书式文案全撤）", () => {
     const appPath = join(__dirname, "..", "ui", "public", "app.js");
     const appSrc = readFileSync(appPath, "utf-8");
 
     expect(appSrc).toContain("empty-brand");
     expect(appSrc).toContain('class="empty-brand">FATHOM');
-    expect(appSrc).toContain("说要做什么，回车就发。");
-    expect(appSrc).toContain("稿件、纪要、问答都可以从这里开始。");
-    expect(appSrc).toContain("现在只能在这个窗口下指令。");
-    expect(appSrc).toContain("输入 @ 可按文件名找这个文件夹里的文件。");
+    // 2026-09-18 夜委托方点名：红框内容（四行说明 + 下一步 chip 排）全去
+    expect(appSrc).not.toContain("说要做什么，回车就发。");
+    expect(appSrc).not.toContain("稿件、纪要、问答都可以从这里开始。");
+    expect(appSrc).not.toContain("现在只能在这个窗口下指令。");
+    expect(appSrc).not.toContain("输入 @ 可按文件名找这个文件夹里的文件。");
     expect(appSrc).not.toContain("see every run to the bottom.");
     expect(appSrc).not.toContain("每一层都看得见。");
     expect(appSrc).not.toContain("尚无运行。提交一个任务开始。");
@@ -664,6 +665,11 @@ describe("reduceEvent", () => {
     expect(appSrc).not.toContain("设计模板 · 开会话时选");
     expect(appSrc).toContain("DESIGN_STARTER_TEMPLATES");
     expect(appSrc).toContain("renderStarterGallery");
+    // 欢迎面不再渲染下一步 chip（函数仍在，服务对话后场景）
+    expect(appSrc).toMatch(/export function renderEmptyState[\s\S]{0,1400}?\n\}/);
+    const welcomeBody = appSrc.slice(appSrc.indexOf("export function renderEmptyState"));
+    const bodyEnd = welcomeBody.indexOf("\n}");
+    expect(welcomeBody.slice(0, bodyEnd)).not.toContain("renderNextActionChips");
   });
 
   it("14b. FATHOM 眉标：去连字符后取前 6 位大写", () => {

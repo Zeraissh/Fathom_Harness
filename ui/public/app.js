@@ -2839,7 +2839,7 @@ export function deriveScopeSummary(parts = {}) {
   // 模型胶囊的形状是「环境变量 · <模型名>」；摘要里只留名字
   const model = clean(parts.model).replace(/^环境变量\s*·\s*/, "");
   const items = [
-    project && project !== "未入项（按目录）" ? project : "",
+    project && project !== "创建项目" ? project : "",
     clean(parts.workdir) !== "选择目录" ? clean(parts.workdir) : "",
     model && model !== "加载中" && model !== "—" ? model : "",
   ].filter(Boolean);
@@ -11013,22 +11013,17 @@ export function isDesignTemplatePrompt(text) {
 }
 
 /**
- * 新建对话空态：FATHOM hero（徽记 + 字标 + 主标语）。
+ * 新建对话空态：FATHOM hero（徽记 + 字标）。
  * 模板与示例在 #starter-gallery（提交栏下方），由 renderStarterGallery 单独画。
+ *
+ * 二轮走查（2026-09-18 夜，委托方点名）：说明书式文案（"说要做什么，回车就发"/
+ * "现在只能在这个窗口下指令"/"输入 @ ……"）与「下一步」chip 排全部撤掉——
+ * 欢迎页只留标识与输入框，像 Cowork 一样干净。文案能教的，引导（onboarding）会教。
  */
 export function renderEmptyState(_hasRuns, _opts = {}) {
   const mainEl = document.getElementById("main-area");
   if (!mainEl) return;
   const designClass = _opts.designModeActive ? " empty-state--design" : "";
-  const nextHtml = _opts.designModeActive
-    ? ""
-    : renderNextActionChips(suggestNextActions({
-        surface: "empty",
-        workdir: _opts.workdir,
-        harness: _opts.harness,
-        im: _opts.im,
-        githubPr: _opts.githubPr,
-      }));
   mainEl.innerHTML =
     `<div class="empty-state empty-state--welcome${designClass}">` +
     '<p class="empty-eyebrow">Agent Console</p>' +
@@ -11043,11 +11038,6 @@ export function renderEmptyState(_hasRuns, _opts = {}) {
     '<circle class="fathom-bob" cx="16.6" cy="17.4" r="1.9"/>' +
     "</svg></span>" +
     '<p class="empty-brand">FATHOM<span class="fw-dot">.</span></p>' +
-    '<p class="empty-tagline">说要做什么，回车就发。</p>' +
-    '<p class="empty-tagline-cn">稿件、纪要、问答都可以从这里开始。</p>' +
-    '<p class="empty-window-note">现在只能在这个窗口下指令。</p>' +
-    '<p class="empty-cite-hint">输入 @ 可按文件名找这个文件夹里的文件。旧对话用「引用会话」。</p>' +
-    nextHtml +
     '<span class="empty-depthline" aria-hidden="true"></span>' +
     "</div>";
 }

@@ -193,8 +193,6 @@
           </svg>
         </span>
         <p class="empty-brand">FATHOM<span class="fw-dot">.</span></p>
-        <p class="empty-tagline">说要做什么，回车就发。</p>
-        <p class="empty-tagline-cn">稿件、纪要、问答都可以从这里开始。</p>
         <span class="empty-depthline" aria-hidden="true"></span>
       </div>
     </div>
@@ -260,7 +258,7 @@
         <i class="ph ph-briefcase" aria-hidden="true"></i>
         <label class="sr-only" for="project-select">项目</label>
         <select id="project-select" class="wd-trigger" aria-label="项目">
-          <option value="">未入项（按目录）</option>
+          <option value="">创建项目</option>
         </select>
       </div>
       <div class="scope-field scope-field--workdir" id="workdir-combobox">
@@ -4645,7 +4643,9 @@ function renderProjectOptions(selected) {
   projectSelect.replaceChildren();
   const leftover = document.createElement("option");
   leftover.value = "";
-  leftover.textContent = "未入项（按目录）";
+  // 委托方点名（2026-09-18 夜）："未入项（按目录）"是内部行话——Cowork 式入口
+  // 显示「创建项目」；点开菜单里 ＋ 新建项目… 才是动作。
+  leftover.textContent = "创建项目";
   projectSelect.appendChild(leftover);
   for (const project of availableProjects) {
     const opt = document.createElement("option");
