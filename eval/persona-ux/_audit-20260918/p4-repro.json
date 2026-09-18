@@ -1,0 +1,52 @@
+{
+  "verdict": {
+    "A 复现：点选后输入框完整插入 @hello-code.txt": true,
+    "A 点选后没有把原片段留在后面（无重复）": true,
+    "B 复现：打 / 后出现了补全或命令面板": false,
+    "C1 复现：打 # 后有反应（补全或面板）": false,
+    "C2 复现：打 $ 后有反应（补全或面板）": false
+  },
+  "results": {
+    "atPick": {
+      "typedValue": "@hello",
+      "pickerBefore": {
+        "exists": true,
+        "hidden": false,
+        "items": [
+          "hello-code.txt",
+          "hello.txt"
+        ]
+      },
+      "clickedOption": "hello-code.txt",
+      "valueAfterClick": "@hello-code.txt "
+    },
+    "slash": {
+      "after": "/",
+      "picker": {
+        "exists": true,
+        "hidden": true,
+        "items": []
+      }
+    },
+    "slashPalette": {
+      "exists": true,
+      "hidden": true
+    },
+    "hash": {
+      "after": "#",
+      "picker": {
+        "exists": true,
+        "hidden": true,
+        "items": []
+      }
+    },
+    "dollar": {
+      "after": "$",
+      "picker": {
+        "exists": true,
+        "hidden": true,
+        "items": []
+      }
+    }
+  }
+}

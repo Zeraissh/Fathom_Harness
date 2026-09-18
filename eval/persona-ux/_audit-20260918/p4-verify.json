@@ -1,0 +1,39 @@
+{
+  "verdict": {
+    "1 `/` 在第一格打开命令面板": true,
+    "1 打开面板时没把 `/` 写进输入框": true,
+    "2 有内容时 `/` 照常插入（不抢键）": true,
+    "3 `#` 是普通字符且不误开面板": true,
+    "3 `$` 是普通字符且不误开面板": true,
+    "4 点文件前右列停在「文件」面板（前提成立）": true,
+    "4 点文件后右列切到「预览」": true,
+    "4 坞真的可见（有像素尺寸、没 hidden）": true
+  },
+  "out": {
+    "slashOnEmpty": {
+      "paletteOpen": true,
+      "composerValue": ""
+    },
+    "slashWithText": {
+      "paletteOpen": false,
+      "composerValue": "看下 src/"
+    },
+    "hash": {
+      "composerValue": "#",
+      "paletteOpen": false
+    },
+    "dollar": {
+      "composerValue": "$",
+      "paletteOpen": false
+    },
+    "treeOpen": {
+      "railPanelAfter": "preview",
+      "dockFound": true,
+      "dockHidden": false,
+      "dockVisiblePx": "395x446",
+      "previewText": "关闭hello-code.txt文本5 B下载放大ping"
+    },
+    "rowText": "hello-code.txt@",
+    "panelBeforeClick": "tree"
+  }
+}
