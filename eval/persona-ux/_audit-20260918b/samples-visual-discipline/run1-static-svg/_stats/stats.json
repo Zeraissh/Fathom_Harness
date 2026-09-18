@@ -1,0 +1,3195 @@
+{
+ "out": {
+  "generatedAt": "2026-09-18",
+  "totals": {
+   "files": 317,
+   "total": 169143,
+   "code": 139887,
+   "blank": 11476,
+   "comment": 17780,
+   "byExt": {
+    ".ts": {
+     "files": 283,
+     "total": 122830,
+     "code": 102847
+    },
+    ".js": {
+     "files": 32,
+     "total": 29354,
+     "code": 22629
+    },
+    ".html": {
+     "files": 1,
+     "total": 6034,
+     "code": 4563
+    },
+    ".css": {
+     "files": 1,
+     "total": 10925,
+     "code": 9848
+    }
+   }
+  },
+  "direct": {
+   "src": {
+    "files": 66,
+    "total": 29785,
+    "code": 23719,
+    "blank": 1958,
+    "comment": 4108,
+    "byExt": {
+     ".ts": {
+      "files": 66,
+      "total": 29785,
+      "code": 23719
+     }
+    }
+   },
+   "src/tools": {
+    "files": 25,
+    "total": 4828,
+    "code": 3689,
+    "blank": 328,
+    "comment": 811,
+    "byExt": {
+     ".ts": {
+      "files": 25,
+      "total": 4828,
+      "code": 3689
+     }
+    }
+   },
+   "test": {
+    "files": 165,
+    "total": 68435,
+    "code": 59215,
+    "blank": 5570,
+    "comment": 3650,
+    "byExt": {
+     ".ts": {
+      "files": 165,
+      "total": 68435,
+      "code": 59215
+     }
+    }
+   },
+   "test/fixtures": {
+    "files": 1,
+    "total": 43,
+    "code": 34,
+    "blank": 4,
+    "comment": 5,
+    "byExt": {
+     ".ts": {
+      "files": 1,
+      "total": 43,
+      "code": 34
+     }
+    }
+   },
+   "ui": {
+    "files": 23,
+    "total": 19671,
+    "code": 16129,
+    "blank": 953,
+    "comment": 2589,
+    "byExt": {
+     ".ts": {
+      "files": 23,
+      "total": 19671,
+      "code": 16129
+     }
+    }
+   },
+   "ui/public": {
+    "files": 3,
+    "total": 29138,
+    "code": 23851,
+    "blank": 1440,
+    "comment": 3847,
+    "byExt": {
+     ".js": {
+      "files": 1,
+      "total": 12179,
+      "code": 9440
+     },
+     ".html": {
+      "files": 1,
+      "total": 6034,
+      "code": 4563
+     },
+     ".css": {
+      "files": 1,
+      "total": 10925,
+      "code": 9848
+     }
+    }
+   },
+   "ui/public/core": {
+    "files": 7,
+    "total": 1340,
+    "code": 881,
+    "blank": 112,
+    "comment": 347,
+    "byExt": {
+     ".js": {
+      "files": 7,
+      "total": 1340,
+      "code": 881
+     }
+    }
+   },
+   "ui/public/dom": {
+    "files": 1,
+    "total": 202,
+    "code": 104,
+    "blank": 16,
+    "comment": 82,
+    "byExt": {
+     ".js": {
+      "files": 1,
+      "total": 202,
+      "code": 104
+     }
+    }
+   },
+   "ui/public/features": {
+    "files": 26,
+    "total": 15701,
+    "code": 12265,
+    "blank": 1095,
+    "comment": 2341,
+    "byExt": {
+     ".js": {
+      "files": 23,
+      "total": 15633,
+      "code": 12204
+     },
+     ".ts": {
+      "files": 3,
+      "total": 68,
+      "code": 61
+     }
+    }
+   }
+  },
+  "recursive": {
+   "src": {
+    "files": 91,
+    "total": 34613,
+    "code": 27408,
+    "blank": 2286,
+    "comment": 4919,
+    "byExt": {
+     ".ts": {
+      "files": 91,
+      "total": 34613,
+      "code": 27408
+     }
+    }
+   },
+   "src/tools": {
+    "files": 25,
+    "total": 4828,
+    "code": 3689,
+    "blank": 328,
+    "comment": 811,
+    "byExt": {
+     ".ts": {
+      "files": 25,
+      "total": 4828,
+      "code": 3689
+     }
+    }
+   },
+   "test": {
+    "files": 166,
+    "total": 68478,
+    "code": 59249,
+    "blank": 5574,
+    "comment": 3655,
+    "byExt": {
+     ".ts": {
+      "files": 166,
+      "total": 68478,
+      "code": 59249
+     }
+    }
+   },
+   "test/fixtures": {
+    "files": 1,
+    "total": 43,
+    "code": 34,
+    "blank": 4,
+    "comment": 5,
+    "byExt": {
+     ".ts": {
+      "files": 1,
+      "total": 43,
+      "code": 34
+     }
+    }
+   },
+   "ui": {
+    "files": 60,
+    "total": 66052,
+    "code": 53230,
+    "blank": 3616,
+    "comment": 9206,
+    "byExt": {
+     ".ts": {
+      "files": 26,
+      "total": 19739,
+      "code": 16190
+     },
+     ".js": {
+      "files": 32,
+      "total": 29354,
+      "code": 22629
+     },
+     ".html": {
+      "files": 1,
+      "total": 6034,
+      "code": 4563
+     },
+     ".css": {
+      "files": 1,
+      "total": 10925,
+      "code": 9848
+     }
+    }
+   },
+   "ui/public": {
+    "files": 37,
+    "total": 46381,
+    "code": 37101,
+    "blank": 2663,
+    "comment": 6617,
+    "byExt": {
+     ".js": {
+      "files": 32,
+      "total": 29354,
+      "code": 22629
+     },
+     ".ts": {
+      "files": 3,
+      "total": 68,
+      "code": 61
+     },
+     ".html": {
+      "files": 1,
+      "total": 6034,
+      "code": 4563
+     },
+     ".css": {
+      "files": 1,
+      "total": 10925,
+      "code": 9848
+     }
+    }
+   },
+   "ui/public/core": {
+    "files": 7,
+    "total": 1340,
+    "code": 881,
+    "blank": 112,
+    "comment": 347,
+    "byExt": {
+     ".js": {
+      "files": 7,
+      "total": 1340,
+      "code": 881
+     }
+    }
+   },
+   "ui/public/dom": {
+    "files": 1,
+    "total": 202,
+    "code": 104,
+    "blank": 16,
+    "comment": 82,
+    "byExt": {
+     ".js": {
+      "files": 1,
+      "total": 202,
+      "code": 104
+     }
+    }
+   },
+   "ui/public/features": {
+    "files": 26,
+    "total": 15701,
+    "code": 12265,
+    "blank": 1095,
+    "comment": 2341,
+    "byExt": {
+     ".js": {
+      "files": 23,
+      "total": 15633,
+      "code": 12204
+     },
+     ".ts": {
+      "files": 3,
+      "total": 68,
+      "code": 61
+     }
+    }
+   }
+  }
+ },
+ "allFiles": [
+  {
+   "file": "src/abort.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 33,
+   "blank": 2,
+   "comment": 8,
+   "code": 23
+  },
+  {
+   "file": "src/agent-md.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 328,
+   "blank": 26,
+   "comment": 26,
+   "code": 276
+  },
+  {
+   "file": "src/approval-display.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 127,
+   "blank": 7,
+   "comment": 21,
+   "code": 99
+  },
+  {
+   "file": "src/archive-event.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 188,
+   "blank": 8,
+   "comment": 10,
+   "code": 170
+  },
+  {
+   "file": "src/campaign.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 281,
+   "blank": 27,
+   "comment": 24,
+   "code": 230
+  },
+  {
+   "file": "src/card-png.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 178,
+   "blank": 17,
+   "comment": 12,
+   "code": 149
+  },
+  {
+   "file": "src/chrome-user-data.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 223,
+   "blank": 18,
+   "comment": 23,
+   "code": 182
+  },
+  {
+   "file": "src/clarifier.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 248,
+   "blank": 17,
+   "comment": 14,
+   "code": 217
+  },
+  {
+   "file": "src/cli-args.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 400,
+   "blank": 28,
+   "comment": 27,
+   "code": 345
+  },
+  {
+   "file": "src/cli-durable.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 639,
+   "blank": 31,
+   "comment": 40,
+   "code": 568
+  },
+  {
+   "file": "src/cli-plan-gate.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 107,
+   "blank": 12,
+   "comment": 9,
+   "code": 86
+  },
+  {
+   "file": "src/cli.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 2548,
+   "blank": 59,
+   "comment": 307,
+   "code": 2182
+  },
+  {
+   "file": "src/compact-ledger.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 371,
+   "blank": 36,
+   "comment": 44,
+   "code": 291
+  },
+  {
+   "file": "src/compact-summary.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 230,
+   "blank": 23,
+   "comment": 24,
+   "code": 183
+  },
+  {
+   "file": "src/context-window.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 267,
+   "blank": 20,
+   "comment": 60,
+   "code": 187
+  },
+  {
+   "file": "src/context.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 991,
+   "blank": 64,
+   "comment": 148,
+   "code": 779
+  },
+  {
+   "file": "src/deck-pptx.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 936,
+   "blank": 81,
+   "comment": 14,
+   "code": 841
+  },
+  {
+   "file": "src/design-image-review.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 125,
+   "blank": 11,
+   "comment": 30,
+   "code": 84
+  },
+  {
+   "file": "src/design-mode.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 841,
+   "blank": 64,
+   "comment": 61,
+   "code": 716
+  },
+  {
+   "file": "src/design-workdir.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 57,
+   "blank": 7,
+   "comment": 6,
+   "code": 44
+  },
+  {
+   "file": "src/diagnostics.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 71,
+   "blank": 6,
+   "comment": 8,
+   "code": 57
+  },
+  {
+   "file": "src/env-check.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 99,
+   "blank": 6,
+   "comment": 35,
+   "code": 58
+  },
+  {
+   "file": "src/execution-broker.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 2375,
+   "blank": 112,
+   "comment": 92,
+   "code": 2171
+  },
+  {
+   "file": "src/handoff.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 141,
+   "blank": 11,
+   "comment": 14,
+   "code": 116
+  },
+  {
+   "file": "src/hooks.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 310,
+   "blank": 21,
+   "comment": 20,
+   "code": 269
+  },
+  {
+   "file": "src/image-client.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 228,
+   "blank": 15,
+   "comment": 9,
+   "code": 204
+  },
+  {
+   "file": "src/ledger.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 1085,
+   "blank": 59,
+   "comment": 279,
+   "code": 747
+  },
+  {
+   "file": "src/loop.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 1320,
+   "blank": 67,
+   "comment": 243,
+   "code": 1010
+  },
+  {
+   "file": "src/mcp-catalog.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 714,
+   "blank": 46,
+   "comment": 8,
+   "code": 660
+  },
+  {
+   "file": "src/mcp-github.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 86,
+   "blank": 11,
+   "comment": 10,
+   "code": 65
+  },
+  {
+   "file": "src/mcp.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 551,
+   "blank": 39,
+   "comment": 96,
+   "code": 416
+  },
+  {
+   "file": "src/memory.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 237,
+   "blank": 22,
+   "comment": 32,
+   "code": 183
+  },
+  {
+   "file": "src/metrics.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 425,
+   "blank": 52,
+   "comment": 92,
+   "code": 281
+  },
+  {
+   "file": "src/mid-tool-replay.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 184,
+   "blank": 6,
+   "comment": 23,
+   "code": 155
+  },
+  {
+   "file": "src/model-capability.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 636,
+   "blank": 50,
+   "comment": 106,
+   "code": 480
+  },
+  {
+   "file": "src/model-client-openai.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 273,
+   "blank": 24,
+   "comment": 37,
+   "code": 212
+  },
+  {
+   "file": "src/model-client.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 272,
+   "blank": 17,
+   "comment": 77,
+   "code": 178
+  },
+  {
+   "file": "src/model-fallback.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 675,
+   "blank": 59,
+   "comment": 121,
+   "code": 495
+  },
+  {
+   "file": "src/model-windows.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 94,
+   "blank": 3,
+   "comment": 35,
+   "code": 56
+  },
+  {
+   "file": "src/notify.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 1251,
+   "blank": 103,
+   "comment": 67,
+   "code": 1081
+  },
+  {
+   "file": "src/ooxml-preview.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 291,
+   "blank": 27,
+   "comment": 6,
+   "code": 258
+  },
+  {
+   "file": "src/orchestrate.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 1002,
+   "blank": 48,
+   "comment": 288,
+   "code": 666
+  },
+  {
+   "file": "src/pack-files.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 271,
+   "blank": 18,
+   "comment": 12,
+   "code": 241
+  },
+  {
+   "file": "src/pack-manifest.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 223,
+   "blank": 14,
+   "comment": 28,
+   "code": 181
+  },
+  {
+   "file": "src/permission-mode.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 162,
+   "blank": 12,
+   "comment": 41,
+   "code": 109
+  },
+  {
+   "file": "src/planner.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 1121,
+   "blank": 87,
+   "comment": 184,
+   "code": 850
+  },
+  {
+   "file": "src/presets.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 900,
+   "blank": 79,
+   "comment": 241,
+   "code": 580
+  },
+  {
+   "file": "src/price-refresh.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 123,
+   "blank": 10,
+   "comment": 7,
+   "code": 106
+  },
+  {
+   "file": "src/pricing.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 357,
+   "blank": 26,
+   "comment": 80,
+   "code": 251
+  },
+  {
+   "file": "src/project-status.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 339,
+   "blank": 23,
+   "comment": 22,
+   "code": 294
+  },
+  {
+   "file": "src/provider-config.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 47,
+   "blank": 4,
+   "comment": 5,
+   "code": 38
+  },
+  {
+   "file": "src/provider.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 144,
+   "blank": 11,
+   "comment": 26,
+   "code": 107
+  },
+  {
+   "file": "src/recovery.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 156,
+   "blank": 15,
+   "comment": 24,
+   "code": 117
+  },
+  {
+   "file": "src/router.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 110,
+   "blank": 12,
+   "comment": 15,
+   "code": 83
+  },
+  {
+   "file": "src/run-state.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 519,
+   "blank": 26,
+   "comment": 73,
+   "code": 420
+  },
+  {
+   "file": "src/skills.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 558,
+   "blank": 50,
+   "comment": 17,
+   "code": 491
+  },
+  {
+   "file": "src/spawn.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 144,
+   "blank": 9,
+   "comment": 16,
+   "code": 119
+  },
+  {
+   "file": "src/task-completion.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 209,
+   "blank": 13,
+   "comment": 20,
+   "code": 176
+  },
+  {
+   "file": "src/tool-tx.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 244,
+   "blank": 18,
+   "comment": 48,
+   "code": 178
+  },
+  {
+   "file": "src/tools/ask-user.ts",
+   "dir": "src/tools",
+   "ext": ".ts",
+   "total": 375,
+   "blank": 21,
+   "comment": 147,
+   "code": 207
+  },
+  {
+   "file": "src/tools/bash.ts",
+   "dir": "src/tools",
+   "ext": ".ts",
+   "total": 240,
+   "blank": 14,
+   "comment": 58,
+   "code": 168
+  },
+  {
+   "file": "src/tools/campaign-mail.ts",
+   "dir": "src/tools",
+   "ext": ".ts",
+   "total": 82,
+   "blank": 5,
+   "comment": 6,
+   "code": 71
+  },
+  {
+   "file": "src/tools/describe-image.ts",
+   "dir": "src/tools",
+   "ext": ".ts",
+   "total": 220,
+   "blank": 19,
+   "comment": 40,
+   "code": 161
+  },
+  {
+   "file": "src/tools/draft-domain-pack.ts",
+   "dir": "src/tools",
+   "ext": ".ts",
+   "total": 64,
+   "blank": 1,
+   "comment": 6,
+   "code": 57
+  },
+  {
+   "file": "src/tools/edit-file.ts",
+   "dir": "src/tools",
+   "ext": ".ts",
+   "total": 261,
+   "blank": 18,
+   "comment": 60,
+   "code": 183
+  },
+  {
+   "file": "src/tools/fetch-url.ts",
+   "dir": "src/tools",
+   "ext": ".ts",
+   "total": 364,
+   "blank": 32,
+   "comment": 20,
+   "code": 312
+  },
+  {
+   "file": "src/tools/fs-scan.ts",
+   "dir": "src/tools",
+   "ext": ".ts",
+   "total": 231,
+   "blank": 13,
+   "comment": 74,
+   "code": 144
+  },
+  {
+   "file": "src/tools/fs-util.ts",
+   "dir": "src/tools",
+   "ext": ".ts",
+   "total": 147,
+   "blank": 12,
+   "comment": 30,
+   "code": 105
+  },
+  {
+   "file": "src/tools/generate-image.ts",
+   "dir": "src/tools",
+   "ext": ".ts",
+   "total": 151,
+   "blank": 10,
+   "comment": 12,
+   "code": 129
+  },
+  {
+   "file": "src/tools/glob.ts",
+   "dir": "src/tools",
+   "ext": ".ts",
+   "total": 123,
+   "blank": 8,
+   "comment": 11,
+   "code": 104
+  },
+  {
+   "file": "src/tools/grep.ts",
+   "dir": "src/tools",
+   "ext": ".ts",
+   "total": 252,
+   "blank": 17,
+   "comment": 18,
+   "code": 217
+  },
+  {
+   "file": "src/tools/install-mcp.ts",
+   "dir": "src/tools",
+   "ext": ".ts",
+   "total": 100,
+   "blank": 1,
+   "comment": 5,
+   "code": 94
+  },
+  {
+   "file": "src/tools/propose-handoff.ts",
+   "dir": "src/tools",
+   "ext": ".ts",
+   "total": 97,
+   "blank": 7,
+   "comment": 7,
+   "code": 83
+  },
+  {
+   "file": "src/tools/read-file.ts",
+   "dir": "src/tools",
+   "ext": ".ts",
+   "total": 56,
+   "blank": 2,
+   "comment": 5,
+   "code": 49
+  },
+  {
+   "file": "src/tools/read-only-shell.ts",
+   "dir": "src/tools",
+   "ext": ".ts",
+   "total": 221,
+   "blank": 19,
+   "comment": 56,
+   "code": 146
+  },
+  {
+   "file": "src/tools/registry.ts",
+   "dir": "src/tools",
+   "ext": ".ts",
+   "total": 563,
+   "blank": 44,
+   "comment": 92,
+   "code": 427
+  },
+  {
+   "file": "src/tools/shell-confine.ts",
+   "dir": "src/tools",
+   "ext": ".ts",
+   "total": 302,
+   "blank": 21,
+   "comment": 40,
+   "code": 241
+  },
+  {
+   "file": "src/tools/spawn-task.ts",
+   "dir": "src/tools",
+   "ext": ".ts",
+   "total": 133,
+   "blank": 9,
+   "comment": 19,
+   "code": 105
+  },
+  {
+   "file": "src/tools/update-progress.ts",
+   "dir": "src/tools",
+   "ext": ".ts",
+   "total": 122,
+   "blank": 5,
+   "comment": 10,
+   "code": 107
+  },
+  {
+   "file": "src/tools/validate-input.ts",
+   "dir": "src/tools",
+   "ext": ".ts",
+   "total": 170,
+   "blank": 17,
+   "comment": 47,
+   "code": 106
+  },
+  {
+   "file": "src/tools/view-image.ts",
+   "dir": "src/tools",
+   "ext": ".ts",
+   "total": 160,
+   "blank": 14,
+   "comment": 24,
+   "code": 122
+  },
+  {
+   "file": "src/tools/web-search.ts",
+   "dir": "src/tools",
+   "ext": ".ts",
+   "total": 186,
+   "blank": 10,
+   "comment": 10,
+   "code": 166
+  },
+  {
+   "file": "src/tools/write-file.ts",
+   "dir": "src/tools",
+   "ext": ".ts",
+   "total": 47,
+   "blank": 1,
+   "comment": 7,
+   "code": 39
+  },
+  {
+   "file": "src/tools/write-pptx.ts",
+   "dir": "src/tools",
+   "ext": ".ts",
+   "total": 161,
+   "blank": 8,
+   "comment": 7,
+   "code": 146
+  },
+  {
+   "file": "src/trace.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 374,
+   "blank": 25,
+   "comment": 27,
+   "code": 322
+  },
+  {
+   "file": "src/types.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 696,
+   "blank": 30,
+   "comment": 316,
+   "code": 350
+  },
+  {
+   "file": "src/vendor-catalog.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 336,
+   "blank": 25,
+   "comment": 14,
+   "code": 297
+  },
+  {
+   "file": "src/verifier.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 799,
+   "blank": 50,
+   "comment": 248,
+   "code": 501
+  },
+  {
+   "file": "src/workspace-git.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 208,
+   "blank": 21,
+   "comment": 6,
+   "code": 181
+  },
+  {
+   "file": "src/wsl-path.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 81,
+   "blank": 5,
+   "comment": 10,
+   "code": 66
+  },
+  {
+   "file": "src/wsl2-runtime.ts",
+   "dir": "src",
+   "ext": ".ts",
+   "total": 226,
+   "blank": 13,
+   "comment": 22,
+   "code": 191
+  },
+  {
+   "file": "test/abort.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 34,
+   "blank": 4,
+   "comment": 1,
+   "code": 29
+  },
+  {
+   "file": "test/agent-md.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 250,
+   "blank": 18,
+   "comment": 2,
+   "code": 230
+  },
+  {
+   "file": "test/anthropic-client.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 231,
+   "blank": 22,
+   "comment": 24,
+   "code": 185
+  },
+  {
+   "file": "test/approval-display.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 147,
+   "blank": 6,
+   "comment": 3,
+   "code": 138
+  },
+  {
+   "file": "test/ask-user.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 525,
+   "blank": 55,
+   "comment": 42,
+   "code": 428
+  },
+  {
+   "file": "test/bash-description.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 51,
+   "blank": 5,
+   "comment": 10,
+   "code": 36
+  },
+  {
+   "file": "test/budget-extend.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 53,
+   "blank": 6,
+   "comment": 0,
+   "code": 47
+  },
+  {
+   "file": "test/campaign-mailbox.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 125,
+   "blank": 7,
+   "comment": 0,
+   "code": 118
+  },
+  {
+   "file": "test/campaign-split.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 72,
+   "blank": 8,
+   "comment": 0,
+   "code": 64
+  },
+  {
+   "file": "test/card-png.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 55,
+   "blank": 4,
+   "comment": 0,
+   "code": 51
+  },
+  {
+   "file": "test/changed-line-coverage.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 101,
+   "blank": 8,
+   "comment": 1,
+   "code": 92
+  },
+  {
+   "file": "test/chrome-user-data.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 146,
+   "blank": 15,
+   "comment": 0,
+   "code": 131
+  },
+  {
+   "file": "test/cite.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 140,
+   "blank": 13,
+   "comment": 0,
+   "code": 127
+  },
+  {
+   "file": "test/clarifier.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 365,
+   "blank": 14,
+   "comment": 0,
+   "code": 351
+  },
+  {
+   "file": "test/cli-args.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 337,
+   "blank": 28,
+   "comment": 25,
+   "code": 284
+  },
+  {
+   "file": "test/cli-durable.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 878,
+   "blank": 41,
+   "comment": 16,
+   "code": 821
+  },
+  {
+   "file": "test/cli-json.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 147,
+   "blank": 10,
+   "comment": 12,
+   "code": 125
+  },
+  {
+   "file": "test/cli-lazy-startup.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 67,
+   "blank": 4,
+   "comment": 9,
+   "code": 54
+  },
+  {
+   "file": "test/cli-plan-gate.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 270,
+   "blank": 15,
+   "comment": 0,
+   "code": 255
+  },
+  {
+   "file": "test/cloud-sync-env.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 196,
+   "blank": 43,
+   "comment": 6,
+   "code": 147
+  },
+  {
+   "file": "test/compact-ledger.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 197,
+   "blank": 16,
+   "comment": 6,
+   "code": 175
+  },
+  {
+   "file": "test/compact-summary.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 271,
+   "blank": 13,
+   "comment": 2,
+   "code": 256
+  },
+  {
+   "file": "test/compact-tier2.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 590,
+   "blank": 46,
+   "comment": 61,
+   "code": 483
+  },
+  {
+   "file": "test/compact.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 717,
+   "blank": 53,
+   "comment": 19,
+   "code": 645
+  },
+  {
+   "file": "test/context-window.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 290,
+   "blank": 32,
+   "comment": 22,
+   "code": 236
+  },
+  {
+   "file": "test/context.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 69,
+   "blank": 9,
+   "comment": 1,
+   "code": 59
+  },
+  {
+   "file": "test/conversation-rewind.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 115,
+   "blank": 7,
+   "comment": 0,
+   "code": 108
+  },
+  {
+   "file": "test/deck-pptx.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 157,
+   "blank": 11,
+   "comment": 1,
+   "code": 145
+  },
+  {
+   "file": "test/describe-image.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 261,
+   "blank": 28,
+   "comment": 29,
+   "code": 204
+  },
+  {
+   "file": "test/design-image-review.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 192,
+   "blank": 13,
+   "comment": 0,
+   "code": 179
+  },
+  {
+   "file": "test/design-mode.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 652,
+   "blank": 37,
+   "comment": 5,
+   "code": 610
+  },
+  {
+   "file": "test/design-workdir.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 73,
+   "blank": 9,
+   "comment": 0,
+   "code": 64
+  },
+  {
+   "file": "test/edit-file.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 700,
+   "blank": 60,
+   "comment": 47,
+   "code": 593
+  },
+  {
+   "file": "test/env-sync.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 58,
+   "blank": 5,
+   "comment": 0,
+   "code": 53
+  },
+  {
+   "file": "test/eval-heldout.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 92,
+   "blank": 8,
+   "comment": 4,
+   "code": 80
+  },
+  {
+   "file": "test/eval-nightly.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 199,
+   "blank": 12,
+   "comment": 6,
+   "code": 181
+  },
+  {
+   "file": "test/eval-stats.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 199,
+   "blank": 23,
+   "comment": 7,
+   "code": 169
+  },
+  {
+   "file": "test/execution-broker-oci.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 706,
+   "blank": 27,
+   "comment": 19,
+   "code": 660
+  },
+  {
+   "file": "test/execution-broker.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 750,
+   "blank": 37,
+   "comment": 0,
+   "code": 713
+  },
+  {
+   "file": "test/fetch-url.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 202,
+   "blank": 15,
+   "comment": 0,
+   "code": 187
+  },
+  {
+   "file": "test/fixtures/oci-crash-owner.ts",
+   "dir": "test/fixtures",
+   "ext": ".ts",
+   "total": 43,
+   "blank": 4,
+   "comment": 5,
+   "code": 34
+  },
+  {
+   "file": "test/generate-image.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 92,
+   "blank": 11,
+   "comment": 0,
+   "code": 81
+  },
+  {
+   "file": "test/github-pr.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 178,
+   "blank": 13,
+   "comment": 0,
+   "code": 165
+  },
+  {
+   "file": "test/handoff.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 128,
+   "blank": 11,
+   "comment": 0,
+   "code": 117
+  },
+  {
+   "file": "test/helpers.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 72,
+   "blank": 8,
+   "comment": 8,
+   "code": 56
+  },
+  {
+   "file": "test/history-backup.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 51,
+   "blank": 6,
+   "comment": 0,
+   "code": 45
+  },
+  {
+   "file": "test/hooks.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 425,
+   "blank": 18,
+   "comment": 0,
+   "code": 407
+  },
+  {
+   "file": "test/humanize-error.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 10,
+   "blank": 1,
+   "comment": 0,
+   "code": 9
+  },
+  {
+   "file": "test/image-client.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 144,
+   "blank": 11,
+   "comment": 0,
+   "code": 133
+  },
+  {
+   "file": "test/ledger.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 871,
+   "blank": 80,
+   "comment": 97,
+   "code": 694
+  },
+  {
+   "file": "test/loop-steering.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 152,
+   "blank": 11,
+   "comment": 19,
+   "code": 122
+  },
+  {
+   "file": "test/loop.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 1260,
+   "blank": 89,
+   "comment": 59,
+   "code": 1112
+  },
+  {
+   "file": "test/markdown.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 425,
+   "blank": 49,
+   "comment": 29,
+   "code": 347
+  },
+  {
+   "file": "test/mcp-catalog.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 286,
+   "blank": 18,
+   "comment": 0,
+   "code": 268
+  },
+  {
+   "file": "test/mcp-config-file.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 54,
+   "blank": 6,
+   "comment": 0,
+   "code": 48
+  },
+  {
+   "file": "test/mcp-permissions.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 201,
+   "blank": 13,
+   "comment": 1,
+   "code": 187
+  },
+  {
+   "file": "test/mcp.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 354,
+   "blank": 33,
+   "comment": 1,
+   "code": 320
+  },
+  {
+   "file": "test/memory-contract.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 126,
+   "blank": 13,
+   "comment": 5,
+   "code": 108
+  },
+  {
+   "file": "test/memory.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 94,
+   "blank": 15,
+   "comment": 0,
+   "code": 79
+  },
+  {
+   "file": "test/metrics.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 283,
+   "blank": 21,
+   "comment": 18,
+   "code": 244
+  },
+  {
+   "file": "test/mock-provider.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 449,
+   "blank": 54,
+   "comment": 35,
+   "code": 360
+  },
+  {
+   "file": "test/model-capability.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 211,
+   "blank": 12,
+   "comment": 7,
+   "code": 192
+  },
+  {
+   "file": "test/model-fallback.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 652,
+   "blank": 59,
+   "comment": 14,
+   "code": 579
+  },
+  {
+   "file": "test/notify.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 1191,
+   "blank": 59,
+   "comment": 4,
+   "code": 1128
+  },
+  {
+   "file": "test/onboarding.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 80,
+   "blank": 7,
+   "comment": 2,
+   "code": 71
+  },
+  {
+   "file": "test/ooxml-preview.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 212,
+   "blank": 14,
+   "comment": 0,
+   "code": 198
+  },
+  {
+   "file": "test/openai-client.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 233,
+   "blank": 18,
+   "comment": 13,
+   "code": 202
+  },
+  {
+   "file": "test/pack-files.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 141,
+   "blank": 13,
+   "comment": 0,
+   "code": 128
+  },
+  {
+   "file": "test/pack-manifest.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 102,
+   "blank": 7,
+   "comment": 0,
+   "code": 95
+  },
+  {
+   "file": "test/parallel.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 597,
+   "blank": 41,
+   "comment": 23,
+   "code": 533
+  },
+  {
+   "file": "test/permission-mode.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 191,
+   "blank": 12,
+   "comment": 4,
+   "code": 175
+  },
+  {
+   "file": "test/plan-replan.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 226,
+   "blank": 8,
+   "comment": 1,
+   "code": 217
+  },
+  {
+   "file": "test/planner.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 552,
+   "blank": 48,
+   "comment": 25,
+   "code": 479
+  },
+  {
+   "file": "test/presets.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 439,
+   "blank": 34,
+   "comment": 42,
+   "code": 363
+  },
+  {
+   "file": "test/price-refresh.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 29,
+   "blank": 2,
+   "comment": 0,
+   "code": 27
+  },
+  {
+   "file": "test/pricing.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 177,
+   "blank": 13,
+   "comment": 18,
+   "code": 146
+  },
+  {
+   "file": "test/progress-budget-context.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 150,
+   "blank": 11,
+   "comment": 1,
+   "code": 138
+  },
+  {
+   "file": "test/project-status.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 156,
+   "blank": 14,
+   "comment": 0,
+   "code": 142
+  },
+  {
+   "file": "test/provider.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 61,
+   "blank": 7,
+   "comment": 0,
+   "code": 54
+  },
+  {
+   "file": "test/read-only-shell.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 268,
+   "blank": 17,
+   "comment": 15,
+   "code": 236
+  },
+  {
+   "file": "test/recovery.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 123,
+   "blank": 10,
+   "comment": 8,
+   "code": 105
+  },
+  {
+   "file": "test/review-mode.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 594,
+   "blank": 42,
+   "comment": 2,
+   "code": 550
+  },
+  {
+   "file": "test/router.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 71,
+   "blank": 8,
+   "comment": 1,
+   "code": 62
+  },
+  {
+   "file": "test/run-crash-inject.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 840,
+   "blank": 62,
+   "comment": 44,
+   "code": 734
+  },
+  {
+   "file": "test/run-state-persist.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 236,
+   "blank": 14,
+   "comment": 2,
+   "code": 220
+  },
+  {
+   "file": "test/run-state.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 320,
+   "blank": 20,
+   "comment": 6,
+   "code": 294
+  },
+  {
+   "file": "test/shell-confine.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 139,
+   "blank": 17,
+   "comment": 0,
+   "code": 122
+  },
+  {
+   "file": "test/skills-install.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 375,
+   "blank": 25,
+   "comment": 1,
+   "code": 349
+  },
+  {
+   "file": "test/spawn-task.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 221,
+   "blank": 13,
+   "comment": 0,
+   "code": 208
+  },
+  {
+   "file": "test/title.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 72,
+   "blank": 14,
+   "comment": 0,
+   "code": 58
+  },
+  {
+   "file": "test/tool-tx.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 360,
+   "blank": 16,
+   "comment": 11,
+   "code": 333
+  },
+  {
+   "file": "test/tools-search.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 286,
+   "blank": 38,
+   "comment": 10,
+   "code": 238
+  },
+  {
+   "file": "test/tools.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 475,
+   "blank": 48,
+   "comment": 33,
+   "code": 394
+  },
+  {
+   "file": "test/trace.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 165,
+   "blank": 11,
+   "comment": 0,
+   "code": 154
+  },
+  {
+   "file": "test/ui-a11y.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 1284,
+   "blank": 111,
+   "comment": 178,
+   "code": 995
+  },
+  {
+   "file": "test/ui-app.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 3474,
+   "blank": 335,
+   "comment": 376,
+   "code": 2763
+  },
+  {
+   "file": "test/ui-artifact-canvas.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 1254,
+   "blank": 84,
+   "comment": 34,
+   "code": 1136
+  },
+  {
+   "file": "test/ui-artifacts-api.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 143,
+   "blank": 13,
+   "comment": 4,
+   "code": 126
+  },
+  {
+   "file": "test/ui-artifacts-panel.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 259,
+   "blank": 16,
+   "comment": 5,
+   "code": 238
+  },
+  {
+   "file": "test/ui-artifacts.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 108,
+   "blank": 9,
+   "comment": 3,
+   "code": 96
+  },
+  {
+   "file": "test/ui-ask-badge.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 148,
+   "blank": 11,
+   "comment": 12,
+   "code": 125
+  },
+  {
+   "file": "test/ui-campaign-api.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 308,
+   "blank": 22,
+   "comment": 4,
+   "code": 282
+  },
+  {
+   "file": "test/ui-changes-endpoint.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 352,
+   "blank": 33,
+   "comment": 26,
+   "code": 293
+  },
+  {
+   "file": "test/ui-changes-panel.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 437,
+   "blank": 35,
+   "comment": 28,
+   "code": 374
+  },
+  {
+   "file": "test/ui-cite-api.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 406,
+   "blank": 33,
+   "comment": 5,
+   "code": 368
+  },
+  {
+   "file": "test/ui-command-center.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 629,
+   "blank": 42,
+   "comment": 38,
+   "code": 549
+  },
+  {
+   "file": "test/ui-command-palette.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 477,
+   "blank": 50,
+   "comment": 38,
+   "code": 389
+  },
+  {
+   "file": "test/ui-conversation-context.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 173,
+   "blank": 10,
+   "comment": 0,
+   "code": 163
+  },
+  {
+   "file": "test/ui-design-archive.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 194,
+   "blank": 14,
+   "comment": 4,
+   "code": 176
+  },
+  {
+   "file": "test/ui-design-templates.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 134,
+   "blank": 7,
+   "comment": 0,
+   "code": 127
+  },
+  {
+   "file": "test/ui-executor-model-picker.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 98,
+   "blank": 5,
+   "comment": 2,
+   "code": 91
+  },
+  {
+   "file": "test/ui-faces.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 1447,
+   "blank": 143,
+   "comment": 99,
+   "code": 1205
+  },
+  {
+   "file": "test/ui-file-preview-endpoint.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 203,
+   "blank": 20,
+   "comment": 22,
+   "code": 161
+  },
+  {
+   "file": "test/ui-file-preview.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 453,
+   "blank": 46,
+   "comment": 33,
+   "code": 374
+  },
+  {
+   "file": "test/ui-file-tree.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 312,
+   "blank": 27,
+   "comment": 9,
+   "code": 276
+  },
+  {
+   "file": "test/ui-github-pr-api.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 232,
+   "blank": 13,
+   "comment": 3,
+   "code": 216
+  },
+  {
+   "file": "test/ui-github-pr.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 185,
+   "blank": 11,
+   "comment": 2,
+   "code": 172
+  },
+  {
+   "file": "test/ui-global-search.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 354,
+   "blank": 32,
+   "comment": 23,
+   "code": 299
+  },
+  {
+   "file": "test/ui-handoff-rail.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 107,
+   "blank": 10,
+   "comment": 2,
+   "code": 95
+  },
+  {
+   "file": "test/ui-handoff.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 247,
+   "blank": 16,
+   "comment": 1,
+   "code": 230
+  },
+  {
+   "file": "test/ui-host-round.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 240,
+   "blank": 15,
+   "comment": 4,
+   "code": 221
+  },
+  {
+   "file": "test/ui-math.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 157,
+   "blank": 15,
+   "comment": 8,
+   "code": 134
+  },
+  {
+   "file": "test/ui-memory-endpoint.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 222,
+   "blank": 17,
+   "comment": 20,
+   "code": 185
+  },
+  {
+   "file": "test/ui-memory-panel.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 339,
+   "blank": 30,
+   "comment": 25,
+   "code": 284
+  },
+  {
+   "file": "test/ui-message-queue-ui.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 192,
+   "blank": 21,
+   "comment": 28,
+   "code": 143
+  },
+  {
+   "file": "test/ui-message-queue.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 431,
+   "blank": 44,
+   "comment": 36,
+   "code": 351
+  },
+  {
+   "file": "test/ui-model-config.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 263,
+   "blank": 18,
+   "comment": 16,
+   "code": 229
+  },
+  {
+   "file": "test/ui-models-api.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 354,
+   "blank": 31,
+   "comment": 35,
+   "code": 288
+  },
+  {
+   "file": "test/ui-notifications.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 709,
+   "blank": 62,
+   "comment": 50,
+   "code": 597
+  },
+  {
+   "file": "test/ui-office-preview-endpoint.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 122,
+   "blank": 12,
+   "comment": 4,
+   "code": 106
+  },
+  {
+   "file": "test/ui-overflow-guards.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 58,
+   "blank": 9,
+   "comment": 9,
+   "code": 40
+  },
+  {
+   "file": "test/ui-pack-files.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 161,
+   "blank": 14,
+   "comment": 4,
+   "code": 143
+  },
+  {
+   "file": "test/ui-patch.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 5943,
+   "blank": 477,
+   "comment": 330,
+   "code": 5136
+  },
+  {
+   "file": "test/ui-path-inspect-cache.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 40,
+   "blank": 3,
+   "comment": 10,
+   "code": 27
+  },
+  {
+   "file": "test/ui-preview-dock.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 325,
+   "blank": 29,
+   "comment": 24,
+   "code": 272
+  },
+  {
+   "file": "test/ui-production.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 86,
+   "blank": 7,
+   "comment": 1,
+   "code": 78
+  },
+  {
+   "file": "test/ui-projects-api.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 293,
+   "blank": 21,
+   "comment": 3,
+   "code": 269
+  },
+  {
+   "file": "test/ui-projects.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 85,
+   "blank": 8,
+   "comment": 3,
+   "code": 74
+  },
+  {
+   "file": "test/ui-rail-policy.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 430,
+   "blank": 50,
+   "comment": 63,
+   "code": 317
+  },
+  {
+   "file": "test/ui-reading-mode.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 476,
+   "blank": 50,
+   "comment": 46,
+   "code": 380
+  },
+  {
+   "file": "test/ui-scheduler.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 521,
+   "blank": 45,
+   "comment": 35,
+   "code": 441
+  },
+  {
+   "file": "test/ui-schedules-endpoint.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 383,
+   "blank": 46,
+   "comment": 24,
+   "code": 313
+  },
+  {
+   "file": "test/ui-schedules-panel.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 641,
+   "blank": 42,
+   "comment": 21,
+   "code": 578
+  },
+  {
+   "file": "test/ui-search-endpoint.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 254,
+   "blank": 20,
+   "comment": 23,
+   "code": 211
+  },
+  {
+   "file": "test/ui-server-ux.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 178,
+   "blank": 10,
+   "comment": 4,
+   "code": 164
+  },
+  {
+   "file": "test/ui-server.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 10084,
+   "blank": 801,
+   "comment": 621,
+   "code": 8662
+  },
+  {
+   "file": "test/ui-settings-models.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 461,
+   "blank": 37,
+   "comment": 25,
+   "code": 399
+  },
+  {
+   "file": "test/ui-settings.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 807,
+   "blank": 68,
+   "comment": 42,
+   "code": 697
+  },
+  {
+   "file": "test/ui-theme-select.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 99,
+   "blank": 8,
+   "comment": 5,
+   "code": 86
+  },
+  {
+   "file": "test/ui-usage.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 373,
+   "blank": 33,
+   "comment": 24,
+   "code": 316
+  },
+  {
+   "file": "test/ui-vendors-api.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 108,
+   "blank": 10,
+   "comment": 4,
+   "code": 94
+  },
+  {
+   "file": "test/ui-workdir-picker.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 490,
+   "blank": 50,
+   "comment": 33,
+   "code": 407
+  },
+  {
+   "file": "test/ui-workdirs-api.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 640,
+   "blank": 69,
+   "comment": 52,
+   "code": 519
+  },
+  {
+   "file": "test/ui-workspace-git-api.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 186,
+   "blank": 11,
+   "comment": 3,
+   "code": 172
+  },
+  {
+   "file": "test/ui-workspace-git.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 248,
+   "blank": 14,
+   "comment": 7,
+   "code": 227
+  },
+  {
+   "file": "test/ui-zip.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 27,
+   "blank": 3,
+   "comment": 0,
+   "code": 24
+  },
+  {
+   "file": "test/usage.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 50,
+   "blank": 3,
+   "comment": 0,
+   "code": 47
+  },
+  {
+   "file": "test/validate-input.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 284,
+   "blank": 37,
+   "comment": 6,
+   "code": 241
+  },
+  {
+   "file": "test/vendor-catalog.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 66,
+   "blank": 5,
+   "comment": 0,
+   "code": 61
+  },
+  {
+   "file": "test/verifier.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 1146,
+   "blank": 97,
+   "comment": 104,
+   "code": 945
+  },
+  {
+   "file": "test/view-image.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 251,
+   "blank": 27,
+   "comment": 7,
+   "code": 217
+  },
+  {
+   "file": "test/web-search.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 43,
+   "blank": 3,
+   "comment": 0,
+   "code": 40
+  },
+  {
+   "file": "test/workspace-files.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 127,
+   "blank": 18,
+   "comment": 0,
+   "code": 109
+  },
+  {
+   "file": "test/workspace-git.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 118,
+   "blank": 11,
+   "comment": 0,
+   "code": 107
+  },
+  {
+   "file": "test/write-pptx.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 92,
+   "blank": 9,
+   "comment": 0,
+   "code": 83
+  },
+  {
+   "file": "test/wsl2-path.test.ts",
+   "dir": "test",
+   "ext": ".ts",
+   "total": 134,
+   "blank": 10,
+   "comment": 1,
+   "code": 123
+  },
+  {
+   "file": "ui/api-errors.ts",
+   "dir": "ui",
+   "ext": ".ts",
+   "total": 26,
+   "blank": 3,
+   "comment": 3,
+   "code": 20
+  },
+  {
+   "file": "ui/artifacts.ts",
+   "dir": "ui",
+   "ext": ".ts",
+   "total": 203,
+   "blank": 19,
+   "comment": 11,
+   "code": 173
+  },
+  {
+   "file": "ui/campaign.ts",
+   "dir": "ui",
+   "ext": ".ts",
+   "total": 126,
+   "blank": 14,
+   "comment": 6,
+   "code": 106
+  },
+  {
+   "file": "ui/cite.ts",
+   "dir": "ui",
+   "ext": ".ts",
+   "total": 157,
+   "blank": 13,
+   "comment": 15,
+   "code": 129
+  },
+  {
+   "file": "ui/conversation-context.ts",
+   "dir": "ui",
+   "ext": ".ts",
+   "total": 243,
+   "blank": 12,
+   "comment": 39,
+   "code": 192
+  },
+  {
+   "file": "ui/conversation-rewind.ts",
+   "dir": "ui",
+   "ext": ".ts",
+   "total": 396,
+   "blank": 26,
+   "comment": 10,
+   "code": 360
+  },
+  {
+   "file": "ui/design-templates.ts",
+   "dir": "ui",
+   "ext": ".ts",
+   "total": 221,
+   "blank": 18,
+   "comment": 22,
+   "code": 181
+  },
+  {
+   "file": "ui/env-sync.ts",
+   "dir": "ui",
+   "ext": ".ts",
+   "total": 108,
+   "blank": 12,
+   "comment": 8,
+   "code": 88
+  },
+  {
+   "file": "ui/github-pr.ts",
+   "dir": "ui",
+   "ext": ".ts",
+   "total": 392,
+   "blank": 29,
+   "comment": 7,
+   "code": 356
+  },
+  {
+   "file": "ui/history-backup.ts",
+   "dir": "ui",
+   "ext": ".ts",
+   "total": 128,
+   "blank": 10,
+   "comment": 4,
+   "code": 114
+  },
+  {
+   "file": "ui/history.ts",
+   "dir": "ui",
+   "ext": ".ts",
+   "total": 655,
+   "blank": 40,
+   "comment": 123,
+   "code": 492
+  },
+  {
+   "file": "ui/mcp-config-file.ts",
+   "dir": "ui",
+   "ext": ".ts",
+   "total": 106,
+   "blank": 8,
+   "comment": 4,
+   "code": 94
+  },
+  {
+   "file": "ui/model-config.ts",
+   "dir": "ui",
+   "ext": ".ts",
+   "total": 476,
+   "blank": 41,
+   "comment": 76,
+   "code": 359
+  },
+  {
+   "file": "ui/production.ts",
+   "dir": "ui",
+   "ext": ".ts",
+   "total": 106,
+   "blank": 8,
+   "comment": 11,
+   "code": 87
+  },
+  {
+   "file": "ui/projects.ts",
+   "dir": "ui",
+   "ext": ".ts",
+   "total": 266,
+   "blank": 21,
+   "comment": 23,
+   "code": 222
+  },
+  {
+   "file": "ui/public/app.js",
+   "dir": "ui/public",
+   "ext": ".js",
+   "total": 12179,
+   "blank": 604,
+   "comment": 2135,
+   "code": 9440
+  },
+  {
+   "file": "ui/public/core/batch.js",
+   "dir": "ui/public/core",
+   "ext": ".js",
+   "total": 72,
+   "blank": 5,
+   "comment": 25,
+   "code": 42
+  },
+  {
+   "file": "ui/public/core/diff.js",
+   "dir": "ui/public/core",
+   "ext": ".js",
+   "total": 98,
+   "blank": 11,
+   "comment": 34,
+   "code": 53
+  },
+  {
+   "file": "ui/public/core/highlight.js",
+   "dir": "ui/public/core",
+   "ext": ".js",
+   "total": 150,
+   "blank": 16,
+   "comment": 41,
+   "code": 93
+  },
+  {
+   "file": "ui/public/core/katex-preview-runtime.js",
+   "dir": "ui/public/core",
+   "ext": ".js",
+   "total": 24,
+   "blank": 2,
+   "comment": 8,
+   "code": 14
+  },
+  {
+   "file": "ui/public/core/markdown.js",
+   "dir": "ui/public/core",
+   "ext": ".js",
+   "total": 427,
+   "blank": 35,
+   "comment": 118,
+   "code": 274
+  },
+  {
+   "file": "ui/public/core/math.js",
+   "dir": "ui/public/core",
+   "ext": ".js",
+   "total": 316,
+   "blank": 26,
+   "comment": 22,
+   "code": 268
+  },
+  {
+   "file": "ui/public/core/rail-policy.js",
+   "dir": "ui/public/core",
+   "ext": ".js",
+   "total": 253,
+   "blank": 17,
+   "comment": 99,
+   "code": 137
+  },
+  {
+   "file": "ui/public/dom/patch.js",
+   "dir": "ui/public/dom",
+   "ext": ".js",
+   "total": 202,
+   "blank": 16,
+   "comment": 82,
+   "code": 104
+  },
+  {
+   "file": "ui/public/features/artifact-canvas.js",
+   "dir": "ui/public/features",
+   "ext": ".js",
+   "total": 1998,
+   "blank": 113,
+   "comment": 297,
+   "code": 1588
+  },
+  {
+   "file": "ui/public/features/artifacts.js",
+   "dir": "ui/public/features",
+   "ext": ".js",
+   "total": 299,
+   "blank": 33,
+   "comment": 50,
+   "code": 216
+  },
+  {
+   "file": "ui/public/features/changes-panel.js",
+   "dir": "ui/public/features",
+   "ext": ".js",
+   "total": 574,
+   "blank": 33,
+   "comment": 127,
+   "code": 414
+  },
+  {
+   "file": "ui/public/features/command-center.js",
+   "dir": "ui/public/features",
+   "ext": ".js",
+   "total": 758,
+   "blank": 62,
+   "comment": 154,
+   "code": 542
+  },
+  {
+   "file": "ui/public/features/command-palette.js",
+   "dir": "ui/public/features",
+   "ext": ".js",
+   "total": 601,
+   "blank": 44,
+   "comment": 109,
+   "code": 448
+  },
+  {
+   "file": "ui/public/features/executor-model-picker.js",
+   "dir": "ui/public/features",
+   "ext": ".js",
+   "total": 285,
+   "blank": 18,
+   "comment": 31,
+   "code": 236
+  },
+  {
+   "file": "ui/public/features/file-preview.js",
+   "dir": "ui/public/features",
+   "ext": ".js",
+   "total": 364,
+   "blank": 33,
+   "comment": 110,
+   "code": 221
+  },
+  {
+   "file": "ui/public/features/file-tree.js",
+   "dir": "ui/public/features",
+   "ext": ".js",
+   "total": 403,
+   "blank": 36,
+   "comment": 38,
+   "code": 329
+  },
+  {
+   "file": "ui/public/features/github-pr.js",
+   "dir": "ui/public/features",
+   "ext": ".js",
+   "total": 272,
+   "blank": 21,
+   "comment": 37,
+   "code": 214
+  },
+  {
+   "file": "ui/public/features/global-search.js",
+   "dir": "ui/public/features",
+   "ext": ".js",
+   "total": 469,
+   "blank": 36,
+   "comment": 84,
+   "code": 349
+  },
+  {
+   "file": "ui/public/features/humanize-error.d.ts",
+   "dir": "ui/public/features",
+   "ext": ".ts",
+   "total": 3,
+   "blank": 1,
+   "comment": 1,
+   "code": 1
+  },
+  {
+   "file": "ui/public/features/humanize-error.js",
+   "dir": "ui/public/features",
+   "ext": ".js",
+   "total": 23,
+   "blank": 2,
+   "comment": 3,
+   "code": 18
+  },
+  {
+   "file": "ui/public/features/memory-panel.js",
+   "dir": "ui/public/features",
+   "ext": ".js",
+   "total": 497,
+   "blank": 38,
+   "comment": 74,
+   "code": 385
+  },
+  {
+   "file": "ui/public/features/notifications.js",
+   "dir": "ui/public/features",
+   "ext": ".js",
+   "total": 929,
+   "blank": 68,
+   "comment": 199,
+   "code": 662
+  },
+  {
+   "file": "ui/public/features/onboarding.js",
+   "dir": "ui/public/features",
+   "ext": ".js",
+   "total": 169,
+   "blank": 13,
+   "comment": 14,
+   "code": 142
+  },
+  {
+   "file": "ui/public/features/preview-dock.js",
+   "dir": "ui/public/features",
+   "ext": ".js",
+   "total": 450,
+   "blank": 43,
+   "comment": 116,
+   "code": 291
+  },
+  {
+   "file": "ui/public/features/reading-mode.js",
+   "dir": "ui/public/features",
+   "ext": ".js",
+   "total": 474,
+   "blank": 34,
+   "comment": 151,
+   "code": 289
+  },
+  {
+   "file": "ui/public/features/review-mode.d.ts",
+   "dir": "ui/public/features",
+   "ext": ".ts",
+   "total": 61,
+   "blank": 2,
+   "comment": 1,
+   "code": 58
+  },
+  {
+   "file": "ui/public/features/review-mode.js",
+   "dir": "ui/public/features",
+   "ext": ".js",
+   "total": 1474,
+   "blank": 73,
+   "comment": 100,
+   "code": 1301
+  },
+  {
+   "file": "ui/public/features/schedules.js",
+   "dir": "ui/public/features",
+   "ext": ".js",
+   "total": 967,
+   "blank": 79,
+   "comment": 126,
+   "code": 762
+  },
+  {
+   "file": "ui/public/features/settings.js",
+   "dir": "ui/public/features",
+   "ext": ".js",
+   "total": 2430,
+   "blank": 159,
+   "comment": 251,
+   "code": 2020
+  },
+  {
+   "file": "ui/public/features/theme-select.d.ts",
+   "dir": "ui/public/features",
+   "ext": ".ts",
+   "total": 4,
+   "blank": 1,
+   "comment": 1,
+   "code": 2
+  },
+  {
+   "file": "ui/public/features/theme-select.js",
+   "dir": "ui/public/features",
+   "ext": ".js",
+   "total": 279,
+   "blank": 25,
+   "comment": 17,
+   "code": 237
+  },
+  {
+   "file": "ui/public/features/usage.js",
+   "dir": "ui/public/features",
+   "ext": ".js",
+   "total": 713,
+   "blank": 48,
+   "comment": 73,
+   "code": 592
+  },
+  {
+   "file": "ui/public/features/workdir-picker.js",
+   "dir": "ui/public/features",
+   "ext": ".js",
+   "total": 784,
+   "blank": 58,
+   "comment": 148,
+   "code": 578
+  },
+  {
+   "file": "ui/public/features/workspace-git.js",
+   "dir": "ui/public/features",
+   "ext": ".js",
+   "total": 421,
+   "blank": 22,
+   "comment": 29,
+   "code": 370
+  },
+  {
+   "file": "ui/public/index.html",
+   "dir": "ui/public",
+   "ext": ".html",
+   "total": 6034,
+   "blank": 280,
+   "comment": 1191,
+   "code": 4563
+  },
+  {
+   "file": "ui/public/styles.css",
+   "dir": "ui/public",
+   "ext": ".css",
+   "total": 10925,
+   "blank": 556,
+   "comment": 521,
+   "code": 9848
+  },
+  {
+   "file": "ui/scheduler.ts",
+   "dir": "ui",
+   "ext": ".ts",
+   "total": 500,
+   "blank": 43,
+   "comment": 107,
+   "code": 350
+  },
+  {
+   "file": "ui/serve.ts",
+   "dir": "ui",
+   "ext": ".ts",
+   "total": 161,
+   "blank": 9,
+   "comment": 60,
+   "code": 92
+  },
+  {
+   "file": "ui/server.ts",
+   "dir": "ui",
+   "ext": ".ts",
+   "total": 14613,
+   "blank": 561,
+   "comment": 1970,
+   "code": 12082
+  },
+  {
+   "file": "ui/title.ts",
+   "dir": "ui",
+   "ext": ".ts",
+   "total": 104,
+   "blank": 12,
+   "comment": 14,
+   "code": 78
+  },
+  {
+   "file": "ui/usage.ts",
+   "dir": "ui",
+   "ext": ".ts",
+   "total": 143,
+   "blank": 14,
+   "comment": 8,
+   "code": 121
+  },
+  {
+   "file": "ui/workdirs.ts",
+   "dir": "ui",
+   "ext": ".ts",
+   "total": 166,
+   "blank": 10,
+   "comment": 42,
+   "code": 114
+  },
+  {
+   "file": "ui/workspace-files.ts",
+   "dir": "ui",
+   "ext": ".ts",
+   "total": 212,
+   "blank": 19,
+   "comment": 14,
+   "code": 179
+  },
+  {
+   "file": "ui/zip.ts",
+   "dir": "ui",
+   "ext": ".ts",
+   "total": 163,
+   "blank": 11,
+   "comment": 12,
+   "code": 140
+  }
+ ]
+}
