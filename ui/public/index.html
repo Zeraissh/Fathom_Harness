@@ -1240,7 +1240,12 @@ let selectedDesignTemplate = /** @type {string|null} */ (null);
 let designModeActive = false;
 let workspaceFace = "office";
 let officeCatalogOpen = false;
-let codeVerifyPref = true;
+/**
+ * Code 脸的核查偏好（切脸时记忆/还原用）。出发状态必须与设置中心同源——
+ * 旧硬编码 `true` 会在启动「默认 office → 应用记忆的 Code 脸」这段迁移里
+ * 把设置默认值和「默认关；需要时再开」的文案一起悄悄盖掉（走查 U2）。
+ */
+let codeVerifyPref = composerDefaults(uiSettings).verify;
 let selectedDesignTab = /** @type {string|null} */ (null);
 let selectedDesignId = /** @type {string|null} */ (null);
 let selectedDesignSample = /** @type {string|null} */ (null);
@@ -5619,6 +5624,9 @@ try {
     getHarnessSnapshot: () => harnessSnapshot,
     // 设置页改动实时同步 composer 当次控件；只动 patch 里出现的键
     onApplyComposerDefaults: (patch) => {
+      // Code 脸的核查记忆同步跟着默认值走：设置页改了默认而切脸记忆还是旧值，
+      // 切到 Code 时又会把旧值还原回来（走查 U2 的同族缺口）
+      if (typeof patch?.verify === "boolean") codeVerifyPref = Boolean(patch.verify);
       applyComposerDefaults(
         { verifyToggle, autoApproveToggle, effortSelect },
         patch,
