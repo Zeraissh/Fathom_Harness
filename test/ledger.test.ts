@@ -579,7 +579,7 @@ describe("appendRunLedger：仪器坏了不能影响被测对象", () => {
    * 仪器坏了就当这次没记，**绝不能反过来把运行搞挂**。
    */
   it("路径写不进去时返回 false 而不是抛异常", async () => {
-    const bad = join(tmpdir(), "definitely-not-a-dir- ", "x.jsonl");
+    const bad = join(tmpdir(), "definitely-not-a-dir-\u0000", "x.jsonl");
     await expect(appendRunLedger(entry(), bad)).resolves.toBe(false);
   });
 });
