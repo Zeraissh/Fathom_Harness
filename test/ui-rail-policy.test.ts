@@ -287,7 +287,22 @@ describe("样式锁（styles.css）：split 真并排", () => {
     expect(css).toMatch(/\.right-rail\[data-collapsed="true"\]\s*\.right-rail-collapse/);
   });
 
+  /**
+   * 走查 UX-C1（活页实锤）：右列 240/282 档下 `.ac-browser-bar` 溢出 76px——
+   * URL 框被 flex:1;min-width:0 压成 16px 的一条缝，最右边的按钮被窗口右缘直接
+   * 切断（bodyScrollX=0，页面不横滚，就是看不见点不着）。修法：允许换行 + URL 有地板。
+   */
+  it("画布工具条窄档收纳：URL 有地板、工具按钮换行，不挤出窗口", () => {
+    expect(css).toMatch(/\.ac-browser-bar\s*\{[^}]*flex-wrap:\s*wrap/);
+    expect(css).toMatch(/\.ac-browser-url\s*\{[^}]*min-width:\s*\d+px/);
+  });
 
-
-
+  /**
+   * O1：`.ac-title { flex: 0 0 auto }` 让 .ac-name 的三件套（ellipsis）成死代码——
+   * flex-shrink:0 的子项对容器 min-content 的贡献取 max-content，父不缩，子就永远
+   * 没有"被裁"的那一天；超长文件名会把坞顶条撑出右列。
+   */
+  it("坞顶条长文件名可省略：.ac-title 允许收缩（ellipsis 不许是死代码）", () => {
+    expect(css).toMatch(/\.ac-title\s*\{[^}]*flex:\s*0 1 auto/);
+  });
 });

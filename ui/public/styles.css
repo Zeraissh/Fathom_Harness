@@ -9181,13 +9181,18 @@ button.chg-row-head:focus-visible { outline: 2px solid var(--focus); outline-off
   border-bottom: 1px solid var(--border-1);
   flex-shrink: 0;
   min-width: 0;
+  /* split 档预览列可能只有 ~141px：头里的「放大」等键够不着时允许横滚，
+     不让它越列而过（走查 UX-C1 的同族边角） */
+  overflow-x: auto;
 }
 .ac-title {
   display: flex;
   align-items: baseline;
   gap: var(--space-sm);
   min-width: 0;
-  flex: 0 0 auto;
+  /* 必须可收缩：flex:0 0 auto 时父不缩，.ac-name 的 ellipsis 永远不触发
+     （超长文件名把坞顶条撑出右列——走查 O1）。 */
+  flex: 0 1 auto;
 }
 .ac-name {
   font-size: var(--font-lg);
@@ -9293,10 +9298,18 @@ button.chg-row-head:focus-visible { outline: 2px solid var(--focus); outline-off
   border-bottom: 1px solid var(--border-1);
   flex-shrink: 0;
   background: var(--surface-0);
+  /* 窄档收纳（走查 UX-C1）：此前不换行，URL 被压成 16px 缝、最右按钮被窗口
+     右缘直接切断。允许换行后按钮落到第二行，全都看得见点得着。
+     split 档预览列可能只有 ~141px（单按钮 134px 都放不下）——再加横滚兜底，
+     保证"够得着"优先于"排得美"。 */
+  flex-wrap: wrap;
+  overflow-x: auto;
 }
 .ac-browser-url {
-  flex: 1;
-  min-width: 0;
+  flex: 1 1 96px;
+  /* 地板：不允许再被压成一条缝（压到 16px 时地址完全不可读）；基准给 96px
+     是为了让"URL + 前往"能在 328px 的内容盒里与后续按钮同排，少折一行 */
+  min-width: 96px;
   height: 32px;
   padding: 0 var(--space-sm);
   border: 1px solid var(--border-1);
@@ -9316,6 +9329,8 @@ button.chg-row-head:focus-visible { outline: 2px solid var(--focus); outline-off
   display: flex;
   gap: var(--space-xs);
   flex-shrink: 0;
+  /* 极窄档（右列 240 的内容盒 ≈208）：按钮组自己也允许换行，别越出窗口 */
+  flex-wrap: wrap;
 }
 .ac-nav { padding: var(--space-xs) var(--space-sm); }
 .ac-nav:disabled { opacity: 0.4; cursor: default; }
