@@ -209,9 +209,12 @@
           id="rail-tab-tree" aria-pressed="true" aria-controls="workspace-file-tree">文件</button>
         <button type="button" class="right-rail-tab" data-rail-panel="preview"
           id="rail-tab-preview" aria-pressed="false" aria-controls="right-rail-preview">预览</button>
-        <button type="button" class="right-rail-collapse" id="right-rail-collapse"
-          aria-label="收起右列" title="收起右列" aria-expanded="true"><i class="ph ph-caret-right" aria-hidden="true"></i></button>
       </div>
+      <!-- 收起/展开键是右列的**直接子节点**，不在 tab 行里：split 档 tab 行整排
+           隐藏（两栏都开着，切换没有语义），键若随行消失，宽档收不起也回不来
+           （2026-09-18 走查 UX-B2/B1）。绝对定位浮在右上角，三种形态都在。 -->
+      <button type="button" class="right-rail-collapse" id="right-rail-collapse"
+        aria-label="收起右列" title="收起右列" aria-expanded="true"><i class="ph ph-caret-right" aria-hidden="true"></i></button>
       <div class="right-rail-drag" id="right-rail-drag" role="separator" aria-orientation="vertical"
         aria-label="拖动调整右列宽度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="25" tabindex="0"></div>
       <!-- 右侧工作区文件：Work/Code 都有。展开走 /api/workspace/files?q=dir/。
@@ -5168,6 +5171,17 @@ function paintRightRail() {
   rail.style.setProperty("--rail-width", `${p.railWidth}px`);
   rail.style.setProperty("--rail-tree-w", `${p.tree}px`);
   rail.style.setProperty("--rail-preview-w", `${p.preview}px`);
+  /**
+   * 「放大」的左伸量（走查 UX-B3）：坞挂在右列里，`position:absolute; inset:0`
+   * 的最近定位祖先是右列——于是"放大"只填满右列自己（实测 239px，对话纹丝不动），
+   * 而 CSS 注释与产品语义都写着"盖满整个主区"。要盖主区就得向左伸过对话列：
+   * 两种档位右列都贴主区右缘，左伸量 = -(主区宽 - 右列宽)。
+   */
+  const availableWidth = Math.max(0, window.innerWidth - railSidebarWidth());
+  rail.style.setProperty(
+    "--rail-expand-inset",
+    `${-Math.max(0, availableWidth - p.railWidth)}px`,
+  );
   // 对话地板设在 #center-row 上——**不能设在 rail 上**：rail 与 #main-area 是兄弟，
   // CSS 变量只向下继承，横向传不过去（第一版就错在这里，活页量出 computed=0px）。
   // 值取 CENTER_MIN_PX（地板本身，不是对话的实际宽）：side 档才需要地板，
@@ -5214,6 +5228,13 @@ function showRailPanel(panel) {
   rail.dataset.panel = pref0.panel;
 
   rail.addEventListener("click", (event) => {
+    // 收起/展开（走查 UX-B2：此前这个键没有任何处理器，点了字节级零变化）。
+    // 两档里语义不同（side 收成细条 / overlay 抽屉关着），由 railPolicy 解释。
+    const collapseBtn = event.target.closest?.("#right-rail-collapse");
+    if (collapseBtn) {
+      saveRailPref({ collapsed: !readRailPref(window.localStorage).collapsed });
+      return;
+    }
     const tab = event.target.closest?.("[data-rail-panel]");
     if (tab) showRailPanel(tab.dataset.railPanel);
   });

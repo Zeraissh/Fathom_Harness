@@ -243,4 +243,51 @@ describe("宿主接线锁（index.html）", () => {
     // 从隐藏回到可见要补上错过的重绘
     expect(html).toMatch(/visibilitychange/);
   });
+
+  /**
+   * 2026-09-18 走查 UX-B2：收起键点击前后字节级零变化（没接线），且键在
+   * .right-rail-tabs 里——而 split 档整排隐藏，键跟着一起消失；收起态更是
+   * 无入口可回去。修法：键移出 tab 行成为右列直接子节点（布局无关地存活），
+   * 点击写偏好。
+   */
+  it("右列收起键：接线了，且不在 tab 行里", () => {
+    expect(html).toMatch(
+      /right-rail-collapse[\s\S]{0,400}?saveRailPref\(\{ collapsed: !/,
+    );
+    const tabs = html.match(/<div class="right-rail-tabs"[\s\S]*?<\/div>/);
+    expect(tabs?.[0] ?? "", "收起键还关在 tab 行里——split 档会跟着消失").not.toContain(
+      "right-rail-collapse",
+    );
+  });
+
+  it("放大态的左伸量由宿主算（坞在右列里，要盖主区就得向左伸过对话列）", () => {
+    expect(html).toMatch(/--rail-expand-inset/);
+  });
+});
+
+describe("样式锁（styles.css）：split 真并排", () => {
+  const css = readFileSync(join(__dirname, "..", "ui", "public", "styles.css"), "utf-8");
+
+  /**
+   * 走查 UX-B1：面板拿的是 `flex: 0 0 var(--rail-tree-w)`，但右列是 column——
+   * flex-basis 于是被当**高度**用，两条 141px 横条叠在 769px 的列顶，下面全空。
+   * 注释写着"并排"，缺的就是这一行 flex-direction。
+   */
+  it("split 档右列是 row——flex-basis 才是宽度而不是高度", () => {
+    expect(css).toMatch(
+      /\.right-rail\[data-layout="split"\]\s*\{[^}]*flex-direction:\s*row/,
+    );
+  });
+
+  it("放大态用宿主给的左伸量盖满主区（inset 左值不再恒 0）", () => {
+    expect(css).toMatch(/\.preview-dock--expanded\s*\{[^}]*var\(--rail-expand-inset/);
+  });
+
+  it("收起态图标翻转，收起后还看得见展开入口", () => {
+    expect(css).toMatch(/\.right-rail\[data-collapsed="true"\]\s*\.right-rail-collapse/);
+  });
+
+
+
+
 });

@@ -1533,6 +1533,7 @@ body.sidebar-collapsed .sidebar {
   --rail-width: 288px;      /* 中档默认（RAIL_MIN 240 ~ RAIL_MAX 360 之间） */
   --rail-tree-w: 144px;     /* split 档只在 ≥1440 生效 */
   --rail-preview-w: 144px;
+  --rail-expand-inset: 0px; /* 放大态左伸量：宿主按 -(主区宽-右列宽) 写 */
 }
 
 .right-rail {
@@ -1549,6 +1550,12 @@ body.sidebar-collapsed .sidebar {
   z-index: 30;
 }
 .right-rail[data-collapsed="true"] { width: 40px; overflow: hidden; }
+
+/* split 档：**并排**两列。缺这一行时面板的 `flex: 0 0 var(--rail-tree-w)`
+   在 column 容器里被当成高度用——两条 141px 横条叠在 769px 的列顶、下面全空
+   （2026-09-18 走查 UX-B1 活页实锤）。 */
+.right-rail[data-layout="split"] { flex-direction: row; }
+.right-rail[data-layout="split"] > .right-rail-preview { border-left: 1px solid var(--border-1); }
 
 .right-rail-tabs {
   flex: 0 0 auto;
@@ -1578,8 +1585,13 @@ body.sidebar-collapsed .sidebar {
 .right-rail-tab:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 1px; }
 
 .right-rail-collapse {
-  flex: 0 0 auto;
-  margin-left: auto;
+  /* 浮在右列右上角，独立于 tab 行——split 档 tab 行整排隐藏（走查 UX-B1/B2），
+     收起态（40px 细条）也得留着它当展开入口。
+     z 序：坞 40 < 本键 45 < 放大态 70——坞开着时键仍可点，放大态则由坞接管。 */
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 45;
   padding: 2px 4px;
   border: 0;
   background: transparent;
@@ -1589,6 +1601,8 @@ body.sidebar-collapsed .sidebar {
 }
 .right-rail-collapse:hover { color: var(--text-1); }
 .right-rail-collapse:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 1px; }
+/* 收起后箭头掉头：▸ 收起 → ◂ 展开，入口还在看得见的地方 */
+.right-rail[data-collapsed="true"] .right-rail-collapse i { transform: rotate(180deg); }
 
 /* 拖拽柄：右列左缘的一条热区（覆盖与收起形态下不出现） */
 .right-rail-drag {
@@ -9134,7 +9148,9 @@ button.chg-row-head:focus-visible { outline: 2px solid var(--focus); outline-off
     specificity 相同，必须排在 --overlay 之后才能盖住它 */
 .preview-dock--expanded {
   position: absolute;
-  inset: 0;
+  /* 左伸量由宿主算（paintRightRail 写 --rail-expand-inset = -(主区宽-右列宽)）：
+     坞在右列里，inset:0 只填右列自己；要兑现"盖满整个主区"就得向左伸过对话列。 */
+  inset: 0 0 0 var(--rail-expand-inset, 0);
   width: auto !important; /* 盖掉拖拽写下的内联宽度 */
   min-width: 0;
   z-index: 70;
