@@ -178,7 +178,7 @@ import {
 } from "./cli-plan-gate.js";
 import { readArchivedState, readArchivedTranscript } from "../ui/history.js";
 import { seedDurableBudget, snapshotDurableBudget } from "./run-state.js";
-import { resolveVerifierReadOnlyCommands, type VerifyOutcome } from "./verifier.js";
+import { resolveVerifierReadOnlyCommands, verifierCanExecute, type VerifyOutcome } from "./verifier.js";
 import { allPacks, getPack, DEFAULT_HOST_DISCIPLINES, selectPackTools, ALWAYS_ON_BUILTIN_TOOLS, type DomainPack } from "./presets.js";
 import { loadInstalledFilePacksSync, packsRootFromEnv } from "./pack-files.js";
 import {
@@ -1078,7 +1078,7 @@ async function main(): Promise<void> {
     console.log(
       executionStatus.effectiveState === "partial"
         ? c.cyan(line)
-        : c.yellow(`${line} — shell commands are not run-isolated`),
+        : c.yellow(`${line} — commands run directly on the host (no sandbox)`),
     );
   }
 
@@ -2157,6 +2157,11 @@ async function main(): Promise<void> {
     const tag = outcome.finalPassed ? c.green("✔ 核查通过") : c.red("✘ 核查未通过");
     finalOut(`\n${tag}${outcome.reworks ? c.dim(`（返工 ${outcome.reworks} 轮）`) : ""}`);
     printVerdictSignal("  ", outcome.finalPassed, outcome.verifications.at(-1)?.verdict);
+    // H8（走查 2026-09-18）：核查侧没有执行手段时，裁决是静态推导——真机实录
+    // 里"未能亲自运行"只写在细则里，标题却直书「核查通过」。口径上标题。
+    if (!verifierCanExecute(readOnlyFor(pack).commands)) {
+      finalOut(c.dim("  静态推导：核查侧白名单不含可运行器——产物未经运行验证"));
+    }
     // 终态口径（走查 H3）：--verify 路径此前从不收尾 durable——档案永远停在
     // "running"（僵尸工厂）。核查未通过不改执行段 stopReason，裁决由 outcome 另记。
     cliDurable?.markEnded(outcome.main.stopReason);

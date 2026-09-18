@@ -312,7 +312,7 @@ import {
   resolveOfficeNotifyFromEnv,
   type OfficeNotifyConfig,
 } from "../src/notify.js";
-import { DEFAULT_VERIFIER_MAX_TURNS, resolveVerifierReadOnlyCommands } from "../src/verifier.js";
+import { DEFAULT_VERIFIER_MAX_TURNS, resolveVerifierReadOnlyCommands, verifierCanExecute } from "../src/verifier.js";
 import type { Plan, PlanNodeState, SubTask } from "../src/planner.js";
 import {
   applyPlanShortEdits,
@@ -8160,6 +8160,10 @@ export function createUiServer(options: UiServerOptions = {}): UiServerHandle {
             // 裁决是怎么拿到的（direct/wrapup/reformat/failed）——让 fail-closed
             // 的三种误伤形态可计量，也是 §2.1 该不该做的判据
             recovery: vo.recovery,
+            // H8（走查）：核查侧无执行手段 → 裁决是静态推导，界面如实标注
+            ...(verifierCanExecute(readOnlyFor(run.packName ? getPack(run.packName) : pack).commands)
+              ? {}
+              : { staticOnly: true }),
           });
         },
       });
@@ -8168,7 +8172,14 @@ export function createUiServer(options: UiServerOptions = {}): UiServerHandle {
       // 追加 verdict 合成事件（末轮裁决，保持既有契约）
       const lastVerdict = outcome.verifications.at(-1)?.verdict;
       if (lastVerdict) {
-        pushSyntheticEvent(run, "verifier", { type: "verdict", judgedTurn, verdict: lastVerdict });
+        pushSyntheticEvent(run, "verifier", {
+          type: "verdict",
+          judgedTurn,
+          verdict: lastVerdict,
+          ...(verifierCanExecute(readOnlyFor(run.packName ? getPack(run.packName) : pack).commands)
+            ? {}
+            : { staticOnly: true }),
+        });
       }
       if (!mainStopReason) mainStopReason = outcome.main.stopReason;
       if (mainStopReason === "error" && !mainError && outcome.main.error) {

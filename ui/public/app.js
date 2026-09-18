@@ -1269,6 +1269,8 @@ function applyVerification(state, seq, event) {
         seq: typeof seq === "number" ? seq : null,
         // 裁决获得路径（第五次提醒：这是逐字段白名单投影，不列出就静默丢弃）
         recovery: event.recovery ? String(event.recovery) : null,
+        // H8：核查侧无执行手段（宿主按白名单算）——静态推导必须能走到渲染层
+        ...(event.staticOnly === true ? { staticOnly: true } : {}),
         verdict: {
           passed: Boolean(raw.passed),
           summary: String(raw.summary ?? ""),
@@ -2007,6 +2009,8 @@ function applyVerdict(state, event) {
       ...(Number.isFinite(Number(event.judgedTurn)) && event.judgedTurn !== undefined
         ? { judgedTurn: Number(event.judgedTurn) }
         : {}),
+      // H8：静态推导标注同走白名单投影（不列出就静默丢）
+      ...(event.staticOnly === true ? { staticOnly: true } : {}),
     },
   };
 }
@@ -8819,6 +8823,8 @@ export function deriveChatItems(state, live, opts = {}) {
     verdict: v.verdict,
     recovery: v.recovery ?? null,
     seq: typeof v.seq === "number" ? v.seq : null,
+    // H8：静态推导标注（白名单投影，不列出就丢）
+    ...(v.staticOnly === true ? { staticOnly: true } : {}),
   }));
   const placed = verdictItems.filter((v) => v.seq !== null);
   if (placed.length > 0) {
@@ -10830,9 +10836,15 @@ function renderVerdictInline(it) {
     it.judgedTurn != null
       ? `<span class="aside-peek chat-verdict-turn" data-judged-turn="${Number(it.judgedTurn)}">判第 ${Number(it.judgedTurn)} 轮对话</span>`
       : "";
+  // H8（走查）：核查侧无执行手段时裁决是静态推导——"未能亲自运行"不能只躺在
+  // 细则里。徽标紧贴结论，hover 给出来由。
+  const staticBadge = it.staticOnly === true
+    ? '<span class="aside-peek chat-verdict-static" data-static-only title="核查侧白名单不含可运行器——产物未经运行验证">（静态推导）</span>'
+    : "";
   return (
     `<div class="chat-verdict chat-verdict--${tone}">` +
     `<div class="chat-verdict-head">◆ ${esc(label)}` +
+    staticBadge +
     judged +
     (it.round ? `<span class="aside-peek">返工第 ${it.round} 轮</span>` : "") +
     "</div>" +

@@ -258,6 +258,40 @@ export function resolveVerifierReadOnlyCommands(
 }
 
 /**
+ * 核查侧有没有"把产物跑起来"的手段（H8 · 走查 2026-09-18）：白名单里有没有可运行器。
+ *
+ * 无包运行的通用缺省只有 ls/cat/grep/stat/od/diff——产物不可能被实际执行验证过。
+ * 真机实录：裁决卡写「核查通过」，细则里才写着"未能亲自运行复现"。口径要上标题：
+ * 宿主按白名单算（不猜核查者的意图），没有执行手段就在裁决旁标「静态推导」。
+ */
+const EXECUTION_CAPABLE_COMMANDS = new Set([
+  "node", "deno", "bun", "npm", "npx", "yarn", "pnpm",
+  "python", "python3", "pytest", "uv", "poetry", "pipenv",
+  "make", "cmake", "ninja", "meson",
+  "cargo", "rustc", "go", "dotnet", "java", "javac", "mvn", "gradle",
+  "gcc", "g++", "clang", "clang++", "cc",
+  "ruby", "php", "swift",
+  "tsc", "vitest", "jest", "mocha", "playwright",
+]);
+
+export function verifierCanExecute(commands: readonly string[]): boolean {
+  return (Array.isArray(commands) ? commands : []).some((raw) => {
+    const name = String(raw ?? "").trim().toLowerCase();
+    if (!name) return false;
+    const base = name.split(/[\\/]/).pop() ?? name; // ./node → node
+    const head = (base.split(/\s+/)[0] ?? "").trim(); // "node --test" → node
+    if (!head) return false;
+    for (const tool of EXECUTION_CAPABLE_COMMANDS) {
+      if (head === tool) return true;
+      // 版本后缀形态：node18 / python3 / gcc-12 / clang++-17
+      const rest = head.slice(tool.length);
+      if (rest !== "" && head.startsWith(tool) && /^[-.\d]/.test(rest)) return true;
+    }
+    return false;
+  });
+}
+
+/**
  * 预算用尽后"收口续跑"的额外轮次上限（9.7）。
  * 刻意很小：这一步只允许写裁决，不允许继续取证——大了就等于偷偷放宽调查预算。
  */

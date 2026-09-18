@@ -15,6 +15,7 @@ import {
   resolveVerifierReadOnlyCommands,
   runVerifier,
   verdictFromToolInput,
+  verifierCanExecute,
 } from "../src/verifier.js";
 import { PACKS } from "../src/presets.js";
 import type { ModelClient, ModelRequest, ModelTurn } from "../src/types.js";
@@ -1109,5 +1110,37 @@ describe("§2.1 结构化交付：裁决走终结工具", () => {
     const bad = await tool.execute({ summary: "缺 passed" }, {} as never);
     expect(bad.isError).toBe(true);
     expect(bad.content).toContain("passed");
+  });
+});
+
+/**
+ * H8 · 静态推导标注（2026-09-18 走查）。
+ *
+ * 真机实录：无领域包时核查者只有只读白名单（ls/cat/grep/stat/od/diff…），
+ * 跑不了 node——裁决卡写「核查通过」而细读才看到"未能亲自运行"。口径必须
+ * 上标题：宿主按白名单判"核查侧有没有执行手段"，没有就标注「静态推导」。
+ */
+describe("H8 · verifierCanExecute：核查侧有没有执行手段", () => {
+  it("默认只读白名单（无包无 env）判为无执行手段", () => {
+    const { commands, source } = resolveVerifierReadOnlyCommands(undefined, undefined);
+    expect(source).toBe("default");
+    expect(commands.length).toBeGreaterThan(0);
+    expect(verifierCanExecute(commands)).toBe(false);
+  });
+
+  it("白名单含可运行器即判为有手段（node/pytest/cmake…）", () => {
+    expect(verifierCanExecute(["cat", "node"])).toBe(true);
+    expect(verifierCanExecute(["pytest"])).toBe(true);
+    expect(verifierCanExecute(["git", "cmake", "ninja"])).toBe(true);
+  });
+
+  it("空表 / 纯读工具不误报有手段", () => {
+    expect(verifierCanExecute([])).toBe(false);
+    expect(verifierCanExecute(["ls", "grep", "od", "diff", "git", "stat"])).toBe(false);
+  });
+
+  it("大小写与路径形态不影响判定", () => {
+    expect(verifierCanExecute(["Node"])).toBe(true);
+    expect(verifierCanExecute(["./node"])).toBe(true);
   });
 });

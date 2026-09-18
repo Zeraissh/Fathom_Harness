@@ -5790,3 +5790,61 @@ describe("U1 · 运行列表终态标签写真话", () => {
     expect(label.classList.contains("run-item-state-label--bad")).toBe(false);
   });
 });
+
+/**
+ * H8 · 静态推导标注进裁决卡（2026-09-18 走查）。
+ * 服务端在 verification/verdict 事件上带 staticOnly（宿主按核查白名单算），
+ * reducer 逐字段白名单必须透传（同 judgedTurn 的坑，第六次），渲染层给标签加注。
+ */
+describe("H8 · 裁决卡标注「静态推导」", () => {
+  it("reducer 透传 staticOnly（白名单投影不得静默丢）", () => {
+    let s = createInitialState("run-so", "任务", true);
+    s = reduceEvents(s, [
+      sse(0, "verifier", "verification", {
+        round: 0,
+        judgedTurn: 1,
+        staticOnly: true,
+        verdict: { passed: true, issues: [], unverified: [], advisory: [], summary: "读源码推导" },
+      }),
+    ]);
+    expect(s.verifications[0].staticOnly).toBe(true);
+  });
+
+  it("裁决卡带（静态推导）徽标 + 说明 title；无标注时不加", () => {
+    let s = createInitialState("run-so2", "任务", true);
+    s = reduceEvents(s, [
+      sse(0, "main", "turn_start", { turn: 1 }),
+      sse(1, "main", "assistant_text", { text: "改完了" }),
+      sse(2, "main", "done", { stopReason: "completed", usage: { turns: 1 } }),
+      sse(3, "verifier", "verification", {
+        round: 0,
+        judgedTurn: 1,
+        staticOnly: true,
+        verdict: { passed: true, issues: [], unverified: [], advisory: [], summary: "静态推导" },
+      }),
+    ]);
+    renderRunDetail(s, { activeTab: "loop", harness: null });
+    const head = document.querySelector(".chat-verdict-head")!;
+    expect(head.textContent).toContain("核查通过");
+    const badge = head.querySelector("[data-static-only]")!;
+    expect(badge.textContent).toContain("静态推导");
+    expect(badge.getAttribute("title")).toContain("未经运行验证");
+
+    let s2 = createInitialState("run-so3", "任务", true);
+    s2 = reduceEvents(s2, [
+      sse(0, "verifier", "verification", {
+        round: 0,
+        judgedTurn: 1,
+        verdict: { passed: true, issues: [], unverified: [], advisory: [], summary: "跑了测试" },
+      }),
+    ]);
+    renderRunDetail(s2, { activeTab: "loop", harness: null });
+    expect(document.querySelector("[data-static-only]")).toBeNull();
+  });
+
+  it("宿主侧接线锁：server 从核查白名单算 staticOnly 并随事件下发", () => {
+    const server = readFileSync(join(__dirname, "..", "ui", "server.ts"), "utf-8");
+    expect(server).toMatch(/verifierCanExecute\(/);
+    expect(server).toMatch(/staticOnly: true/);
+  });
+});
