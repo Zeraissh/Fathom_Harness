@@ -20,6 +20,7 @@ import {
 import type { PlannedRunResult } from "../src/orchestrate.js";
 import {
   cliMetaCheckpoint,
+  cliRunEndForStopReason,
   createCliDurable,
   formatCliResumeStop,
   lastExecutorTranscriptMessages,
@@ -28,6 +29,7 @@ import {
   prepareCliSingleResume,
 } from "../src/cli-durable.js";
 import type { TurnEvent } from "../src/types.js";
+import { STOP_REASONS } from "../src/types.js";
 import { loadArchivedMetas } from "../ui/history.js";
 import { durablePlanFromPlan, planNodesFromSubtasks } from "../src/planner.js";
 import { initialRunState, transitionRunState } from "../src/run-state.js";
@@ -740,5 +742,137 @@ describe("CLI events.jsonl TurnEvent 投影", () => {
     } finally {
       await rm(root, { recursive: true, force: true });
     }
+  });
+});
+
+/**
+ * 终态口径（2026-09-18 走查 U1/H3）：CLI 归档的 run_end 必须写真话。
+ *
+ * 旧病两处：①网络错误与人工停止一样写 outcome=closed/mainStopReason=aborted，
+ * 消费方从 meta 分不清"端点挂了"还是"人按了停"；②除 error/aborted 外的终态
+ * （max_turns/stalled/incomplete…）一律 markCompleted，run_end 里冒充 completed。
+ * 口径表逐值覆盖 STOP_REASONS——上游加新值而这里没跟上时，测试必须红。
+ */
+describe("终态口径：markEnded 写真话（U1/H3）", () => {
+  it("口径表逐值覆盖 STOP_REASONS（新值必须显式定档，不许默认冒充）", () => {
+    const expected: Record<string, { transition: string; outcome: string }> = {
+      completed: { transition: "complete", outcome: "completed" },
+      partial: { transition: "complete", outcome: "partial" },
+      blocked: { transition: "complete", outcome: "blocked" },
+      max_tokens: { transition: "complete", outcome: "error" },
+      max_turns: { transition: "complete", outcome: "error" },
+      budget_exhausted: { transition: "complete", outcome: "error" },
+      incomplete: { transition: "complete", outcome: "error" },
+      stalled: { transition: "complete", outcome: "error" },
+      refusal: { transition: "complete", outcome: "error" },
+      aborted: { transition: "interrupt", outcome: "closed" },
+      // error 保持 interrupted 相位：CLI 的同 run 热续（canSameRunResume）只认
+      // interrupted——错误终态若落 failed 会让"端点挂了→修好→--resume-run"断掉。
+      // 与 Web 的 failed 相位差异是有意的，真话由 outcome/mainStopReason 承担。
+      error: { transition: "interrupt", outcome: "error" },
+      plan_rejected: { transition: "close", outcome: "rejected" },
+      plan_gate_expired: { transition: "interrupt", outcome: "closed" },
+    };
+    for (const v of STOP_REASONS) {
+      expect(expected[v], `STOP_REASONS 新增了 ${v}：先在 cliRunEndForStopReason 里定档`).toBeTruthy();
+      expect(cliRunEndForStopReason(v)).toEqual(expected[v]);
+    }
+    // 未登记值 fail-closed：不冒充 completed
+    expect(cliRunEndForStopReason("no_such_reason")).toEqual({ transition: "complete", outcome: "error" });
+  });
+
+  it("error 落盘为 error 而不是 aborted（H3 语义混叠封口）", async () => {
+    const root = await mkdtemp(path.join(tmpdir(), "cli-end-err-"));
+    try {
+      const handle = createCliDurable({ runId: "cli-end-err", historyRoot: root });
+      handle.apply({ type: "start" });
+      handle.markEnded("error");
+      await handle.writer.flush();
+      const listed = await loadArchivedMetas(root);
+      expect(listed[0]!.meta.status).toBe("done");
+      expect(listed[0]!.meta.mainStopReason).toBe("error");
+      const state = JSON.parse(
+        await readFile(path.join(root, "cli-end-err", "state.json"), "utf8"),
+      ) as { phase: string };
+      expect(state.phase).toBe("interrupted");
+      const ends = (await readFile(path.join(root, "cli-end-err", "events.jsonl"), "utf8"))
+        .trim()
+        .split("\n")
+        .map((line) => (JSON.parse(line) as { event: { type: string; outcome?: string; mainStopReason?: string } }).event)
+        .filter((e) => e.type === "run_end");
+      expect(ends).toEqual([{ type: "run_end", outcome: "error", mainStopReason: "error", finishedAt: expect.any(Number), host: "cli" }]);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it("max_turns 不再冒充 completed（fail-open 封口）", async () => {
+    const root = await mkdtemp(path.join(tmpdir(), "cli-end-max-"));
+    try {
+      const handle = createCliDurable({ runId: "cli-end-max", historyRoot: root });
+      handle.apply({ type: "start" });
+      handle.markEnded("max_turns");
+      await handle.writer.flush();
+      const listed = await loadArchivedMetas(root);
+      expect(listed[0]!.meta.mainStopReason).toBe("max_turns");
+      const state = JSON.parse(
+        await readFile(path.join(root, "cli-end-max", "state.json"), "utf8"),
+      ) as { phase: string };
+      expect(state.phase).toBe("completed");
+      const ends = (await readFile(path.join(root, "cli-end-max", "events.jsonl"), "utf8"))
+        .trim()
+        .split("\n")
+        .map((line) => (JSON.parse(line) as { event: { type: string; outcome?: string; mainStopReason?: string } }).event)
+        .filter((e) => e.type === "run_end");
+      expect(ends).toEqual([{ type: "run_end", outcome: "error", mainStopReason: "max_turns", finishedAt: expect.any(Number), host: "cli" }]);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it("aborted / completed 回归锁：相位与 outcome 保持既有语义", async () => {
+    const root = await mkdtemp(path.join(tmpdir(), "cli-end-reg-"));
+    try {
+      const aborted = createCliDurable({ runId: "cli-end-ab", historyRoot: root });
+      aborted.apply({ type: "start" });
+      aborted.markEnded("aborted");
+      await aborted.writer.flush();
+      const done = createCliDurable({ runId: "cli-end-ok", historyRoot: root });
+      done.apply({ type: "start" });
+      done.markEnded("completed");
+      await done.writer.flush();
+      const listed = await loadArchivedMetas(root);
+      const byId = new Map(listed.map((l) => [l.meta.runId, l.meta]));
+      expect(byId.get("cli-end-ab")!.mainStopReason).toBe("aborted");
+      expect(byId.get("cli-end-ok")!.mainStopReason).toBe("completed");
+      const phase = async (id: string) =>
+        (JSON.parse(await readFile(path.join(root, id, "state.json"), "utf8")) as { phase: string }).phase;
+      expect(await phase("cli-end-ab")).toBe("interrupted");
+      expect(await phase("cli-end-ok")).toBe("completed");
+      const outcome = async (id: string) =>
+        (await readFile(path.join(root, id, "events.jsonl"), "utf8"))
+          .trim()
+          .split("\n")
+          .map((line) => (JSON.parse(line) as { event: { type: string; outcome?: string } }).event)
+          .filter((e) => e.type === "run_end")
+          .map((e) => e.outcome);
+      expect(await outcome("cli-end-ab")).toEqual(["closed"]);
+      expect(await outcome("cli-end-ok")).toEqual(["completed"]);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it("CLI 宿主把终态口径接到 markEnded / 退出码（host-lags）", () => {
+    const root = path.dirname(fileURLToPath(import.meta.url));
+    const cli = readFileSync(path.join(root, "..", "src", "cli.ts"), "utf8");
+    // 三条单执行者路径（热续 / --verify / 普通）都必须收尾 durable。
+    // --verify 路径 2026-09-18 前从不收尾（档案永远 running，僵尸工厂）——
+    // 逐条数出来，防它再丢。
+    expect(cli.match(/cliDurable\?\.markEnded\(event\.result\.stopReason\)/g)).toHaveLength(2);
+    expect(cli).toMatch(/cliDurable\?\.markEnded\(outcome\.main\.stopReason\)/);
+    expect(cli).toMatch(/cliDurable\?\.markEnded\(plannedStopReason\(outcome\)\)/);
+    // 退出码：终态事实来自 ledgerFacts，不许被别的分支静默盖掉
+    expect(cli).toMatch(/cliExitCodeForRun\(ledgerFacts\)/);
   });
 });

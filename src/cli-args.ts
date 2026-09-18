@@ -41,6 +41,22 @@ const COMMAND_FLAGS = new Map<string, CliCommand>([
 /** 非 TTY / readline 已关且需要确认：人话退出，不摔栈。 */
 export const CLI_NEEDS_CONFIRM_EXIT = 2;
 
+/**
+ * 终态口径（走查 F1/H1）：run 终态 → CLI 进程退出码。undefined = 不表态。
+ *
+ * 只有 completed 是 0；--verify 下 completed 但核查未通过也是 1。plan_rejected
+ * 不表态——抛错路径已定 2，这里再赋值会把"需要确认"盖成"跑失败了"。
+ * 依据是 run 的 stopReason（台账/档案里同一份事实），不是 stdout 文案。
+ */
+export function cliExitCodeForRun(
+  facts: { stopReason?: string | null; finalPassed?: boolean | null } | null | undefined,
+): number | undefined {
+  const reason = facts?.stopReason;
+  if (!reason || reason === "plan_rejected") return undefined;
+  if (reason === "completed") return facts?.finalPassed === false ? 1 : 0;
+  return 1;
+}
+
 export function formatCliNeedsConfirmMessage(): string {
   return "需要确认，请加 --yes";
 }
@@ -234,6 +250,10 @@ export function cliHelpText(): string {
     "",
     "Confirm:",
     "  没有交互终端时请加 --yes，否则会停在确认（退出码 2），不会摔 readline 栈。",
+    "",
+    "Exit codes:",
+    "  退出码：0=completed（--verify 时还须核查通过）；1=（核查未通过/其它一切终态：中断、预算耗尽、撞轮次、异常等）；2=需要确认（非 TTY 计划门）；130/143=信号中断。",
+    "  CI 请以退出码判定成败；stopReason 原文在各 run 的台账与 .agent-run-history 档案里。",
     "",
     "Doctor is static: it performs no network request and starts no execution worker.",
   ].join("\n");

@@ -179,6 +179,48 @@ export interface CliDurableHandle {
   markInterrupted(): void;
   markCompleted(): void;
   markFailed(): void;
+  /** 终态口径（走查 U1/H3）：按 stopReason 写真话的 run_end——phase、outcome、原因三处一致。 */
+  markEnded(stopReason: string): void;
+}
+
+/** run_end 的 outcome 词表（对齐 ui/server.ts 的 RunEndInfo.outcome）。 */
+export type CliRunEndOutcome = "completed" | "partial" | "blocked" | "closed" | "rejected" | "error";
+
+/**
+ * stopReason → CLI 归档终态（phase 迁移 + run_end outcome）。fail-closed：
+ * 未登记的原因不冒充 completed，落 error。
+ *
+ * 两条口径来源，别按"看着更顺"改：
+ * - outcome 镜像 ui/server.ts 的 runOutcomeForStopReason（那份注释就是纪律）；
+ * - 相位里只有 error 与 Web 不同（Web 落 failed）：CLI 的同 run 热续
+ *   （canSameRunResume）只认 interrupted——"端点挂了→修好→--resume-run"
+ *   是同一条链，error 落 failed 会把这条路断掉。真话由 outcome/mainStopReason
+ *   承担，消费方读 meta 就能分清"网络错"与"人按停"。
+ */
+export function cliRunEndForStopReason(reason: string): {
+  transition: "complete" | "fail" | "interrupt" | "close";
+  outcome: CliRunEndOutcome;
+} {
+  switch (reason) {
+    case "completed":
+      return { transition: "complete", outcome: "completed" };
+    case "partial":
+      return { transition: "complete", outcome: "partial" };
+    case "blocked":
+      return { transition: "complete", outcome: "blocked" };
+    case "aborted":
+    case "plan_gate_expired":
+      return { transition: "interrupt", outcome: "closed" };
+    case "error":
+      return { transition: "interrupt", outcome: "error" };
+    case "plan_rejected":
+      return { transition: "close", outcome: "rejected" };
+    default:
+      // max_tokens / max_turns / budget_exhausted / incomplete / stalled / refusal…
+      // 轮子停了但结果不是"完成"——相位按既有语义落在完成态（热续由各自的门管），
+      // outcome 不许再冒充 completed。
+      return { transition: "complete", outcome: "error" };
+  }
 }
 
 const CLI_CRASH_PHASES = new Set([
@@ -427,7 +469,7 @@ export function createCliDurable(opts: {
   let eventSeq = nextArchiveEventSeq(dir);
   let archiveSegmentIndex = state.checkpoint ? state.checkpoint.segmentIndex + 1 : 0;
 
-  function appendHostEnd(outcome: "completed" | "closed" | "error", mainStopReason: string): void {
+  function appendHostEnd(outcome: CliRunEndOutcome, mainStopReason: string): void {
     const finishedAt = Date.now();
     writer.appendEvent({
       seq: eventSeq++,
@@ -576,6 +618,15 @@ export function createCliDurable(opts: {
       writer.writeState(state);
       appendHostEnd("error", "error");
       closeTrace("error");
+    },
+    markEnded(stopReason) {
+      const { transition, outcome } = cliRunEndForStopReason(stopReason);
+      const next = transitionRunState(state, { type: transition });
+      if (next) state = next;
+      writer.writeState(state);
+      appendHostEnd(outcome, stopReason);
+      // 正常交付三档（completed/partial/blocked）收 ok；closed（人工停止等）与 error 仍记 error
+      closeTrace(outcome === "completed" || outcome === "partial" || outcome === "blocked" ? "ok" : "error");
     },
   };
 }

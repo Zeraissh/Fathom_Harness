@@ -22,6 +22,8 @@ import {
   renderRunList,
   diffKeyed,
   patchList,
+  patchRunItems,
+  runItemStateFace,
   appendOnly,
   keepScrollAnchored,
   createBatcher,
@@ -5740,5 +5742,54 @@ describe("展开/隐藏批（UX-B4）", () => {
     // 按钮的 Enter/Space 在浏览器里合成 click，冒泡到 label 的委托——单次切换
     identity.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     expect(toggled.length, "点分组头应收起分组").toBe(1);
+  });
+});
+
+/**
+ * U1 · 运行列表终态标签写真话（2026-09-18 走查）。
+ *
+ * 旧病：列表把一切非 running 的运行画成绿色「已完成」——用户亲手停掉的
+ * run 在列表说"已完成"、详情页说"已停止"，同一个 run 两个说法。数据层
+ * 早就有 mainStopReason（/api/runs 的 stopReason），错的只是那一行渲染。
+ */
+describe("U1 · 运行列表终态标签写真话", () => {
+  it("runItemStateFace：running 走 shimmer；终态逐档走 classifyStopReason；缺 stopReason 的老档案回落已完成", () => {
+    expect(runItemStateFace({ status: "running" })).toEqual({ label: "运行中", tone: "running", hint: null });
+    expect(runItemStateFace({ status: "done", stopReason: "completed" })).toMatchObject({ label: "已完成", tone: "ok" });
+    expect(runItemStateFace({ status: "done", stopReason: "aborted" })).toMatchObject({ label: "已停止", tone: "warn" });
+    expect(runItemStateFace({ status: "done", stopReason: "error" })).toMatchObject({ label: "异常终止", tone: "bad" });
+    expect(runItemStateFace({ status: "done", stopReason: "max_turns" })).toMatchObject({ label: "撞轮次护栏", tone: "bad" });
+    // 旧档案没有 mainStopReason：保持既有语义（status=done 即已完成），不许误画成"运行中"
+    expect(runItemStateFace({ status: "done", stopReason: null })).toMatchObject({ label: "已完成", tone: "ok" });
+  });
+
+  it("patchRunItems 接线：已停止的运行在列表不再显示已完成", () => {
+    const host = document.createElement("div");
+    patchRunItems(
+      host,
+      [
+        { runId: "r1", task: "t", title: "t", status: "done", stopReason: "aborted", verify: false, conversationTurn: 1 },
+      ],
+      null, null, () => {}, null,
+    );
+    const label = host.querySelector(".run-item-state-label")!;
+    expect(label.textContent).toBe("已停止");
+    expect(label.classList.contains("run-item-state-label--warn")).toBe(true);
+    expect(label.classList.contains("thinking-shimmer")).toBe(false);
+    expect(label.getAttribute("title")).toContain("主动停止");
+  });
+
+  it("patchRunItems 接线：running 项保持 shimmer 且不带终态色调", () => {
+    const host = document.createElement("div");
+    patchRunItems(
+      host,
+      [{ runId: "r2", task: "t", title: "t", status: "running", verify: false, conversationTurn: 1 }],
+      null, null, () => {}, null,
+    );
+    const label = host.querySelector(".run-item-state-label")!;
+    expect(label.textContent).toBe("运行中");
+    expect(label.classList.contains("thinking-shimmer")).toBe(true);
+    expect(label.classList.contains("run-item-state-label--warn")).toBe(false);
+    expect(label.classList.contains("run-item-state-label--bad")).toBe(false);
   });
 });

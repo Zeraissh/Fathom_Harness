@@ -5097,7 +5097,24 @@ export function groupRunsByWorkdir(runs, projects = []) {
   }));
 }
 
-function patchRunItems(host, runs, metaMap, selectedRunId, onSelect, onDelete) {
+/**
+ * 运行列表项的状态面（U1 · 2026-09-18 走查）。
+ *
+ * 旧病：这里只判 running，其余一律画绿色「已完成」——用户亲手停掉的 run
+ * 在列表说"已完成"、点进去详情页说"已停止"，同一个 run 两个说法。
+ * 数据层早就有 stopReason（/api/runs），错的只是这一行渲染没走分档。
+ * 老档案缺 stopReason：按 status=done 读成已完成，不许误画成"运行中"。
+ *
+ * @param {{status?:string, stopReason?:string|null}} run
+ * @returns {{label:string, tone:"ok"|"warn"|"bad"|"running", hint:string|null}}
+ */
+export function runItemStateFace(run) {
+  if (!run || run.status === "running") return { label: "运行中", tone: "running", hint: null };
+  if (!run.stopReason) return { label: "已完成", tone: "ok", hint: null };
+  return classifyStopReason(run.stopReason);
+}
+
+export function patchRunItems(host, runs, metaMap, selectedRunId, onSelect, onDelete) {
   patchList(host, runs, {
     key: (r) => r.runId,
     create: (r) => {
@@ -5174,8 +5191,12 @@ function updateRunItem(el, r, metaMap, selectedRunId, onDelete) {
   setAttr(del, "hidden", r.status === "running" || !onDelete ? "" : null);
 
   const stateLabel = el.querySelector(".run-item-state-label");
-  setText(stateLabel, r.status === "running" ? "运行中" : "已完成");
-  setClass(stateLabel, "thinking-shimmer", r.status === "running");
+  const stateFace = runItemStateFace(r);
+  setText(stateLabel, stateFace.label);
+  setClass(stateLabel, "thinking-shimmer", stateFace.tone === "running");
+  setClass(stateLabel, "run-item-state-label--warn", stateFace.tone === "warn");
+  setClass(stateLabel, "run-item-state-label--bad", stateFace.tone === "bad");
+  setAttr(stateLabel, "title", stateFace.hint || null);
   setClass(el, "run-item--running", r.status === "running");
   // 标题是算出来的短句；完整任务原文挂 title，鼠标停一下就能看全
   setText(el.querySelector(".run-item-task"), resolveDisplayedTitle(r.title, r.task));

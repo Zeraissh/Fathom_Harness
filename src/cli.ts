@@ -116,6 +116,7 @@ import {
   CLI_VERSION,
   CliArgumentError,
   cliCanPrompt,
+  cliExitCodeForRun,
   cliHelpText,
   formatCliNeedsConfirmMessage,
   formatStaticDoctor,
@@ -2050,8 +2051,8 @@ async function main(): Promise<void> {
           : c.red("\n✘ 编排未完成（快速失败）") + c.dim(`（${wallNote}）`),
       );
     }
-    if (outcome.completed) cliDurable?.markCompleted();
-    else cliDurable?.markFailed();
+    // 终态口径（走查 U1/H3）：编排聚合不能再把 partial/aborted 一律压成 error
+    cliDurable?.markEnded(plannedStopReason(outcome));
     }
   } else if (cliSingleResume) {
     const loop = new AgentLoop(config, modelClient);
@@ -2076,11 +2077,8 @@ async function main(): Promise<void> {
             finalPassed: null,
             verifications: [],
           };
-          if (event.result.stopReason === "error" || event.result.stopReason === "aborted") {
-            cliDurable?.markInterrupted();
-          } else {
-            cliDurable?.markCompleted();
-          }
+          // 终态口径（走查 U1/H3）：错误不再冒充 aborted，max_turns 等不再冒充 completed
+          cliDurable?.markEnded(event.result.stopReason);
         }
         await renderEvent(event);
       }
@@ -2125,6 +2123,9 @@ async function main(): Promise<void> {
     const tag = outcome.finalPassed ? c.green("✔ 核查通过") : c.red("✘ 核查未通过");
     console.log(`\n${tag}${outcome.reworks ? c.dim(`（返工 ${outcome.reworks} 轮）`) : ""}`);
     printVerdictSignal("  ", outcome.finalPassed, outcome.verifications.at(-1)?.verdict);
+    // 终态口径（走查 H3）：--verify 路径此前从不收尾 durable——档案永远停在
+    // "running"（僵尸工厂）。核查未通过不改执行段 stopReason，裁决由 outcome 另记。
+    cliDurable?.markEnded(outcome.main.stopReason);
   } else {
     const loop = new AgentLoop(config, modelClient);
     try {
@@ -2145,11 +2146,8 @@ async function main(): Promise<void> {
             finalPassed: null,
             verifications: [],
           };
-          if (event.result.stopReason === "error" || event.result.stopReason === "aborted") {
-            cliDurable?.markInterrupted();
-          } else {
-            cliDurable?.markCompleted();
-          }
+          // 终态口径（走查 U1/H3）：错误不再冒充 aborted，max_turns 等不再冒充 completed
+          cliDurable?.markEnded(event.result.stopReason);
         }
         await renderEvent(event);
       }
@@ -2208,6 +2206,11 @@ async function main(): Promise<void> {
       },
     }),
   );
+
+  // 终态口径（走查 F1/H1）：run 终态映射进程退出码——终态失败不许静默退 0，
+  // CI 的 $? 是最常被读的那处口径。plan_rejected 不表态（抛错路径已定 2，别覆盖）。
+  const runExitCode = cliExitCodeForRun(ledgerFacts);
+  if (runExitCode !== undefined) process.exitCode = runExitCode;
 
   rl?.close();
   await executionBroker?.dispose?.();

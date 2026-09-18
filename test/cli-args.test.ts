@@ -8,6 +8,7 @@ import {
   CLI_VERSION,
   CliArgumentError,
   cliCanPrompt,
+  cliExitCodeForRun,
   cliHelpText,
   formatCliNeedsConfirmMessage,
   formatStaticDoctor,
@@ -206,5 +207,43 @@ describe("static doctor", () => {
     expect(report.ok).toBe(false);
     expect(report.provider.value).toBe("<invalid>");
     expect(report.model.value).toBe("<invalid>");
+  });
+});
+
+/**
+ * 退出码口径（2026-09-18 走查 F1/H1）：终态失败 ≠ 进程成功。
+ *
+ * 旧病：断端点跑任务输出 `■ error (0 turns)` 而退出码 0——CI 的
+ * `if [ $? -ne 0 ]` 把"端点挂了"当成功，消费方被迫 parse stdout。
+ * 口径：只有 completed 是 0；completed 但--verify 核查未通过也是 1；
+ * plan_rejected 不表态（抛错路径已定 2，别覆盖）。
+ */
+describe("退出码口径（CI 消费者）", () => {
+  it("只有 completed 是 0；核查未通过与一切非 completed 终态都是 1", () => {
+    expect(cliExitCodeForRun({ stopReason: "completed" })).toBe(0);
+    expect(cliExitCodeForRun({ stopReason: "completed", finalPassed: true })).toBe(0);
+    expect(cliExitCodeForRun({ stopReason: "completed", finalPassed: null })).toBe(0);
+    expect(cliExitCodeForRun({ stopReason: "completed", finalPassed: false })).toBe(1);
+    expect(cliExitCodeForRun({ stopReason: "aborted" })).toBe(1);
+    expect(cliExitCodeForRun({ stopReason: "error" })).toBe(1);
+    expect(cliExitCodeForRun({ stopReason: "max_turns" })).toBe(1);
+    expect(cliExitCodeForRun({ stopReason: "partial" })).toBe(1);
+    expect(cliExitCodeForRun({ stopReason: "budget_exhausted" })).toBe(1);
+    expect(cliExitCodeForRun({ stopReason: "stalled" })).toBe(1);
+  });
+
+  it("没有终态事实时不表态；plan_rejected 让抛错路径的 2 生效", () => {
+    expect(cliExitCodeForRun(null)).toBeUndefined();
+    expect(cliExitCodeForRun(undefined)).toBeUndefined();
+    expect(cliExitCodeForRun({})).toBeUndefined();
+    expect(cliExitCodeForRun({ stopReason: null })).toBeUndefined();
+    expect(cliExitCodeForRun({ stopReason: "plan_rejected" })).toBeUndefined();
+  });
+
+  it("--help 写明退出码表（消费方不用猜）", () => {
+    const help = cliHelpText();
+    expect(help).toMatch(/退出码：0=completed/);
+    expect(help).toMatch(/1=（核查未通过|其它终态）/);
+    expect(help).toMatch(/130\/143=信号/);
   });
 });

@@ -4359,6 +4359,9 @@ body.sidebar-collapsed .sidebar {
   background: var(--accent);
   animation: agent-pulse 1.2s ease-in-out infinite;
 }
+/* U1：终态标签按分档着色——已停止/截断等不是绿色"已完成" */
+.run-item-state-label--warn { color: var(--yellow); }
+.run-item-state-label--bad { color: var(--red); }
 .run-item-task { color: var(--text-1); font-size: var(--font-md); line-height: 1.45; }
 .run-item-meta {
   margin-top: 4px;
