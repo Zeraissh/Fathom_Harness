@@ -74,7 +74,9 @@ export function renderWorkdirOptions(select, workdirs, opts = {}) {
   select.appendChild(add);
   const wanted = opts.selected && workdirs.includes(opts.selected) ? opts.selected : workdirs[0];
   if (wanted) select.value = wanted;
-  select.title = select.value === WORKDIR_ADD_VALUE ? "" : select.value;
+  // U6（走查）：禁用 = 宿主锁定了工作目录并写好解释（这个 title 归宿主），
+  // 四处写入点在禁用下一律不碰 title，否则解释会被裸路径冲掉
+  if (!select.disabled) select.title = select.value === WORKDIR_ADD_VALUE ? "" : select.value;
   return select.value;
 }
 
@@ -97,12 +99,12 @@ export function wireWorkdirSelect(select, hooks = {}) {
         ? lastReal
         : values.find((v) => v !== WORKDIR_ADD_VALUE);
       if (fallback) select.value = fallback;
-      select.title = select.value;
+      if (!select.disabled) select.title = select.value; // U6：禁用时 title 归宿主（解释）
       hooks.onAddRequest?.();
       return;
     }
     lastReal = select.value;
-    select.title = select.value;
+    if (!select.disabled) select.title = select.value; // U6 同上
     hooks.onChange?.(select.value);
   });
 }
@@ -175,7 +177,7 @@ export function getWorkdirSelection(select, workdirs) {
 export function applyWorkdirSelection(select, workdirs, selection) {
   const next = normalizeWorkdirSelection(workdirs, selection);
   if (next.primary) select.value = next.primary;
-  select.title = next.primary;
+  if (!select.disabled) select.title = next.primary; // U6：禁用时 title 归宿主（解释）
   select.dataset.extras = JSON.stringify(next.extras);
   return next;
 }
@@ -283,7 +285,7 @@ export function initWorkdirCombobox(root, hooks = {}, env = {}) {
     if (trigger.disabled) closeMenu();
     const sel = applyWorkdirSelection(select, listedWorkdirs(), getWorkdirSelection(select));
     if (triggerText) triggerText.textContent = formatWorkdirTriggerLabel(sel.primary, sel.extras);
-    trigger.title = [sel.primary, ...sel.extras].filter(Boolean).join("\n");
+    if (!trigger.disabled) trigger.title = [sel.primary, ...sel.extras].filter(Boolean).join("\n"); // U6：禁用时 title 归宿主（解释）
     trigger.setAttribute("aria-expanded", menu.hidden ? "false" : "true");
     if (!menu.hidden) renderWorkdirMenu(menu, listedWorkdirs(), sel);
     return sel;

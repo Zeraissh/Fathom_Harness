@@ -3666,6 +3666,9 @@ export function patchComposer(mode, root = document) {
   const workdirField = q("#workdir-combobox");
   if (workdirEl instanceof HTMLSelectElement) {
     const locked = mode.workdirLocked === true;
+    // U6（走查）：禁用键的解释此前只写在 trigger.title 上，被 theme-select 的镜像
+    // paint 用 select.title（裸路径）冲掉——解释必须写进镜像复制的源头。
+    const lockedTitle = `本对话的工作目录：${mode.workdir ?? workdirEl.value}（开新对话时可另选）`;
     if (locked && mode.workdir) {
       if (![...workdirEl.options].some((o) => o.value === mode.workdir)) {
         const opt = workdirEl.ownerDocument.createElement("option");
@@ -3675,12 +3678,14 @@ export function patchComposer(mode, root = document) {
         workdirEl.insertBefore(opt, workdirEl.firstChild);
       }
       workdirEl.value = mode.workdir;
-      workdirEl.title = mode.workdir;
+      workdirEl.title = lockedTitle;
       workdirEl.dataset.extras = "[]";
       if (form) form.dataset.workdirRun = String(mode.runId ?? "");
     } else if (!locked && form?.dataset.workdirRun) {
       delete form.dataset.workdirRun;
     }
+    // 镜像源头（select.title）恒与语义一致：锁定=解释，未锁=当前路径
+    workdirEl.title = locked ? lockedTitle : (workdirEl.value || "");
     const triggerText = q("#workdir-trigger-text");
     if (triggerText) {
       const extras = locked ? [] : parseWorkdirExtrasAttr(workdirEl.dataset.extras);
@@ -3690,7 +3695,7 @@ export function patchComposer(mode, root = document) {
     if (workdirTrigger) {
       setAttr(workdirTrigger, "disabled", locked ? "" : null);
       workdirTrigger.title = locked
-        ? `本对话的工作目录：${mode.workdir ?? workdirEl.value}（开新对话时可另选）`
+        ? lockedTitle
         : (workdirEl.value || "选择目录");
     }
     if (workdirField) setClass(workdirField, "scope-field--locked", locked);
@@ -6767,7 +6772,6 @@ function patchApprovalRail(parts, state, isRunning, callbacks) {
         '<span class="approval-tool-name"></span>' +
         '<span class="approval-result" hidden></span>' +
         "</div>" +
-        '<p class="approval-summary"></p>' +
         '<details class="approval-details">' +
         "<summary>详情</summary>" +
         '<pre class="approval-input"></pre>' +
@@ -6821,8 +6825,9 @@ function updateApprovalCard(card, a, isRunning) {
   setClass(card, "approval-card--resolved", resolved);
   card.setAttribute("data-tool-name", a.name ?? "");
   const human = describeApprovalAction(a.name, a.input);
+  // U4（走查）：命令原文只写一遍——此前 header 与 summary 各 setText 一次，
+  // 同一句话在卡里上下重复（"要运行：X" ×2）
   setText(card.querySelector(".approval-tool-name"), human);
-  setText(card.querySelector(".approval-summary"), human);
 
   const resultEl = card.querySelector(".approval-result");
   if (resolved) {
@@ -7547,7 +7552,6 @@ function patchAgentOverlay(parts, state, callbacks, live = null) {
         '<span class="approval-tool-name"></span>' +
         '<span class="approval-result" hidden></span>' +
         "</div>" +
-        '<p class="approval-summary"></p>' +
         '<details class="approval-details">' +
         "<summary>详情</summary>" +
         '<pre class="approval-input"></pre>' +
@@ -7645,9 +7649,9 @@ function chatItemSig(it) {
     case "notice":
       return `notice:${it.tone}:${it.text}:${it.peek ?? ""}:${it.live ? 1 : 0}`;
     case "tools":
-      return `tools:${(it.tools ?? []).map((t) => `${t.toolUseId}:${t.status}:${t.gated ? 1 : 0}:${t.autoApproved ? 1 : 0}:${(t.result ?? "").length}`).join("|")}`;
+      return `tools:${(it.tools ?? []).map((t) => `${t.toolUseId}:${t.status}:${t.gated ? 1 : 0}:${t.awaitingApproval ? 1 : 0}:${t.autoApproved ? 1 : 0}:${(t.result ?? "").length}`).join("|")}`;
     case "tool":
-      return `tool:${it.status}:${it.gated ? 1 : 0}:${it.autoApproved ? 1 : 0}:${it.durationMs ?? ""}:${(it.result ?? "").length}`;
+      return `tool:${it.status}:${it.gated ? 1 : 0}:${it.awaitingApproval ? 1 : 0}:${it.autoApproved ? 1 : 0}:${it.durationMs ?? ""}:${(it.result ?? "").length}`;
     case "verdict":
       return `verdict:${JSON.stringify(it.verdict)}`;
     case "artifacts":
@@ -8790,6 +8794,19 @@ export function deriveChatItems(state, live, opts = {}) {
         break;
       default:
         break;
+    }
+  }
+
+  // U5（走查）：审批还悬着时不能说「经放行」——按当前 pending 集合给工具行标现在时。
+  // 放行决定一到，pendingApprovals 里的 status 翻页，下一次派生就换成「经放行」。
+  const pendingNow = new Set(
+    (state.pendingApprovals ?? [])
+      .filter((a) => (a.status ?? "pending") === "pending")
+      .map((a) => a.toolUseId),
+  );
+  for (const item of items) {
+    if (item.kind === "tool" && item.gated) {
+      item.awaitingApproval = pendingNow.has(item.toolUseId);
     }
   }
 
@@ -10492,11 +10509,17 @@ function renderToolGroup(it) {
    * 在 renderToolRow 里，而分组 pass 把**即使单个**工具也包成 tools 组
    * （deriveChatItems 的 flush），那条渲染路径正常流程永远到不了。
    */
-  const gatedCount = tools.filter((t) => t.gated).length;
+  const pendingCount = tools.filter((t) => t.gated && t.awaitingApproval).length;
+  const gatedCount = tools.filter((t) => t.gated && !t.awaitingApproval).length;
+  const gate = [
+    pendingCount
+      ? `<span class="chat-tool-gate" title="组内有 ${pendingCount} 步正在等你放行">⏸ 待放行${pendingCount > 1 ? ` ×${pendingCount}` : ""}</span>`
+      : "",
+    gatedCount
+      ? `<span class="chat-tool-gate" title="组内有 ${gatedCount} 步曾等待人工放行">⚠ 经放行${gatedCount > 1 ? ` ×${gatedCount}` : ""}</span>`
+      : "",
+  ].join("");
   const autoTools = tools.filter((t) => t.autoApproved);
-  const gate = gatedCount
-    ? `<span class="chat-tool-gate" title="组内有 ${gatedCount} 步曾等待人工放行">⚠ 经放行${gatedCount > 1 ? ` ×${gatedCount}` : ""}</span>`
-    : "";
   // 单步时直接亮判词（"为什么免问"是信任披露）；多步才收成计数词
   const auto = autoTools.length
     ? `<span class="chat-tool-auto" title="${esc(
@@ -10530,7 +10553,13 @@ function renderToolRow(it) {
   const cls = it.status === "error" ? " chat-tool--err" : it.status === "running" ? " chat-tool--live" : "";
   const mark = it.status === "error" ? "✗" : it.status === "running" ? "⋯" : "✓";
   const dur = it.durationMs != null ? `<span class="aside-peek">${it.durationMs}ms</span>` : "";
-  const gate = it.gated ? '<span class="chat-tool-gate" title="这一步曾等待人工放行">⚠ 经放行</span>' : "";
+  // U5（走查）：现在时 vs 完成时——挂起中不能说"经放行"（走查实录：允许/拒绝
+  // 还在屏上，工具行已标经放行，小白以为已批准在等它自己跑）
+  const gate = it.gated
+    ? it.awaitingApproval
+      ? '<span class="chat-tool-gate" title="这一步正在等你放行">⏸ 待放行</span>'
+      : '<span class="chat-tool-gate" title="这一步曾等待人工放行">⚠ 经放行</span>'
+    : "";
   const auto = it.autoApproved
     ? `<span class="chat-tool-auto" title="${esc(it.autoReason || "只读命令，免审批卡")}">自动放行</span>`
     : "";

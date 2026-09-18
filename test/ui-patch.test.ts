@@ -4818,6 +4818,37 @@ describe("追加模式显示该对话的工作目录", () => {
     expect(trigger.disabled).toBe(false);
     expect(field.classList.contains("scope-field--locked")).toBe(false);
   });
+
+  /**
+   * U6（走查）：会话内工作目录触发器是禁用键，但解释被镜像 paint 冲掉了——
+   * theme-select.paintTrigger 从 select.title 复制（`trigger.title = select.title || label`），
+   * 而宿主只把解释写在 trigger.title 上、select.title 是裸路径 → 解释秒没。
+   * 修法：解释同时写进 select.title（镜像复制的源头），两处都留得住。
+   */
+  it("U6：会话内触发器禁用时，title 说明「开新对话可另选」——且镜像 paint 冲不掉", () => {
+    const select = document.getElementById("workdir-select") as HTMLSelectElement;
+    const trigger = document.getElementById("workdir-trigger") as HTMLButtonElement;
+    select.innerHTML = "";
+    const opt = document.createElement("option");
+    opt.value = "D:\\first";
+    opt.textContent = "D:\\first";
+    select.appendChild(opt);
+    select.value = "D:\\first";
+
+    patchComposer(deriveComposerMode({
+      info: { runId: "run-b", status: "done", canContinue: true, workdir: "D:\\other" },
+      localStatus: "done",
+    }));
+    expect(trigger.disabled).toBe(true);
+    expect(trigger.title).toContain("本对话的工作目录");
+    expect(trigger.title).toContain("开新对话");
+    // 镜像源头也必须是解释：theme-select 的 paintTrigger 从 select.title 复制
+    expect(select.title).toContain("本对话的工作目录");
+
+    patchComposer(deriveComposerMode({ info: null, workdir: "D:\\first" }));
+    expect(trigger.disabled).toBe(false);
+    expect(trigger.title).not.toContain("本对话的工作目录");
+  });
 });
 
 describe("侧栏工作目录分组可收起", () => {
@@ -5454,8 +5485,10 @@ describe("persona-ux 文案锁（#4/#5/#6/#9/#10/#25）", () => {
       .toBe("要新建或改 a.md");
     renderRunDetail(stateWithPendingApproval(), { activeTab: "loop" });
     const card = document.querySelector(".approval-card")!;
-    expect(card.querySelector(".approval-summary")?.textContent).toBe("要新建或改 a.txt");
+    // U4（走查）：命令原文只写一遍——此前 header 与 summary 各写一遍，同一句话上下重复
+    expect(card.querySelector(".approval-summary")).toBeNull();
     expect(card.querySelector(".approval-tool-name")?.textContent).toBe("要新建或改 a.txt");
+    expect(card.textContent!.split("要新建或改 a.txt").length - 1).toBe(1);
     expect(card.textContent).not.toMatch(/write_file\s*\{/);
     expect(card.querySelector("[data-action='allow']")?.textContent).toBe("允许");
     expect(card.querySelector("[data-action='deny']")?.textContent).toBe("拒绝");
@@ -5846,5 +5879,41 @@ describe("H8 · 裁决卡标注「静态推导」", () => {
     const server = readFileSync(join(__dirname, "..", "ui", "server.ts"), "utf-8");
     expect(server).toMatch(/verifierCanExecute\(/);
     expect(server).toMatch(/staticOnly: true/);
+  });
+});
+
+/**
+ * U5 · 待放行 ≠ 经放行（2026-09-18 走查）。
+ * 实录：审批还悬着（允许/拒绝在屏上），工具行已经标「⚠ 经放行」（title 亦写
+ * 「曾等待」）——小白会以为已批准、在等它自己跑。pending 用现在时，决定后才是完成时。
+ */
+describe("U5 · 待放行 ≠ 经放行", () => {
+  const withPendingTool = () => {
+    let s = createInitialState("run-tg", "任务", true);
+    s = reduceEvents(s, [
+      sse(0, "main", "turn_start", { turn: 1 }),
+      sse(1, "main", "tool_call", { toolUseId: "t1", name: "node", input: { command: "node sum.js" } }),
+      sse(2, "main", "approval_request", { toolUseId: "t1", name: "node", input: { command: "node sum.js" } }),
+    ]);
+    return s;
+  };
+
+  it("挂起时标「待放行」+ 正在等；决定后才是「经放行」", () => {
+    renderRunDetail(withPendingTool(), { activeTab: "loop", harness: null });
+    const gate = document.querySelector(".chat-tool-gate");
+    expect(gate, "挂起的审批没有可视标记").toBeTruthy();
+    expect(gate!.textContent).toContain("待放行");
+    expect(gate!.textContent).not.toContain("经放行");
+    expect(gate!.getAttribute("title")).toContain("正在等");
+
+    let s = withPendingTool();
+    s = reduceEvents(s, [
+      sse(3, "main", "approval_resolved", { toolUseId: "t1", decision: "allowed" }),
+    ]);
+    renderRunDetail(s, { activeTab: "loop", harness: null });
+    const after = document.querySelector(".chat-tool-gate");
+    expect(after!.textContent).toContain("经放行");
+    expect(after!.textContent).not.toContain("待放行");
+    expect(after!.getAttribute("title")).toContain("曾等待");
   });
 });

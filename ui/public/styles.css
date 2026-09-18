@@ -2090,12 +2090,6 @@ body.sidebar-collapsed .sidebar {
   margin-top: var(--space-xs);
 }
 
-.approval-summary {
-  margin: 0 0 var(--space-sm);
-  font-size: var(--font-sm);
-  color: var(--text-1);
-  line-height: 1.45;
-}
 .approval-details {
   margin: 0 0 var(--space-sm);
   font-size: var(--font-xs);
