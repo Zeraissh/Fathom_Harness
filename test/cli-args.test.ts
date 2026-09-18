@@ -14,6 +14,7 @@ import {
   formatStaticDoctor,
   isReadlineClosedError,
   parseCliArgs,
+  resolveColorEnabled,
 } from "../src/cli-args.js";
 
 describe("CLI argument contract", () => {
@@ -245,5 +246,42 @@ describe("退出码口径（CI 消费者）", () => {
     expect(help).toMatch(/退出码：0=completed/);
     expect(help).toMatch(/1=（核查未通过|其它终态）/);
     expect(help).toMatch(/130\/143=信号/);
+  });
+});
+
+/**
+ * H2 · 机器可读出口（2026-09-18 走查）：--json / --quiet / 颜色决策。
+ *
+ * 旧病：重定向到文件后 ANSI 原样落盘（手写 \x1b 常量、无 isTTY/NO_COLOR 判断）；
+ * 唯一的机器可读出口（.agent-run-history 档案）藏在启动 dim 文案里，--help 不提。
+ */
+describe("机器可读出口（--json/--quiet/NO_COLOR）", () => {
+  it("--json / --quiet 可解析；二者同给时 json 优先且不报互斥", () => {
+    expect(parseCliArgs(["run", "--json", "任务"])).toMatchObject({ json: true, quiet: false });
+    expect(parseCliArgs(["--quiet", "--yes", "任务"])).toMatchObject({ quiet: true, json: false });
+    expect(parseCliArgs(["--json", "--quiet", "任务"])).toMatchObject({ json: true, quiet: true });
+    // 旧入口（无 run 子命令）同样接受
+    expect(parseCliArgs(["--json", "任务"])).toMatchObject({ json: true, task: "任务" });
+  });
+
+  it("颜色决策：FORCE_COLOR 显式优先 > NO_COLOR 非空 > isTTY（管道即关）", () => {
+    expect(resolveColorEnabled({}, true)).toBe(true);
+    expect(resolveColorEnabled({}, false)).toBe(false);
+    expect(resolveColorEnabled({ NO_COLOR: "1" }, true)).toBe(false);
+    // NO_COLOR 规范：存在且非空才算；空串不生效
+    expect(resolveColorEnabled({ NO_COLOR: "" }, true)).toBe(true);
+    expect(resolveColorEnabled({ FORCE_COLOR: "1" }, false)).toBe(true);
+    expect(resolveColorEnabled({ FORCE_COLOR: "0" }, true)).toBe(false);
+    expect(resolveColorEnabled({ FORCE_COLOR: "1", NO_COLOR: "1" }, false)).toBe(true);
+  });
+
+  it("--help 写明机器可读出口与档案路径（消费方不用考古）", () => {
+    const help = cliHelpText();
+    expect(help).toMatch(/--json/);
+    expect(help).toMatch(/run_result/);
+    expect(help).toMatch(/--quiet/);
+    expect(help).toMatch(/NO_COLOR/);
+    expect(help).toMatch(/\.agent-run-history/);
+    expect(help).toMatch(/\.agent-runs\.jsonl/);
   });
 });

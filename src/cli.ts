@@ -122,6 +122,7 @@ import {
   formatStaticDoctor,
   isReadlineClosedError,
   parseCliArgs,
+  resolveColorEnabled,
 } from "./cli-args.js";
 import { AgentLoop, createRunBudget, DEFAULT_MAX_TOKENS, DEFAULT_MAX_TURNS } from "./loop.js";
 import {
@@ -267,6 +268,8 @@ import {
   hostPlanResultEvent,
   hostPlanResumeEvent,
   hostPlanSubtaskViews,
+  isEphemeralTurnEvent,
+  serializeTurnEventForArchive,
 } from "./archive-event.js";
 import { cliRuntimePermissionSwitches, formatPermissionBanner, matchPermissionMode, resolvePermissionMode } from "./permission-mode.js";
 import {
@@ -287,13 +290,20 @@ let activeCliExecutionBroker: ExecutionBroker | undefined;
 let activeCliDurable: CliDurableHandle | undefined;
 let activeCliLineageBudget: SharedRunBudget | undefined;
 
+/**
+ * 颜色（H2 · 走查）：管道/重定向自动关（ANSI 不再原样落盘）、NO_COLOR 非空
+ * 强制关、FORCE_COLOR 显式优先。全文件 160+ 个 c.* 调用点不感知开关——
+ * 关色时按原文返回，一处收口。
+ */
+const colorOff = !resolveColorEnabled(process.env, Boolean(process.stdout.isTTY));
+const paint = (code: string) => (s: string) => (colorOff ? s : `\x1b[${code}m${s}\x1b[0m`);
 const c = {
-  dim: (s: string) => `\x1b[2m${s}\x1b[0m`,
-  cyan: (s: string) => `\x1b[36m${s}\x1b[0m`,
-  green: (s: string) => `\x1b[32m${s}\x1b[0m`,
-  yellow: (s: string) => `\x1b[33m${s}\x1b[0m`,
-  red: (s: string) => `\x1b[31m${s}\x1b[0m`,
-  magenta: (s: string) => `\x1b[35m${s}\x1b[0m`,
+  dim: paint("2"),
+  cyan: paint("36"),
+  green: paint("32"),
+  yellow: paint("33"),
+  red: paint("31"),
+  magenta: paint("35"),
 };
 
 /**
@@ -470,6 +480,21 @@ async function main(): Promise<void> {
     if (!report.ok) process.exitCode = 1;
     return;
   }
+
+  // H2 · 机器可读出口（走查）：--json/--quiet 的 stdout 契约在**入口一处收口**——
+  // 之后全部既有 console.log（启动配置/轮次/工具行/编排块…）自动改道 stderr，
+  // 不必逐个调用点去加判断（漏一个 stdout 就不干净了）。
+  const jsonMode = parsedArgs.command === "run" && parsedArgs.json;
+  const quietMode = parsedArgs.command === "run" && parsedArgs.quiet && !jsonMode;
+  if (jsonMode || quietMode) {
+    console.log = (...args: unknown[]) => {
+      console.error(...args);
+    };
+  }
+  /** 终局汇总行：默认/--quiet 落 stdout；--json 下不许污染 JSONL（终局走 run_result）。 */
+  const finalOut = (line: string): void => {
+    if (!jsonMode) process.stdout.write(`${line}\n`);
+  };
 
   // .env 被残留环境变量压掉时大声说出来（可能意味着凭据发往另一家端点）
   warnEnvConflicts();
@@ -1474,7 +1499,7 @@ async function main(): Promise<void> {
   const writtenArtifactPaths = new Set<string>();
   const endStreamLine = () => {
     if (streamingText) {
-      process.stdout.write("\n");
+      if (!jsonMode) process.stdout.write("\n");
       streamingText = false;
     }
   };
@@ -1598,7 +1623,16 @@ async function main(): Promise<void> {
     verifications: VerifyOutcome[];
   } | null = null;
   const ledgerStartedAt = Date.now();
+  /** --json 的事件流：与档案同形（逐字增量滤掉），段号取 durable 游标（无 durable 时 0）。 */
+  const emitJsonEvent = (source: string, event: TurnEvent): void => {
+    if (isEphemeralTurnEvent(event)) return;
+    const segmentIndex = cliDurable?.getState().checkpoint?.segmentIndex ?? 0;
+    process.stdout.write(
+      `${JSON.stringify({ ts: Date.now(), source, event: serializeTurnEventForArchive(source, event, segmentIndex) })}\n`,
+    );
+  };
   const noteForLedger = (source: string, event: TurnEvent): void => {
+    if (jsonMode) emitJsonEvent(source, event);
     cliDurable?.noteTrace(source, event);
     cliDurable?.noteEvent(source, event);
     if (event.type === "tool_call") tallyToolCall(ledgerTally, source, event.name);
@@ -1982,7 +2016,7 @@ async function main(): Promise<void> {
     });
     } catch (err) {
       if (err instanceof CliPlanRejectedError) {
-        console.log(c.yellow(`\n${err.message}`));
+        finalOut(c.yellow(`\n${err.message}`));
         ledgerFacts = {
           stopReason: "plan_rejected",
           error: null,
@@ -2003,7 +2037,7 @@ async function main(): Promise<void> {
     const totalWallMs = finishedAt - startedAt;
     const wallMs = finishedAt - planReadyAt; // 子任务阶段墙钟（排除 planner）
     cliDurable?.noteHostEvent(hostPlanResultEvent(outcome, { startedAt, planReadyAt, finishedAt }));
-    console.log(c.cyan("\n═══ 三角编排结果 ═══"));
+    finalOut(c.cyan("\n═══ 三角编排结果 ═══"));
     // 记账不分分支：计划不可解析（fail-closed）也是一次要归档的失败，只在
     // plan 存在的分支赋值会让这类失败在台账里落 stopReason=null。
     // steps 为空时各聚合项自然得 0/[]，不必按分支各写一份。
@@ -2024,10 +2058,10 @@ async function main(): Promise<void> {
       verifications: outcome.steps.flatMap((st) => st.result.verifications),
     };
     if (!outcome.plan) {
-      console.log(c.red(`✘ planner 未能产出可解析计划：${outcome.planOutcome.raw.slice(0, 200)}`));
+      finalOut(c.red(`✘ planner 未能产出可解析计划：${outcome.planOutcome.raw.slice(0, 200)}`));
       // 9.2 的 planner 版：区分"胡言乱语"与"探索没来得及收口"，返工策略完全不同
       if (outcome.planOutcome.failureSummary) {
-        console.log(c.yellow(`  ${outcome.planOutcome.failureSummary}`));
+        finalOut(c.yellow(`  ${outcome.planOutcome.failureSummary}`));
       }
     } else {
       for (const sub of outcome.plan.subtasks) {
@@ -2038,14 +2072,14 @@ async function main(): Promise<void> {
             ? c.green("✔ 通过")
             : c.red("✘ 未通过");
         const dur = step ? c.dim(` ${(step.durationMs / 1000).toFixed(1)}s`) : "";
-        console.log(`${mark} ${sub.id} ${sub.title}${sub.pack ? c.dim(` [${sub.pack}]`) : ""}${dur}`);
+        finalOut(`${mark} ${sub.id} ${sub.title}${sub.pack ? c.dim(` [${sub.pack}]`) : ""}${dur}`);
         if (step) {
           printVerdictSignal("    ", step.result.finalPassed, step.result.verifications.at(-1)?.verdict);
         }
       }
       const serialMs = outcome.steps.reduce((acc, s) => acc + s.durationMs, 0);
       const wallNote = `全程 ${(totalWallMs / 1000).toFixed(1)}s，子任务阶段墙钟 ${(wallMs / 1000).toFixed(1)}s，子任务合计 ${(serialMs / 1000).toFixed(1)}s${effectiveConcurrency > 1 ? `，并行节省 ${Math.max(0, (serialMs - wallMs) / 1000).toFixed(1)}s` : ""}`;
-      console.log(
+      finalOut(
         outcome.completed
           ? c.green(`\n✔ 全部子任务执行并核查通过`) + c.dim(`（${wallNote}）`)
           : c.red("\n✘ 编排未完成（快速失败）") + c.dim(`（${wallNote}）`),
@@ -2121,7 +2155,7 @@ async function main(): Promise<void> {
       verifications: outcome.verifications,
     };
     const tag = outcome.finalPassed ? c.green("✔ 核查通过") : c.red("✘ 核查未通过");
-    console.log(`\n${tag}${outcome.reworks ? c.dim(`（返工 ${outcome.reworks} 轮）`) : ""}`);
+    finalOut(`\n${tag}${outcome.reworks ? c.dim(`（返工 ${outcome.reworks} 轮）`) : ""}`);
     printVerdictSignal("  ", outcome.finalPassed, outcome.verifications.at(-1)?.verdict);
     // 终态口径（走查 H3）：--verify 路径此前从不收尾 durable——档案永远停在
     // "running"（僵尸工厂）。核查未通过不改执行段 stopReason，裁决由 outcome 另记。
@@ -2212,6 +2246,24 @@ async function main(): Promise<void> {
   const runExitCode = cliExitCodeForRun(ledgerFacts);
   if (runExitCode !== undefined) process.exitCode = runExitCode;
 
+  // H2 · --json 的终局对象：与 ■ 行同一份事实（ledgerFacts），机器消费的收尾口径；
+  // exitCode 报的是此刻真实会退出的值（含 plan_rejected 由抛错路径定的 2）。
+  if (jsonMode) {
+    process.stdout.write(
+      `${JSON.stringify({
+        type: "run_result",
+        runId: cliRunId,
+        stopReason: ledgerFacts?.stopReason ?? null,
+        turns: ledgerFacts?.turns ?? null,
+        finalPassed: ledgerFacts?.finalPassed ?? null,
+        reworks: ledgerFacts?.reworks ?? null,
+        error: ledgerFacts?.error ?? null,
+        verifications: ledgerFacts?.verifications?.length ?? 0,
+        exitCode: typeof process.exitCode === "number" ? process.exitCode : 0,
+      })}\n`,
+    );
+  }
+
   rl?.close();
   await executionBroker?.dispose?.();
   activeCliExecutionBroker = undefined;
@@ -2227,7 +2279,9 @@ async function main(): Promise<void> {
         break;
       case "text_delta":
         streamingText = true;
-        process.stdout.write(event.text);
+        // --json/--quiet：live 文本是"人话"，改走 stderr；完整文本以 assistant_text
+        // 事件进 JSONL（逐字增量被 isEphemeralTurnEvent 滤掉，与档案同纪律）
+        (jsonMode || quietMode ? process.stderr : process.stdout).write(event.text);
         break;
       case "assistant_text":
         endStreamLine(); // 完整文本已通过 delta 流式输出过，这里只收行
@@ -2404,26 +2458,28 @@ async function main(): Promise<void> {
             : reason === "partial" || reason === "max_tokens" || reason === "aborted"
               ? c.yellow
               : c.red;
-        console.log(color(`\n■ ${reason}`) + c.dim(` (${u.turns} turns)`));
-        console.log(
+        // 终局汇总：走 finalOut（stdout）。--quiet 时它仍是 stdout 上仅剩的东西；
+        // --json 时让位给 run_result。
+        finalOut(color(`\n■ ${reason}`) + c.dim(` (${u.turns} turns)`));
+        finalOut(
           c.dim(
             `  total: in=${u.inputTokens} cacheW=${u.cacheCreationTokens} cacheR=${u.cacheReadTokens} out=${u.outputTokens} | cacheHit=${(u.cacheHitRatio * 100).toFixed(1)}%`,
           ),
         );
         if (reason === "max_tokens") {
-          console.log(
+          finalOut(
             c.yellow(
               `  末轮输出撞 max_tokens 被截断，已生成内容保留在结果中。若任务需要更长回复，提高 AGENT_MAX_TOKENS`,
             ),
           );
         }
         if (reason === "incomplete" && writtenArtifactPaths.size > 0) {
-          console.log(c.yellow(`  已写 ${writtenArtifactPaths.size} 个文件，未签字`));
+          finalOut(c.yellow(`  已写 ${writtenArtifactPaths.size} 个文件，未签字`));
         }
         if (event.result.completion) {
           const completion = event.result.completion;
-          console.log(c.dim(`  ${completion.status}: ${completion.summary}`));
-          for (const blocker of completion.blockers) console.log(c.yellow(`  blocker: ${blocker}`));
+          finalOut(c.dim(`  ${completion.status}: ${completion.summary}`));
+          for (const blocker of completion.blockers) finalOut(c.yellow(`  blocker: ${blocker}`));
         }
         if (event.result.error) console.error(c.red(`  error: ${event.result.error.message}`));
         break;
