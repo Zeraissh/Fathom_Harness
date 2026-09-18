@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
@@ -11,6 +11,7 @@ import {
   cliExitCodeForRun,
   cliHelpText,
   formatCliNeedsConfirmMessage,
+  formatSignalNotice,
   formatStaticDoctor,
   isReadlineClosedError,
   parseCliArgs,
@@ -283,5 +284,54 @@ describe("机器可读出口（--json/--quiet/NO_COLOR）", () => {
     expect(help).toMatch(/NO_COLOR/);
     expect(help).toMatch(/\.agent-run-history/);
     expect(help).toMatch(/\.agent-runs\.jsonl/);
+  });
+});
+
+/**
+ * H4/H5 · 走查小项：中断提示 + 跨目录调用。
+ * H4：优雅中断路径存在但静默消失（130 无提示）；Windows 上非控制台信号投递不了，
+ *     得把"只有控制台 Ctrl+C 才算优雅中断"写进帮助。
+ * H5：无 bin，--help 只教仓库内 npm 脚本——在自己项目里跑要试错两轮绝对路径。
+ */
+describe("H4/H5 · 中断提示与跨目录调用", () => {
+  it("H4：中断提示分两态——有检查点给续跑命令，没检查点说清不能热续", () => {
+    const withCp = formatSignalNotice("SIGINT", { runId: "cli-123", hasCheckpoint: true });
+    expect(withCp).toContain("SIGINT");
+    expect(withCp).toContain("--resume-run cli-123");
+    const noCp = formatSignalNotice("SIGTERM", { runId: "cli-9", hasCheckpoint: false });
+    expect(noCp).toContain("SIGTERM");
+    expect(noCp).toContain("不能热续");
+    expect(noCp).not.toContain("--resume-run cli-9");
+  });
+
+  it("H4：help 写明「控制台 Ctrl+C 才是优雅中断；硬杀不能热续」", () => {
+    const help = cliHelpText();
+    expect(help).toMatch(/Ctrl\+C/);
+    expect(help).toMatch(/硬杀/);
+  });
+
+  it("H4 接线锁：信号处理器退出前打提示（读活 durable 的检查点事实）", () => {
+    const cli = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "..", "src", "cli.ts"), "utf8");
+    expect(cli).toMatch(/formatSignalNotice\(/);
+    expect(cli).toMatch(/hasCheckpoint/);
+  });
+
+  it("H5：help 给跨目录调用示例（在别的项目里怎么跑）", () => {
+    const help = cliHelpText();
+    expect(help).toMatch(/node_modules/);
+    expect(help).toMatch(/tsx/);
+    expect(help).toMatch(/你的项目/);
+  });
+
+  it("H5：package.json 有 bin，指向构建产物 dist/src/cli.js（rootDir=. 保留 src 前缀）", () => {
+    const pkg = JSON.parse(
+      readFileSync(join(dirname(fileURLToPath(import.meta.url)), "..", "package.json"), "utf8"),
+    ) as { bin?: Record<string, string> };
+    expect(pkg.bin?.["agent-harness"]).toBe("dist/src/cli.js");
+    // 构建产物必须真在那个位置（pack 允许清单只放行 dist/**）
+    const built = join(dirname(fileURLToPath(import.meta.url)), "..", "dist", "src", "cli.js");
+    if (existsSync(built)) {
+      expect(readFileSync(built, "utf8").startsWith("#!/usr/bin/env node")).toBe(true);
+    }
   });
 });

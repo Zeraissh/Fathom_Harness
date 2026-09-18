@@ -65,6 +65,22 @@ export function formatCliNeedsConfirmMessage(): string {
   return "需要确认，请加 --yes";
 }
 
+/**
+ * 中断提示（H4 · 走查 2026-09-18）：优雅中断此前静默消失——退出 130、什么也不说。
+ * 有热续检查点就给续跑命令（检查点事实来自活 durable）；没有就说清不能热续，
+ * 不含糊其辞。
+ */
+export function formatSignalNotice(
+  signal: string,
+  facts: { runId?: string | null; hasCheckpoint?: boolean },
+): string {
+  const tail = facts.runId ? `（run ${facts.runId}）` : "";
+  if (facts.hasCheckpoint && facts.runId) {
+    return `已中断（${signal}）${tail}：已提交的检查点保留——继续：--resume-run ${facts.runId}`;
+  }
+  return `已中断（${signal}）${tail}：没有已提交的检查点，这次运行不能热续`;
+}
+
 export function cliCanPrompt(
   io: { stdin?: { isTTY?: boolean | undefined } } = process,
 ): boolean {
@@ -278,6 +294,15 @@ export function cliHelpText(): string {
     "Exit codes:",
     "  退出码：0=completed（--verify 时还须核查通过）；1=（核查未通过/其它一切终态：中断、预算耗尽、撞轮次、异常等）；2=需要确认（非 TTY 计划门）；130/143=信号中断。",
     "  CI 请以退出码判定成败；stopReason 原文在各 run 的台账与 .agent-run-history 档案里。",
+    "",
+    "Interrupt:",
+    "  中断：控制台 Ctrl+C = 优雅中断（落检查点、退出 130/143，并打印能不能 --resume-run 续跑）；",
+    "  Windows 上 kill / 任务管理器属硬杀——不落检查点、不能热续（这是 OS 行为，宿主拗不过）。",
+    "",
+    "Run from another project:",
+    "  命令行暂不能 --workdir，工作目录 = 当前 cwd。在别的项目里跑：",
+    "  cd 你的项目 && node <仓库>/node_modules/tsx/dist/cli.mjs --env-file <仓库>/.env <仓库>/src/cli.ts run \"任务\"",
+    "  或构建后走 bin：npx agent-harness run \"任务\"（bin → dist/src/cli.js，需先在仓库里 npm run build）",
     "",
     "Machine-readable output:",
     "  --json         stdout 只输出 JSONL：每个执行事件一行 {\"ts\",\"source\",\"event\"}（逐字增量不落流），终局一行 {type:\"run_result\", stopReason, turns, finalPassed, exitCode, …}；人话装饰一律改走 stderr（含 FORCE_COLOR 强制开色时，JSONL 依旧纯净）",

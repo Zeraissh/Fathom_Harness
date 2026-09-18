@@ -2,6 +2,9 @@
   "name": "agent-harness",
   "version": "1.3.0",
   "private": true,
+  "bin": {
+    "agent-harness": "dist/src/cli.js"
+  },
   "type": "module",
   "description": "Harness engineering agent framework — hand-written agent loop on the Anthropic Messages API",
   "engines": {

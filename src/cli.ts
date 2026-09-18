@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 /**
  * CLI 宿主：事件流的一个消费者示例。
  * 用法：npx tsx src/cli.ts "任务描述" [--yes] [--verify] [--plan [--parallel[=N]]] [--auto] [--ask]
@@ -119,6 +120,7 @@ import {
   cliExitCodeForRun,
   cliHelpText,
   formatCliNeedsConfirmMessage,
+  formatSignalNotice,
   formatStaticDoctor,
   isReadlineClosedError,
   parseCliArgs,
@@ -791,15 +793,6 @@ async function main(): Promise<void> {
       "disable MCP or use a separately managed hardware/service gateway",
     );
   }
-  const mcp = mcpConfig ? await connectMcpServers(mcpConfig, (m) => console.warn(c.yellow(m))) : undefined;
-  if (mcp) {
-    for (const [server, count] of Object.entries(mcp.summary)) {
-      console.log(c.dim(`mcp: connected "${server}" (${count} tools)`));
-    }
-    for (const [server, reason] of Object.entries(mcp.skipped)) {
-      console.log(c.dim(`mcp: skipped "${server}" (${reason})`));
-    }
-  }
 
   /**
    * 识图：执行者自己能看图 → describe_image 走执行模型，不另引识图角色。
@@ -1366,6 +1359,19 @@ async function main(): Promise<void> {
   }
   activeCliDurable = cliDurable;
   activeCliLineageBudget = lineageBudget;
+
+  // H6（走查）：MCP 连接**后移**到这里——args / 档案校验（尤其坏 --resume-run）
+  // 失败必须先于拉起 30+ 个 MCP 工具与服务器横幅出现。旧序：坏 resume 先打
+  // 10 行噪音（含 MCP 自家 stdio 横幅），真错误排到最后一行。
+  const mcp = mcpConfig ? await connectMcpServers(mcpConfig, (m) => console.warn(c.yellow(m))) : undefined;
+  if (mcp) {
+    for (const [server, count] of Object.entries(mcp.summary)) {
+      console.log(c.dim(`mcp: connected "${server}" (${count} tools)`));
+    }
+    for (const [server, reason] of Object.entries(mcp.skipped)) {
+      console.log(c.dim(`mcp: skipped "${server}" (${reason})`));
+    }
+  }
 
   try {
     resolvePermissionMode(process.env.AGENT_PERMISSION_MODE);
@@ -2495,6 +2501,15 @@ async function main(): Promise<void> {
 
 for (const signal of ["SIGINT", "SIGTERM"] as const) {
   process.once(signal, () => {
+    // H4（走查）：中断不再静默消失——说出它是什么、检查点在不在、能不能续跑
+    console.error(
+      c.yellow(
+        formatSignalNotice(signal, {
+          runId: activeCliDurable?.runId ?? null,
+          hasCheckpoint: Boolean(activeCliDurable?.getState().checkpoint),
+        }),
+      ),
+    );
     if (activeCliLineageBudget) {
       activeCliDurable?.apply({
         type: "budget_snapshot",
