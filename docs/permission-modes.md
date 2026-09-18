@@ -15,6 +15,11 @@
  * 2. 圈禁 / SAFE-01~03 硬拒（symlink、SSRF、路径逃逸）不受三档影响。
  * 3. pack 泛化 `auto` 不能盖掉 server 单工具 `ask`（既有 SAFE-01 测试）。
  * 4. 不做七档；不做 `bypassPermissions` 等价档（`--yes` 已是它，且硬拒除外）。
+ * 5. **圈内只读 bash 命令免审批卡**（2026-09-18 裁决，走查第一刀）：与三档正交、
+ *    任何档位都成立；`permission: deny` / 圈禁 / 凭据形状门仍排在它之前拦。
+ *    判定见 `src/tools/read-only-shell.ts`（白名单 + 参数圈禁 + 凭据形状弹卡），
+ *    **判不准回到卡，不是拒绝**。放行留痕（`approval_auto` 事件，计台账 auto）。
+ *    只读角色（verifier / planner）显式关掉这条豁免——它们的只读门是领域白名单，更窄。
  *
  * ## 代码事实源
  *
@@ -24,7 +29,7 @@
  * - CLI 启动行打印展开后的开关值（不许只报模式名）
  * - Web 出厂：`WEB_DEFAULT_PERMISSION_MODE=manual`、`WEB_DEFAULT_AUTO_APPROVE=false`；
  *   `GET /api/harness.defaults.autoApprove === false`。页面「自动放行」默认不勾，
- *   说明「默认先问；勾上才自动放行」。发送按钮和 label 是「发送」。
+ *   说明「默认先问；工作目录内的只读命令本就免问；勾上才自动放行」。发送按钮和 label 是「发送」。
  * - CLI `--yes` 横幅跟 `cliRuntimePermissionSwitches`（`yes=true` / 会自动放行），不抄 env 标签。
  * - Web：`permissionMode` 选择器 + 装配条 / composer 一行人话（哪一档、会不会自动放行 ask）；
  *   展开开关仍在 why 里。`mode` 只跟实际开关反推，不跟点过的标签（追问改编排后对不上 → 自定义）
@@ -36,7 +41,8 @@
  *   非 TTY 无 `--yes` 退出码 2、印「需要确认，请加 --yes」，不摔 readline。
  *   `--plan --yes` 是自定义（gate + autoYes）。帮助不再写「没有计划确认门」。
  * - 台账：`permissionMode` 记实际开关反推的档（自定义 → null），不是点过的标签；
- *   `approvals{asked,auto,denied}` 记工具审批结局（计划门不计）
+ *   `approvals{asked,auto,denied}` 记工具审批结局（计划门不计；只读免问的
+ *   `approval_auto` 计 auto——规则代行的放行也要进账，不然这批是隐形的）
  */
 
 export {};

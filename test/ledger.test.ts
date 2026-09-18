@@ -439,11 +439,19 @@ describe("D3 审批计数（docs/09 §4.3 判据 4）", () => {
     expect(t.denied).toBe(0);
   });
 
+  it("只读免问（approval_auto）计入 auto——没有请求，只有规则代行的放行", () => {
+    const t = emptyApprovalsTally();
+    tallyApprovalOutcome(t, { type: "approval_auto" });
+    expect(t).toEqual({ asked: 0, auto: 1, denied: 0 });
+  });
+
   it("两个宿主的写入口都接了 permissionMode / approvals，读数器把它印出来", () => {
     const web = readFileSync(join(__dirname, "..", "ui", "server.ts"), "utf-8");
     const cli = readFileSync(join(__dirname, "..", "src", "cli.ts"), "utf-8");
     const report = readFileSync(join(__dirname, "..", "eval", "ledger-report.ts"), "utf-8");
     expect(web).toMatch(/tallyApprovalOutcome\(\(run\.approvalsTally \?\?= emptyApprovalsTally\(\)\), event\)/);
+    // 只读免问（approval_auto）必须进宿主计数口——否则台账里这批放行是隐形的
+    expect(web).toMatch(/event\.type === "approval_auto"/);
     expect(web).toMatch(/permissionMode:\s*matchPermissionMode\(/);
     expect(web).toMatch(/approvals:\s*run\.approvalsTally \?\? emptyApprovalsTally\(\)/);
     expect(cli).toMatch(/tallyApprovalOutcome\(ledgerApprovals/);

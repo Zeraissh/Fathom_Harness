@@ -12,6 +12,22 @@
       "runtimeArgs": ["tsx", "--env-file-if-exists=.env", "ui/serve.ts"],
       "port": 4173,
       "autoPort": true
+    },
+    {
+      "name": "fathom-live",
+      "url": "http://127.0.0.1:4173",
+      "port": 4173
+    },
+    {
+      "name": "fathom-rewalk",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "tsx",
+        "--env-file-if-exists=.env",
+        "--env-file-if-exists=D:/Work/scratch/fathom-rewalk-20260918/rewalk.env",
+        "ui/serve.ts"
+      ],
+      "port": 4199
     }
   ]
 }

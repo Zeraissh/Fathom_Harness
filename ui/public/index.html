@@ -439,7 +439,7 @@
       <div class="knob-row" title="只改审批节奏。圈禁、硬拒与密钥门不受档位影响。">
         <span class="knob-row-copy">
           <span class="knob-row-name" id="permission-row-label">权限</span>
-          <span class="knob-row-desc" id="permission-stance">手动 · 危险动作会先问你，不会自动放行</span>
+          <span class="knob-row-desc" id="permission-stance">手动 · 危险动作会先问你（工作目录内的只读命令自动放行）</span>
         </span>
         <select id="permission-mode-select" aria-labelledby="permission-row-label">
           <option value="">自定义</option>
@@ -462,7 +462,7 @@
         </span>
         <input type="checkbox" id="multi-agent-toggle" />
       </label>
-      <label class="knob-row" title="打开后 ask 级工具不再逐次问。默认先问。写入只能改这些文件夹。">
+      <label class="knob-row" title="打开后 ask 级工具不再逐次问。默认先问；工作目录内的只读命令本来就免问。写入只能改这些文件夹。">
         <span class="knob-row-copy">
           <span class="knob-row-name">自动放行</span>
           <span class="knob-row-desc">默认先问；勾上才自动放行</span>

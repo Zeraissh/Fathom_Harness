@@ -241,7 +241,7 @@ export function railPolicy({ viewportWidth, sidebarWidth, preferredWidth, splitR
 
 来自审计第 5 节「做得对的，下一刀别误伤」。本 spec 的任何改动不得违反：
 
-1. 默认 `autoApprove=false`（默认先问）
+1. 默认 `autoApprove=false`（默认先问）——**2026-09-18 修正**：圈内只读 bash 命令免审批卡（走查第一刀，`src/tools/read-only-shell.ts`，任何档位成立、`deny`/圈禁/凭据门仍先拦）；写盘与未知动作照旧逐张卡。放行留痕 `approval_auto`。
 2. 批准卡人话，不回退 JSON 工具名
 3. 停止三分词：「已停止」+「写入不会回滚」；已完成的才写「运行已完成」
 4. Work 普通人话 `POST /api/runs` 必须 200，不因「设计模式更干净」请回 409

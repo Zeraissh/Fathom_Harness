@@ -291,6 +291,15 @@ export interface AgentConfig {
   /** 额外可写根（见 ToolContext.writeRoots）。Web 宿主只注入本 run 勾选的目录 */
   writeRoots?: string[];
   /**
+   * 圈内只读 bash 命令免审批卡（2026-09-18 走查第一刀；分类器
+   * `src/tools/read-only-shell.ts`）。**默认开**——"读类免问"是登记过的产品裁决，
+   * 不该指望每个宿主装配时都记得打开（P6 同款理由）。
+   * 只读角色（verifier / planner）必须在自己的装配处显式置 false：它们的只读门
+   * 是**白名单**（领域声明的核查命令集），比本分类器更窄，不能被放宽
+   * ——与 withoutEditFile/withoutAskUser 同性质，由 role 文件执行而非装配方。
+   */
+  readOnlyShellAutoAllow?: boolean;
+  /**
    * 第三方 Anthropic 兼容端点模式（DeepSeek/GLM/Kimi 等）：
    * 去掉 Claude 专属参数（adaptive thinking / output_config.effort / cache_control）。
    * 缺省时由宿主按模型名推断（非 claude-* 即 true）。
@@ -537,6 +546,19 @@ export type TurnEvent =
       resolvedTargets?: import("./approval-display.js").ApprovalPathTarget[];
       /** 宿主必须调用 respond 才能让 loop 继续；deny 时可附给模型的理由 */
       respond: (decision: "allow" | "deny", reason?: string) => void;
+    }
+  /**
+   * 只读命令免审批卡（2026-09-18 走查第一刀）：loop 用分类器判「圈内只读 bash」
+   * 后直接放行，不再发 approval_request——但**要留记录**（省掉的是点击，不是记录）。
+   * `rule` 是判据名（当前只 `read-only-shell`），`reason` 是分类器判词。
+   */
+  | {
+      type: "approval_auto";
+      toolUseId: string;
+      name: string;
+      input: unknown;
+      rule: "read-only-shell";
+      reason: string;
     }
   | { type: "usage"; turn: number; usage: Anthropic.Usage; breakdown?: {
       system: number;

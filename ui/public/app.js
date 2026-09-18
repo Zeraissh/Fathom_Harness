@@ -1873,6 +1873,17 @@ function buildTimelineEntry(seq, source, type, event) {
         timedOut: event.timedOut === true,
         ...(event.detail ? { detail: String(event.detail) } : {}),
       };
+    // 只读免问的放行记录（2026-09-18）：与审批请求同形（谁、什么命令、为什么免问），
+    // 但没有卡、没有 respond——它只是一条留痕。逐字段投影，缺一个字段就是静默丢掉。
+    case "approval_auto":
+      return {
+        ...base,
+        toolUseId: String(event.toolUseId ?? ""),
+        name: String(event.name ?? ""),
+        input: event.input,
+        rule: String(event.rule ?? ""),
+        reason: String(event.reason ?? ""),
+      };
     default:
       return base;
   }
@@ -3221,7 +3232,7 @@ export function describePermissionStance(mode, switches) {
   const auto = switches?.autoYes === true;
   const danger = auto
     ? "ask 级会自动放行；deny / 圈禁 / 硬拒仍拦住"
-    : "危险动作会先问你，不会自动放行";
+    : "危险动作会先问你（工作目录内的只读命令自动放行）";
   if (mode === "manual") return `手动 · ${danger}`;
   if (mode === "plan") return `计划 · 先出计划再动手；${danger}`;
   if (mode === "auto") return `自动 · ${danger}`;
@@ -11605,6 +11616,7 @@ export function renderLogEntry(e) {
   let cls = "log-entry";
   if (e.type === "tool_result" && e.resultIsError) cls += " log-entry--error";
   if (e.type === "approval_request") cls += " log-entry--approval";
+  if (e.type === "approval_auto") cls += " log-entry--auto-allow";
   if (e.type === "api_retry") cls += " log-entry--warning";
   if (e.type === "model_call_end" && e.status === "error") cls += " log-entry--warning";
   if (e.type === "model_fallback") cls += " log-entry--warning";
@@ -11827,6 +11839,8 @@ function entryIcon(type, isError) {
     case "assistant_text": return "¶";   // CLI 直接流式打印无标记，列表里需要一个
     case "assistant_thinking": return "✽"; // 与对话视图同款，自成语域
     case "approval_request": return "⚠"; // cli.ts:539
+    // 只读免问不是警告：省掉的是点击不是记录，这行让「没弹卡」在日志里看得见
+    case "approval_auto": return "✓";
     case "api_retry": return "⟳";        // cli.ts:563
     case "model_call_start": return "▷";
     case "model_call_end": return "■";
@@ -11876,6 +11890,7 @@ function entryActionLabel(e) {
       if (e.live) return `思考过程（${(e.text ?? "").length} 字 · 正在写）`;
       return e.redacted ? "思考过程（已加密）" : `思考过程（${(e.text ?? "").length} 字）`;
     case "approval_request": return `审批请求：${e.name ?? ""}`;
+    case "approval_auto": return `自动放行（只读命令）：${e.name ?? ""}`;
     case "api_retry": return `API 重试（第${e.attempt ?? "?"}次）`;
     case "model_call_start": return `模型请求开始（第${(e.attempt ?? 0) + 1}次）`;
     case "model_call_end": return e.status === "error" ? "模型请求失败" : "模型请求结束";
@@ -11964,6 +11979,8 @@ function entryDetail(e) {
     case "assistant_thinking":
       return e.live ? tailOf(e.text, 60) : "";
     case "approval_request":
+      return truncate(formatInput(e.input), 60);
+    case "approval_auto":
       return truncate(formatInput(e.input), 60);
     case "api_retry":
       return e.reason ?? "";

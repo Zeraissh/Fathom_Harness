@@ -3653,7 +3653,9 @@ describe("装配状态条", () => {
     };
     const chip = deriveAssemblyBar(s, null).find((i) => i.key === "permission");
     expect(chip?.chip).toMatch(/计划/);
-    expect(chip?.chip).toMatch(/不会自动放行/);
+    expect(chip?.chip).toMatch(/危险动作会先问你/);
+    // 2026-09-18：只读豁免也必须在装配条上照实说（与 src/permission-mode.ts 同文案）
+    expect(chip?.chip).toMatch(/只读命令自动放行/);
     expect(chip?.why).toContain("确认门开");
     expect(chip?.why).toContain("autoYes 关");
     expect(chip?.why).toMatch(/docs\/permission-modes/);
@@ -5894,5 +5896,47 @@ describe("P5 组的渲染", () => {
       steps: [{ type: "tool_call", seq: 1, name: "read_file", input: {} }],
     });
     expect(html).not.toContain("log-entry-group-body");
+  });
+});
+
+// ---- 只读免问（2026-09-18 审批摩擦第一刀）：日志条渲染 ----
+describe("approval_auto 的渲染", () => {
+  it("免问的只读命令在日志里看得见：标题写明、不是警告类、默认折叠", () => {
+    const html = renderLogEntry({
+      type: "approval_auto",
+      seq: 1,
+      collapsed: true,
+      name: "bash",
+      input: { command: "ls -la" },
+      rule: "read-only-shell",
+      reason: "只读命令，参数均在工作目录内",
+    });
+    expect(html).toContain("log-entry--auto-allow");
+    expect(html).toContain("自动放行（只读命令）：bash");
+    expect(html).toContain("log-entry--collapsed");
+    expect(html).not.toContain("log-entry--approval");
+  });
+
+  it("投影层不丢字段：reducer → 派生日志，条目带 name/input/rule（纯函数测试覆不住调用点）", () => {
+    const s = reduceEvents(createInitialState("rw", "t", false), [
+      {
+        seq: 1,
+        source: "main",
+        event: {
+          type: "approval_auto",
+          toolUseId: "tu_9",
+          name: "bash",
+          input: { command: "ls -la" },
+          rule: "read-only-shell",
+          reason: "只读命令，参数均在工作目录内",
+        },
+      },
+    ]);
+    const entry = deriveLogEntries(s, null).find((e) => e.type === "approval_auto");
+    expect(entry?.name).toBe("bash");
+    expect(entry?.input).toEqual({ command: "ls -la" });
+    expect(entry?.rule).toBe("read-only-shell");
+    const html = renderLogEntry({ ...entry, collapsed: true });
+    expect(html).toContain("自动放行（只读命令）：bash");
   });
 });

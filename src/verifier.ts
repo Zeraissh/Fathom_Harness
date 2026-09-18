@@ -301,6 +301,10 @@ export async function runVerifier(
     tools: [...withoutEditFile(withoutAskUser(roleBase.tools)), createVerdictTool()],
     terminalTool: VERDICT_TOOL_NAME,
     runBudget: verifierBudget,
+    // 核查者的只读门是领域白名单（verify.readOnlyCommands），比执行者的
+    // 「圈内只读 bash 免卡」更窄——这条豁免绝不能顺 {...cfg} 漏进来。
+    // 与 withoutEditFile/withoutAskUser 同性质：由 role 文件执行，不指望装配方记得。
+    readOnlyShellAutoAllow: false,
   };
   const first = await drainVerifierEvents(
     new AgentLoop({ ...verifierCfg, maxTurns: verifierMaxTurns }, model).run(

@@ -1664,6 +1664,9 @@ async function main(): Promise<void> {
           await settleCliApproval(event, tag);
           break;
         }
+        case "approval_auto":
+          console.log(c.dim(`${tag} ✓ 自动放行（只读命令） ${event.name} ${JSON.stringify(event.input).slice(0, 120)}`));
+          break;
         case "compaction":
           console.log(c.yellow(`${tag} ${describeCompaction(event)}`));
           break;
@@ -2279,6 +2282,13 @@ async function main(): Promise<void> {
       case "approval_request": {
         endStreamLine();
         await settleCliApproval(event);
+        break;
+      }
+      case "approval_auto": {
+        // 圈内只读命令免卡（2026-09-18）：没有请求只有放行，但仍要看得见、要记账
+        endStreamLine();
+        console.log(c.dim(`✓ 自动放行（只读命令） ${event.name} ${JSON.stringify(event.input)}`));
+        tallyApprovalOutcome(ledgerApprovals, event);
         break;
       }
       case "usage": {

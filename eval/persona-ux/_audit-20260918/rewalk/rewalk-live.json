@@ -1,0 +1,86 @@
+{
+  "msToConversation": 258,
+  "render": {
+    "chatItems": 12,
+    "domNodes": 2709,
+    "textLen": 258928,
+    "stackHeight": 2254,
+    "thinkingFolds": 3,
+    "scroller": {
+      "sel": "#main-area",
+      "scrollHeight": 2410,
+      "clientHeight": 725
+    },
+    "paint": [
+      {
+        "n": "first-paint",
+        "at": 120
+      },
+      {
+        "n": "first-contentful-paint",
+        "at": 120
+      }
+    ],
+    "nav": {
+      "dcl": 140,
+      "load": 142
+    },
+    "longtasksInPage": 6
+  },
+  "scroll": {
+    "gapsOver33": 0,
+    "maxGap": 0,
+    "gaps": [],
+    "durationMs": 1310,
+    "landedAtBottom": false
+  },
+  "log": {
+    "logEntries": 907,
+    "groupCount": 38,
+    "groupText": [
+      "▸ ⋯ 用了 2 步 bash",
+      "▸ ⋯ 用了 2 步 glob",
+      "▸ ⋯ 用了 2 步 glob",
+      "▸ ⋯ 用了 4 步 grep、read_file"
+    ],
+    "firstGroupExpanded": "▸ ⋯ 用了 2 步 bash",
+    "entryKinds": {
+      "log-entry--collapsed": 747,
+      "log-entry--error": 23,
+      "log-entry--group": 38,
+      "log-entry--approval": 95,
+      "log-entry--warning": 4
+    }
+  },
+  "monitor": {
+    "longtasks": [
+      {
+        "at": 40,
+        "dur": 54
+      },
+      {
+        "at": 164,
+        "dur": 59
+      },
+      {
+        "at": 281,
+        "dur": 223
+      },
+      {
+        "at": 576,
+        "dur": 81
+      },
+      {
+        "at": 658,
+        "dur": 74
+      },
+      {
+        "at": 737,
+        "dur": 230
+      }
+    ],
+    "longtaskCount": 6,
+    "shifts": 7,
+    "shiftSum": 0.546
+  }
+}

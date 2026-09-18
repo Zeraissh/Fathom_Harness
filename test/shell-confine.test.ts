@@ -78,6 +78,12 @@ describe("confineShellCommand", () => {
     expect(confineShellCommand("ls eval-out 2>&1", root).ok).toBe(true);
   });
 
+  it("allows null-sink redirects（走查 2026-09-18：2>/dev/null 曾被整个拒绝，白烧一轮）", async () => {
+    const root = await freshWorkdir();
+    expect(confineShellCommand("cat -A f 2>/dev/null | head -20", root).ok).toBe(true);
+    expect(confineShellCommand("printf x > /dev/null", root).ok).toBe(true);
+  });
+
   it("allows redirect into an extra writable root", async () => {
     const root = await freshWorkdir();
     const extra = await freshWorkdir();

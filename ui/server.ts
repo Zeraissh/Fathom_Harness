@@ -6164,7 +6164,11 @@ export function createUiServer(options: UiServerOptions = {}): UiServerHandle {
       const role = typeof event.role === "string" && event.role ? event.role : "main";
       broadcastDeltaReset(run, role);
     }
-    if (event.type === "approval_resolved" || event.type === "approval_expired") {
+    if (
+      event.type === "approval_resolved" ||
+      event.type === "approval_expired" ||
+      event.type === "approval_auto"
+    ) {
       tallyApprovalOutcome((run.approvalsTally ??= emptyApprovalsTally()), event);
     }
     const seq = run.events.length;
