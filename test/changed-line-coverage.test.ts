@@ -1,8 +1,13 @@
 // @ts-nocheck
 import { describe, expect, it } from "vitest";
+import { execFileSync } from "node:child_process";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import {
   changedLineCoverage,
   coverageInclude,
+  gitDiff,
   parseLcov,
   parseUnifiedDiff,
 } from "../scripts/changed-line-coverage.mjs";
@@ -98,4 +103,56 @@ describe("TEST-01 changed-line coverage", () => {
     const win = parseLcov("SF:D:\\repo\\src\\foo.ts\nDA:3,2\nend_of_record\n");
     expect(win.get("D:/repo/src/foo.ts")?.get(3)).toBe(2);
   });
+});
+
+/**
+ * gitDiff 的缓冲上限（2026-09-18 夜 CI 实录）。
+ *
+ * 这个门在这条 PR 上长期红着，日志只有一句 `git diff failed (null)`——看的人
+ * 只会去查覆盖率。真因是 `spawnSync` 默认 `maxBuffer` = 1MB，而这条分支相对
+ * main 的 diff 有 1.2MB：ENOBUFS 让 status 变成 null、stderr 为空，错误成了
+ * 一团雾。这里用真 git 仓造一份 >1MB 的改动，把"读得全"和"报得清"两件事都钉住。
+ */
+describe("changed-line-coverage · gitDiff 缓冲", () => {
+  function bigRepo(): string {
+    const dir = mkdtempSync(join(tmpdir(), "clc-big-"));
+    const git = (...args: string[]) => execFileSync("git", args, { cwd: dir, stdio: "pipe" });
+    git("init", "-q");
+    git("config", "user.email", "clc@test");
+    git("config", "user.name", "clc");
+    writeFileSync(join(dir, "big.ts"), "export const seed = 0;\n", "utf8");
+    git("add", ".");
+    git("commit", "-qm", "base");
+    git("tag", "base");
+    // 4 万行新增（每行 diff 行 ~33 字节）→ 完整 diff ≈ 1.3MB，稳稳越过 1MB 旧上限
+    writeFileSync(
+      join(dir, "big.ts"),
+      Array.from({ length: 40_000 }, (_, i) => `export const value${i} = ${i};`).join("\n") + "\n",
+      "utf8",
+    );
+    git("add", ".");
+    git("commit", "-qm", "big");
+    return dir;
+  }
+
+  it("diff 超过 1MB 也读得全（旧实现静默截断成 failed (null)）", () => {
+    const dir = bigRepo();
+    try {
+      const diff = gitDiff("base", dir);
+      expect(diff.length).toBeGreaterThan(1024 * 1024);
+      // 末尾那几行在——证明整份都读到了，不是截断后的前 1MB
+      expect(diff).toContain("value39999");
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  }, 60_000);
+
+  it("基准 ref 不存在时，错在基准上而不是静默成功", () => {
+    const dir = bigRepo();
+    try {
+      expect(() => gitDiff("no-such-ref", dir)).toThrow();
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  }, 60_000);
 });

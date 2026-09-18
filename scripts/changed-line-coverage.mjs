@@ -128,9 +128,18 @@ export function gitDiff(base, cwd = process.cwd()) {
     cwd,
     encoding: "utf8",
     shell: false,
+    /**
+     * 默认 maxBuffer 是 1MB。分支 diff 一旦越过它，spawnSync 交回的是
+     * `status=null + error=ENOBUFS + 空 stderr`——旧实现只报 stderr 与 status，
+     * 于是错误变成一句 `git diff failed (null)`，看日志的人只会去查覆盖率。
+     * 这条 PR 就长期红在这里（分支 diff 1.2MB），而不是红在任何未覆盖行上。
+     */
+    maxBuffer: 256 * 1024 * 1024,
   });
   if (result.status !== 0) {
-    throw new Error(result.stderr || `git diff failed (${result.status})`);
+    // 真因优先于 status：ENOBUFS / ENOENT 这类错误的 status 是 null，报出来等于没报
+    const why = result.error ? String(result.error.message ?? result.error) : result.stderr;
+    throw new Error(why || `git diff failed (${result.status})`);
   }
   return result.stdout ?? "";
 }
