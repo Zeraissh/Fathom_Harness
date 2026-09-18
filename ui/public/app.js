@@ -2827,6 +2827,25 @@ export function newRunPlaceholder(workdir, opts) {
  *   delivery?: {kind?: string, placeholder?: string, hint?: string}|null,
  * }} input
  */
+/**
+ * 发送栏上方那排控件（项目 / 工作目录 / 模型，2026-09-18 回走 §2.4）的**收成一行摘要**：
+ * 默认收起时只显示这一行，点开才是控件本体。摘要只写「当前装的是什么」，
+ * 不写选了多少个——空项跳过，全空时给一句可操作的话。
+ * @param {{ project?: string|null, workdir?: string|null, model?: string|null }} [parts]
+ */
+export function deriveScopeSummary(parts = {}) {
+  const clean = (v) => (typeof v === "string" ? v.trim() : "");
+  const project = clean(parts.project);
+  // 模型胶囊的形状是「环境变量 · <模型名>」；摘要里只留名字
+  const model = clean(parts.model).replace(/^环境变量\s*·\s*/, "");
+  const items = [
+    project && project !== "未入项（按目录）" ? project : "",
+    clean(parts.workdir) !== "选择目录" ? clean(parts.workdir) : "",
+    model && model !== "加载中" && model !== "—" ? model : "",
+  ].filter(Boolean);
+  return items.length ? items.join(" · ") : "选项目、目录与模型";
+}
+
 export function deriveComposerMode({ info, localStatus, submitting, error, stopping, workdir, draft, designMode, designTitle, planMode, delivery } = {}) {
   // runPlanned 成文仍走 runVerified。勾选只约束单轮对话，计划子任务默认仍核查。
   const planVerifiesSubtasks = Boolean(planMode) || (info?.mode === "plan" && info?.status === "running");

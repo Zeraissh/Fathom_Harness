@@ -241,7 +241,12 @@
        新建对话时 #main-panel.is-welcome 把同一份表单抬到中央，不搬 DOM。
        胶囊铬（chip / 图标发送 / 紧凑输入）对话态与欢迎态共用；欢迎只多居中和起步卡。 -->
   <form id="submit-form" class="submit-bar" autocomplete="off">
-    <div class="composer-scopebar" id="composer-scopebar">
+    <!-- 上排控件（项目 / 工作目录 / 模型 / 运行设置）收成一行摘要（2026-09-18 回走
+         §2.4）：默认收起，点开才是控件本体。摘要写「当前装的是什么」，由
+         deriveScopeSummary 从控件文字派生（观察器跟进，别处更新文字不必记得这里）。 -->
+    <details class="composer-scope" id="composer-scope">
+      <summary class="composer-scope-summary" id="composer-scope-summary" title="项目 / 工作目录 / 模型"><span class="composer-scope-text">选项目、目录与模型</span></summary>
+      <div class="composer-scopebar" id="composer-scopebar">
       <div class="scope-field scope-field--project" id="project-field">
         <i class="ph ph-briefcase" aria-hidden="true"></i>
         <label class="sr-only" for="project-select">项目</label>
@@ -327,7 +332,8 @@
         <span class="knobs-label sr-only">运行设置</span>
         <i class="ph ph-caret-down knobs-caret" aria-hidden="true"></i>
       </button>
-    </div>
+      </div>
+    </details>
     <!-- 信息队列：运行中收到的排队消息以 chips 呈现在输入行上方；
          内容全部由 message_queued / message_queue_updated 事件重放长出（renderQueueChips）。
          不能放进 .composer-input-row——它是 flex 行，chips 会被挤成内联一员 -->
@@ -565,6 +571,7 @@ import {
   harnessVisionConfigured,
   readNextActionChip,
   deriveComposerMode,
+  deriveScopeSummary,
   composerSubmitPlan,
   suggestPlainModeInsteadOfPlan,
   buildNewRunRequest,
@@ -1182,6 +1189,44 @@ document.addEventListener("click", (e) => {
 // ---- 统一 composer 的三个事实（派生逻辑在 app.js，这里只存输入）----
 /** @type {ReturnType<typeof deriveComposerMode>|null} */
 let composerMode = null;
+
+// ---- 上排控件收成一行摘要（2026-09-18 回走 §2.4）----
+// 摘要文字从控件本体派生（`deriveScopeSummary`），用观察器跟进：项目/目录/模型
+// 的文字各有各的更新路径，逐个挂钩子迟早漏一个；观察的是**结果**，不是路径。
+(function bindComposerScopeSummary() {
+  const details = document.getElementById("composer-scope");
+  const summary = document.getElementById("composer-scope-summary");
+  const bar = document.getElementById("composer-scopebar");
+  if (!details || !summary || !bar) return;
+  const textEl = summary.querySelector(".composer-scope-text") ?? summary;
+  const readText = (sel) => document.querySelector(sel)?.textContent ?? "";
+  const sync = () => {
+    textEl.textContent = deriveScopeSummary({
+      project: document.querySelector("#project-select")?.selectedOptions?.[0]?.textContent ?? "",
+      workdir: readText("#workdir-trigger-text"),
+      model: readText("#executor-model-trigger-text"),
+    });
+  };
+  new MutationObserver(sync).observe(bar, {
+    childList: true,
+    subtree: true,
+    characterData: true,
+    attributes: true,
+    attributeFilter: ["hidden"],
+  });
+  sync();
+  const SCOPE_KEY = "agent.ui.pref.composerScope";
+  try {
+    // 记住的是**展开**：默认收起（回走的密度反馈），展开过一次的用户不必每轮再点
+    details.open = localStorage.getItem(SCOPE_KEY) === "1";
+  } catch { /* 偏好读不到就用默认收起 */ }
+  details.addEventListener("toggle", () => {
+    try {
+      if (details.open) localStorage.setItem(SCOPE_KEY, "1");
+      else localStorage.removeItem(SCOPE_KEY);
+    } catch { /* 写不进去不影响展开本身 */ }
+  });
+})();
 /** 提交在飞。**必须进模式**，不能命令式改 btn.disabled——服务端在返回响应
     之前就广播了 run_created，列表刷新会立刻把按钮重算成"可点" */
 let submitting = false;

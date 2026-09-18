@@ -75,6 +75,7 @@ import {
   deriveSpinState,
   deriveCostWarning,
   deriveComposerMode,
+  deriveScopeSummary,
   composerSubmitPlan,
   patchComposer,
   deriveScrollNav,
@@ -5435,5 +5436,26 @@ describe("approval_auto 投影", () => {
     expect(entry?.name).toBe("bash");
     expect(entry?.input).toEqual({ command: "ls -la" });
     expect(entry?.rule).toBe("read-only-shell");
+  });
+});
+
+// ---- 上排控件收成一行摘要（2026-09-18 回走 §2.4）----
+describe("deriveScopeSummary：上排控件的一行摘要", () => {
+  it("项目/目录/模型各留名字；「环境变量 ·」前缀剥掉；默认项跳过", () => {
+    expect(deriveScopeSummary({ project: "看板", workdir: "web-a", model: "环境变量 · deepseek-flash" }))
+      .toBe("看板 · web-a · deepseek-flash");
+    expect(deriveScopeSummary({ project: "未入项（按目录）", workdir: "web-a", model: "deepseek-flash" }))
+      .toBe("web-a · deepseek-flash");
+    expect(deriveScopeSummary({ workdir: "选择目录", model: "加载中" })).toBe("选项目、目录与模型");
+    expect(deriveScopeSummary({})).toBe("选项目、目录与模型");
+  });
+
+  it("宿主接线：details 包住控件本体、摘要由纯函数派生、展开状态进偏好、观察器跟进", () => {
+    const html = readFileSync(join(__dirname, "..", "ui", "public", "index.html"), "utf-8");
+    expect(html).toMatch(/<details class="composer-scope" id="composer-scope">/);
+    expect(html).toMatch(/deriveScopeSummary\(\{/);
+    expect(html).toMatch(/agent\.ui\.pref\.composerScope/);
+    // 项目/目录/模型的文字各有各的更新路径：观察结果，不逐个挂路径钩子
+    expect(html).toMatch(/new MutationObserver\(sync\)/);
   });
 });

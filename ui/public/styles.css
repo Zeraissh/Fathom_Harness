@@ -4515,6 +4515,37 @@ body.sidebar-collapsed .sidebar {
 }
 .submit-bar[data-mode="append"] { border-left: 3px solid var(--accent); }
 
+/* 上排控件收成一行摘要（2026-09-18 回走 §2.4）：默认收起，点开才是控件本体。
+   收起是 details 自身的 open=false；原生 marker 各浏览器不一致，统一用 ::before 画。 */
+.composer-scope > summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  margin-bottom: 2px;
+  padding: 4px 8px;
+  border-radius: var(--radius);
+  color: var(--text-3);
+  font-size: var(--font-sm);
+  cursor: pointer;
+  list-style: none;
+}
+.composer-scope > summary::-webkit-details-marker { display: none; }
+.composer-scope > summary::before {
+  content: "▸";
+  flex: 0 0 auto;
+  font-size: var(--font-xs);
+}
+.composer-scope[open] > summary::before { content: "▾"; }
+.composer-scope > summary:hover { background: var(--surface-2); color: var(--text-2); }
+.composer-scope > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.composer-scope-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .composer-scopebar {
   display: flex;
   align-items: center;
