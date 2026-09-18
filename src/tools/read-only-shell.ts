@@ -47,6 +47,11 @@ export const READ_ONLY_SHELL_COMMANDS: ReadonlySet<string> = new Set([
   "grep", "rg", "cut", "tr", "diff", "cmp", "strings", "du", "df", "tree",
   "which", "whereis", "date", "basename", "dirname", "realpath",
   "md5sum", "sha1sum", "sha256sum", "echo", "sort", "uniq", "find",
+  // 2026-09-18 真机新摩擦（报告 §9）：模型习惯 `cd <圈内目录> && wc -l f`，
+  // 链式只读本身已放行，卡的是 cd 前缀。cd 有专用守卫（见 classifySegment）。
+  "cd",
+  "jq",   // 只出 stdout，没有写文件的旗标
+  "test", // 纯判定（`[` 不支持——分词后语义不明，维持弹卡）
 ]);
 
 /** `git` 只放行这几个子命令；`--output` 单独再拦（git diff --output=file 会写）。 */
@@ -148,6 +153,19 @@ function classifySegment(seg: string, workdir: string, readRoots?: string[]): Re
 
   if (head === "find" && rest.some((t) => FIND_WRITE_FLAGS.has(t))) {
     return ask("find 的 -exec/-delete 一族会写或执行");
+  }
+  /**
+   * cd 只允许「恰好一个、圈内的目标目录」：
+   * - 无参 → 跳 HOME（圈外）；`-`/任何旗标 → 跳 OLDPWD，静态判不准；
+   *   多参/空串 → 语义不明 —— 一律弹卡。
+   * - 目标本身交给下面的通用圈禁：`..`、`~`、绝对越界、凭据形状在那里拦。
+   * 后续段的相对路径按 workdir 根做静态圈禁——比实际（cd 之后的 cwd）更保守：
+   * 可能多弹卡，绝不会漏放行。
+   */
+  if (head === "cd") {
+    if (rest.length !== 1 || !rest[0] || rest[0].startsWith("-")) {
+      return ask("cd 的目标判不准（无参跳 HOME / `-` 跳 OLDPWD / 多参），弹卡");
+    }
   }
   if (head === "sort" && rest.some((t) => t === "-o" || t.startsWith("--output"))) {
     return ask("sort -o 会写文件");

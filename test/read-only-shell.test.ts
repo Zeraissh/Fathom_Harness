@@ -49,6 +49,15 @@ describe("classifyReadOnlyShellCommand", () => {
       "md5sum hello-code.txt",
       "cat .env.example",
       "ls -la > /dev/null",
+      // 2026-09-18 真机新摩擦：模型习惯 `cd <圈内目录> && …` 链式读。
+      // cd 的目标由通用圈禁兜住（`..`/`~`/绝对越界都在参数检查里弹卡）。
+      "cd sub && cat f",
+      'cd "sub dir" && wc -l a.txt',
+      'cd web-a && echo "===" && wc -l hello-code.txt',
+      // 其它无写能力的常见读工具
+      "jq . package.json",
+      "jq -r .name package.json",
+      "test -f a.txt && echo yes",
     ];
     for (const cmd of allowed) {
       it(`allow: ${cmd}`, async () => {
@@ -77,7 +86,6 @@ describe("classifyReadOnlyShellCommand", () => {
       "tee out.txt",
       "chmod +x f",
       "touch new.txt",
-      "cd sub && cat f",
       "./script.sh",
       "ls -la 2> err.log",
     ];
@@ -99,6 +107,8 @@ describe("classifyReadOnlyShellCommand", () => {
       "cat .env",
       "cat id_rsa",
       "cat server.pem",
+      "test -f /etc/passwd",
+      "jq . /etc/x.json",
     ];
     for (const cmd of asked) {
       it(`ask: ${cmd}`, async () => {
@@ -118,6 +128,25 @@ describe("classifyReadOnlyShellCommand", () => {
       "echo hi && rm -rf x",
       "ls & rm -rf x",
       "(ls -la)",
+    ];
+    for (const cmd of asked) {
+      it(`ask: ${cmd}`, async () => {
+        const root = await freshWorkdir();
+        expect(classifyReadOnlyShellCommand(cmd, root).allow).toBe(false);
+      });
+    }
+  });
+
+  describe("ask：cd 的四个洞（无参跳 HOME / `-` 跳 OLDPWD / 多参 / 空串）", () => {
+    const asked = [
+      "cd",
+      "cd -",
+      "cd a b",
+      'cd ""',
+      "cd ..",
+      "cd ../outside",
+      "cd /etc",
+      "cd ~",
     ];
     for (const cmd of asked) {
       it(`ask: ${cmd}`, async () => {
