@@ -106,6 +106,40 @@ describe("renderGitMenu / initWorkspaceGitChip", () => {
     expect(fetchFn).toHaveBeenCalledWith("/api/workspace/git?workdir=%2Frepo");
   });
 
+  /**
+   * 走查 UX-D1 网络实录：一次导航/渲染有 5-11 个调用方各喊一次 refresh()，
+   * 每条都是一次真实 git 调用（真机会话 4 分钟 112 条）。同一目录的重复请求
+   * 由"在飞去重 + 短 TTL"收掉；目录真的换了则立即重打，TTL 不挡真变化。
+   */
+  it("同一目录的重复刷新被收掉：在飞去重 + 短 TTL", async () => {
+    const root = mountChip();
+    const fetchFn = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({ present: true, branch: "main", dirty: false }),
+    }));
+    const api = initWorkspaceGitChip(root, { getWorkdir: () => "/repo", fetch: fetchFn });
+
+    await Promise.all([api.refresh(), api.refresh(), api.refresh()]);
+    expect(fetchFn, "并发三次只该打一次").toHaveBeenCalledTimes(1);
+    await api.refresh();
+    expect(fetchFn, "TTL 内不该再打").toHaveBeenCalledTimes(1);
+  });
+
+  it("换目录立即重打：TTL 不挡真变化", async () => {
+    const root = mountChip();
+    let wd = "/repo";
+    const fetchFn = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({ present: true, branch: "main", dirty: false }),
+    }));
+    const api = initWorkspaceGitChip(root, { getWorkdir: () => wd, fetch: fetchFn });
+    await api.refresh();
+    wd = "/other";
+    await api.refresh();
+    expect(fetchFn).toHaveBeenCalledTimes(2);
+    expect(fetchFn).toHaveBeenLastCalledWith("/api/workspace/git?workdir=%2Fother");
+  });
+
   it("点其它分支走 checkout，失败时 announce 错误、不假装切成功", async () => {
     const root = mountChip();
     const announce = vi.fn();

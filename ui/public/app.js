@@ -6875,6 +6875,36 @@ function joinDisplayedPath(dir, file) {
 }
 
 /**
+ * 路径存在性探测的缓存（走查 UX-D1）。
+ *
+ * 真机实录：hydrateLocalPathLinks 与 hydrateArtifactCards 每次重渲染都会为
+ * **新节点**探测一次，流式下每批事件一渲染就是 3 条 POST（单会话 84 条）。
+ * 同一 (runId, path) 在 TTL 内复用上一次结果；TTL 过了重探（文件可能刚落盘），
+ * 换 run 不串台。正负结果都缓存——"暂时不存在"同样值得省一次往返。
+ */
+export function createPathInspectCache({ ttlMs = 30000, now = () => Date.now() } = {}) {
+  const cache = new Map();
+  const keyOf = (runId, path) => `${runId} ${path}`;
+  return {
+    get(runId, path) {
+      const hit = cache.get(keyOf(runId, path));
+      if (!hit) return null;
+      if (now() - hit.at > ttlMs) {
+        cache.delete(keyOf(runId, path));
+        return null;
+      }
+      return hit.value;
+    },
+    set(runId, path, value) {
+      if (cache.size > 4000) cache.clear();
+      cache.set(keyOf(runId, path), { value, at: now() });
+    },
+    size: () => cache.size,
+    clear: () => cache.clear(),
+  };
+}
+
+/**
  * 给每个显示值列出按优先级排列的实际探测路径。
  *
  * 裸文件名本身信息不足：截图里的 `index.html` 实际位于同一句已经提到的

@@ -612,6 +612,7 @@ import {
   packOptionLabel,
   applyDocumentTabTitle,
   filterWorkspaceFileEntries,
+  createPathInspectCache,
 } from "/app.js";
 import {
   loadSettings,
@@ -2662,23 +2663,43 @@ async function revealArtifact(runId, path) {
 /**
  * 只读确认模型正文里的路径候选。不存在/越界时宿主回 exists=false，前端不报错、
  * 不造链接；这不是一次用户操作，只是把“看起来像路径”变成“确实存在”的链接。
+ *
+ * 缓存（走查 UX-D1）：每次重渲染两处 hydration 都会为新节点探测一次，流式下
+ * 每批事件 3 条 POST。同一 (runId, path) 在 TTL 内复用结果；TTL 过了重探。
  */
+const pathInspectCache = createPathInspectCache();
 async function inspectRunPaths(runId, paths) {
   const candidates = [...new Set((paths ?? []).map((p) => String(p ?? "").trim()).filter(Boolean))]
     .slice(0, 64);
   if (candidates.length === 0) return [];
-  try {
-    const res = await fetch(`/api/runs/${encodeURIComponent(runId)}/paths/inspect`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ paths: candidates }),
-    });
-    if (!res.ok) return [];
-    const body = await res.json();
-    return Array.isArray(body.paths) ? body.paths : [];
-  } catch {
-    return [];
+  const resolved = new Map();
+  const missing = [];
+  for (const p of candidates) {
+    const hit = pathInspectCache.get(runId, p);
+    if (hit) resolved.set(p, hit);
+    else missing.push(p);
   }
+  if (missing.length > 0) {
+    try {
+      const res = await fetch(`/api/runs/${encodeURIComponent(runId)}/paths/inspect`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ paths: missing }),
+      });
+      if (res.ok) {
+        const body = await res.json();
+        for (const item of Array.isArray(body.paths) ? body.paths : []) {
+          const input = String(item?.input ?? "");
+          if (!input) continue;
+          pathInspectCache.set(runId, input, item);
+          resolved.set(input, item);
+        }
+      }
+    } catch {
+      /* 路径链接是渐进增强：宿主不可达时正文仍完整可读 */
+    }
+  }
+  return candidates.map((p) => resolved.get(p)).filter(Boolean);
 }
 
 // ---- 宿主真相快照（Tools/Context/Loop 面的数据源）----
