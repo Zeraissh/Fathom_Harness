@@ -6547,12 +6547,6 @@ body.sidebar-collapsed .sidebar {
   font-weight: 400;
 }
 .progress-card:not([open]) .progress-card-summary::after { content: "▸"; }
-.progress-waiting {
-  color: var(--text-2);
-  font-size: var(--font-md);
-  padding: 0 12px 12px;
-  margin: 0;
-}
 .progress-list {
   list-style: none;
   margin: 0;
@@ -6747,6 +6741,9 @@ body.sidebar-collapsed .sidebar {
 }
 /* 曾被人工放行过：事后回看必须看得出这一步被拦过，否则读起来像凭空执行 */
 .chat-tool-gate { color: var(--yellow); font-size: var(--font-sm); }
+/* 只读免问留痕（走查 UX-A6）：比「经放行」更安静的一档——它放行的本来就是
+   无写能力的读，逐条 notice 会成噪声，用 chip 挂回被放行的工具行。 */
+.chat-tool-auto { flex: 0 0 auto; color: var(--text-3); font-size: var(--font-xs); white-space: nowrap; }
 
 .chat-gate {
   color: var(--yellow);

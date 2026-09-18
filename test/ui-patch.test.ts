@@ -27,6 +27,7 @@ import {
   createBatcher,
   shouldShowReconnecting,
   deriveChatItems,
+  chatProcessHint,
   updateLiveNode,
   renderChatItem,
   splitUserMessageAttachments,
@@ -5537,5 +5538,115 @@ describe("deriveScopeSummary：上排控件的一行摘要", () => {
     expect(html).toMatch(/agent\.ui\.pref\.composerScope/);
     // 项目/目录/模型的文字各有各的更新路径：观察结果，不逐个挂路径钩子
     expect(html).toMatch(/new MutationObserver\(sync\)/);
+  });
+});
+
+/**
+ * 走查 UX-A6：一批改变语义的事件在对话里零痕迹——用户看到"停了又自己动起来"
+ * （段续跑）、"字打出来又没了"（重试清缓冲）、"答案换了一家服务商"（降级），
+ * 却没有一句话解释。修法不是把内部仪表全铺出来（那是噪声），只给**改变语义
+ * 的那几条**安静的一行；approval_auto 给工具行一枚 chip 而不是多一行。
+ */
+describe("零视觉事件上屏（UX-A6）", () => {
+  const withEvents = (events) =>
+    reduceEvents(createInitialState("run-a6", "零视觉批", false), [
+      sse(0, "main", "turn_start", { turn: 1 }),
+      ...events,
+    ]);
+
+  it("api_retry：重试不再无声（第 N 次 + 原因）", () => {
+    const s = withEvents([
+      sse(1, "main", "api_retry", { turn: 1, attempt: 2, reason: "overloaded", backoffMs: 1200 }),
+    ]);
+    renderRunDetail(s, { activeTab: "loop" });
+    expect(document.body.textContent).toContain("第 2 次重试");
+    expect(document.body.textContent).toContain("overloaded");
+  });
+
+  it("model_fallback：降级说出从哪到哪", () => {
+    const s = withEvents([
+      sse(1, "main", "model_fallback", { from: "deepseek-v4-pro", to: "deepseek-v4-flash", reason: "5xx", turn: 1 }),
+    ]);
+    renderRunDetail(s, { activeTab: "loop" });
+    expect(document.body.textContent).toContain("端点降级");
+    expect(document.body.textContent).toContain("deepseek-v4-flash");
+  });
+
+  it("segment_resume：瞬时错误续跑不再零痕迹", () => {
+    const s = withEvents([
+      sse(1, "main", "segment_resume", { attempt: 1, reason: "fetch failed", priorTurns: 3 }),
+    ]);
+    const items = deriveChatItems(s, {});
+    expect(items.some((it) => it.kind === "notice" && String(it.text).includes("续跑"))).toBe(true);
+    renderRunDetail(s, { activeTab: "loop" });
+    expect(document.body.textContent).toContain("fetch failed");
+  });
+
+  it("hook：拦下才说话（附原因），放行不占位", () => {
+    const blocked = withEvents([
+      sse(1, "main", "hook", { hook: "PreToolUse", outcome: "block", tool: "bash", detail: "禁止 rm" }),
+    ]);
+    const items = deriveChatItems(blocked, {});
+    const notice = items.find((it) => it.kind === "notice");
+    expect(notice, "hook 拦截应留一行").toBeTruthy();
+    expect(String(notice.text)).toContain("拦下");
+    expect(String(notice.peek)).toContain("禁止 rm");
+
+    const allowed = withEvents([
+      sse(1, "main", "hook", { hook: "PreToolUse", outcome: "allow", tool: "bash" }),
+    ]);
+    expect(deriveChatItems(allowed, {}).some((it) => it.kind === "notice")).toBe(false);
+  });
+
+  it("approval_auto：只读免问在工具行留一枚「自动放行」chip（title 带判词）", () => {
+    const s = withEvents([
+      sse(1, "main", "tool_call", { toolUseId: "t1", name: "bash", input: { command: "ls -la" } }),
+      sse(2, "main", "approval_auto", {
+        toolUseId: "t1", name: "bash", input: { command: "ls -la" },
+        rule: "read-only-shell", reason: "只读命令，参数均在工作目录内",
+      }),
+      sse(3, "main", "tool_result", { toolUseId: "t1", result: { content: "ok" }, durationMs: 12 }),
+    ]);
+    renderRunDetail(s, { activeTab: "loop" });
+    const chip = document.querySelector(".chat-tool-auto");
+    expect(chip, "工具行应有自动放行 chip").toBeTruthy();
+    expect(chip?.textContent).toContain("自动放行");
+    expect(chip?.getAttribute("title")).toContain("只读命令");
+  });
+
+  /**
+   * W14：`showWaiting` 与 `showRail` 的前置条件互相矛盾（waiting 要求 items 为空，
+   * 而 showRail 要求三者有其一）——「等待拆步…」永远画不出来，注释却承诺它在。
+   * 裁决：保留"空着不占位"（较新的注释有理：空侧栏是在占位说谎），删死分支。
+   */
+  it("W14：空跑不画「等待拆步…」，右栏整条收起", () => {
+    const s = createInitialState("run-w14", "空跑", false);
+    renderRunDetail(s, { activeTab: "loop" });
+    expect(document.querySelector(".progress-waiting")).toBeNull();
+    expect(document.getElementById("detail-rail")?.hasAttribute("hidden")).toBe(true);
+  });
+
+  it("W15：过程档提示不再指向已删除的「运行详情」抽屉", () => {
+    expect(chatProcessHint("on")).not.toContain("运行详情");
+    expect(chatProcessHint("off")).not.toContain("运行详情");
+  });
+
+  it("收官后重试/降级/续跑仍留在叙事里，工具过程照旧收起", () => {
+    let s = createInitialState("run-a6-settled", "收官留存", false);
+    s = reduceEvents(s, [
+      sse(0, "main", "turn_start", { turn: 1 }),
+      sse(1, "main", "tool_call", { toolUseId: "t1", name: "bash", input: { command: "cat a" } }),
+      sse(2, "main", "tool_result", { toolUseId: "t1", result: { content: "ok" } }),
+      sse(3, "main", "api_retry", { turn: 1, attempt: 1, reason: "timeout" }),
+      sse(4, "main", "assistant_text", { text: "结论。" }),
+      sse(5, "main", "done", { stopReason: "completed", usage: {} }),
+      sse(6, "host", "run_end", { outcome: "completed" }),
+    ]);
+    const settled = deriveChatItems(s, {});
+    expect(settled.some((it) => it.kind === "tools" || it.kind === "tool"), "工具过程应收起").toBe(false);
+    expect(
+      settled.some((it) => it.kind === "notice" && String(it.text).includes("重试")),
+      "重试是叙事，应活过收官收起",
+    ).toBe(true);
   });
 });

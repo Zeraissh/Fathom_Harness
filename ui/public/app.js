@@ -5406,7 +5406,9 @@ function ensureDetailSkeleton(mainEl, state, callbacks) {
      */
     /**
      * 对话与**右栏**并排。右栏常驻 Progress（执行者拆步清单 + 可选编排子任务），
-     * 产物文件也落这里。无步骤时显示「等待拆步…」而不是整栏消失。
+     * 产物文件也落这里。三者皆空时整栏收起——空着一条「等待拆步…」是在占位
+     * 说谎（2026-09-18 走查 UX-A6/W14：旧的 waiting 分支与 showRail 前置条件
+     * 互相矛盾、永不渲染，随注释一并清掉）。
      */
     '<div class="detail-layout">' +
     '<div class="conversation-stack">' +
@@ -7566,9 +7568,9 @@ function chatItemSig(it) {
     case "notice":
       return `notice:${it.tone}:${it.text}:${it.peek ?? ""}:${it.live ? 1 : 0}`;
     case "tools":
-      return `tools:${(it.tools ?? []).map((t) => `${t.toolUseId}:${t.status}:${t.gated ? 1 : 0}:${(t.result ?? "").length}`).join("|")}`;
+      return `tools:${(it.tools ?? []).map((t) => `${t.toolUseId}:${t.status}:${t.gated ? 1 : 0}:${t.autoApproved ? 1 : 0}:${(t.result ?? "").length}`).join("|")}`;
     case "tool":
-      return `tool:${it.status}:${it.gated ? 1 : 0}:${it.durationMs ?? ""}:${(it.result ?? "").length}`;
+      return `tool:${it.status}:${it.gated ? 1 : 0}:${it.autoApproved ? 1 : 0}:${it.durationMs ?? ""}:${(it.result ?? "").length}`;
     case "verdict":
       return `verdict:${JSON.stringify(it.verdict)}`;
     case "artifacts":
@@ -7654,8 +7656,8 @@ export function resolveChatProcessMode(opts = {}) {
 
 /** @param {"off"|"auto"|"on"} mode */
 export function chatProcessHint(mode) {
-  if (mode === "on") return "每一次工具调用都留下；完整过程也在下方「运行详情」";
-  if (mode === "off") return "只看问答；运行中一条「正在…」。完整过程在下方「运行详情」";
+  if (mode === "on") return "每一次工具调用都留下";
+  if (mode === "off") return "只看问答；运行中一条「正在…」";
   return "进行中和出错的才进对话；放行过的成功调用不占位置";
 }
 
@@ -7754,7 +7756,13 @@ function patchProgressPanel(parts, progress, extras) {
   const host = parts.progressPanel;
   if (!host || !progress) return;
   const hasFiles = Boolean(extras?.hasSessionFiles || progress.hasSessionFiles);
-  const showWaiting = Boolean(progress.waiting && !progress.plan && !hasFiles);
+  /**
+   * 走查 UX-A6/W14：这里曾有一个 `showWaiting`（"等待拆步…"）分支，但它与
+   * patchDetailRail 的 `showRail = plan || files || items` 前置条件互相矛盾——
+   * waiting 要求 items 为空，而到达本函数又要求三者有其一，于是永远画不出来
+   * （deriveProgressFace 的 waiting 字段保留：纯函数测试仍在锁它的语义）。
+   * 裁决：保留"空着不占位"（较新的注释有理——空侧栏是在占位说谎），删死分支。
+   */
   const hasItems = Boolean(progress.items && progress.items.length > 0);
   const hasPlan = Boolean(progress.plan);
   const planSig = progress.plan
@@ -7766,14 +7774,13 @@ function patchProgressPanel(parts, progress, extras) {
   const sig = signature([
     itemSig,
     planSig,
-    showWaiting ? "waiting" : "",
     progress.settled ? "settled" : "",
     hasFiles ? "files" : "",
   ]);
   if (parts.sig.progress === sig) return;
   parts.sig.progress = sig;
 
-  if (!showWaiting && !hasItems && !hasPlan) {
+  if (!hasItems && !hasPlan) {
     host.innerHTML = "";
     setAttr(host, "hidden", "");
     return;
@@ -7783,10 +7790,6 @@ function patchProgressPanel(parts, progress, extras) {
   let html =
     '<details class="progress-card" open>' +
     '<summary class="progress-card-summary">Progress</summary>';
-
-  if (showWaiting) {
-    html += '<p class="progress-waiting">等待拆步…</p>';
-  }
 
   if (progress.items && progress.items.length > 0) {
     html += '<ul class="progress-list" role="list">';
@@ -8586,6 +8589,16 @@ export function deriveChatItems(state, live, opts = {}) {
         else items.push({ kind: "gate", name: e.name, seq: e.seq });
         break;
       }
+      case "approval_auto": {
+        // 只读免问的留痕（走查 UX-A6）：读类命中最频繁，逐条 notice 会成噪声——
+        // 挂回它放行的那个工具行（chip + title 判词）。
+        if (!trackTools) break;
+        const at = callAt.get(e.toolUseId);
+        if (at !== undefined) {
+          items[at] = { ...items[at], autoApproved: true, autoReason: e.reason };
+        }
+        break;
+      }
       case "recovery_decision": {
         const stall = e.reason === "end_turn_without_completion" || e.reason === "stagnation";
         items.push({
@@ -8608,9 +8621,70 @@ export function deriveChatItems(state, live, opts = {}) {
           seq: e.seq,
         });
         break;
-      case "run_forked":
+      /**
+       * 走查 UX-A6：这批事件此前在对话里零痕迹，用户只能看到"字打出来又没了"
+       * （重试清缓冲）、"答案换了一家服务商"（降级）、"停了又自己动起来"
+       * （段续跑），却没有一句解释。只给**改变语义**的这几条一行安静 notice；
+       * 纯内部仪表（model_call_start/end、budget_snapshot、mid_tool_replay）
+       * 仍不上屏——把对话铺成事件流是另一种难用。
+       */
+      case "api_retry":
+        items.push({
+          kind: "notice",
+          tone: "retry",
+          // narrative：收官后仍留——"答案中途抖过"是用户回看时会琢磨的事
+          narrative: true,
+          text: `端点抖动 · 第 ${Number(e.attempt ?? 1)} 次重试`,
+          peek: [e.reason, typeof e.backoffMs === "number" ? `${e.backoffMs}ms 后重试` : ""]
+            .filter(Boolean)
+            .join(" · "),
+          live: state.status === "running",
+          seq: e.seq,
+        });
+        break;
+      case "model_fallback":
+        items.push({
+          kind: "notice",
+          tone: "fallback",
+          narrative: true,
+          text: `端点降级：${e.from || "?"} → ${e.to || "?"}`,
+          peek: [e.reason, e.role && e.role !== "main" ? `${e.role} 角色` : ""]
+            .filter(Boolean)
+            .join(" · "),
+          seq: e.seq,
+        });
+        break;
+      case "hook":
+        // 只在钩子真的改了控制流（block）或自己出错时说话；allow 静默
+        if (e.outcome !== "block" && e.outcome !== "error") break;
+        items.push({
+          kind: "notice",
+          tone: "hook",
+          narrative: true,
+          text: e.outcome === "block" ? `被前置钩子拦下：${e.tool || e.hook}` : `钩子执行出错：${e.hook}`,
+          peek: [e.detail, e.outcome === "error" && e.tool ? `工具 ${e.tool}` : ""]
+            .filter(Boolean)
+            .join(" · "),
+          seq: e.seq,
+        });
+        break;
       case "segment_resume":
-        // 接续是宿主内部事件，不是对话。Cursor / GPT 不会在中间插一条「已接续」。
+        // 旧注释说"Cursor/GPT 不会在中间插一条已接续"——但真机表现是停了又
+        // 自己动起来且无解释（走查 UX-A6/W9）。一行安静 notice 比沉默诚实。
+        items.push({
+          kind: "notice",
+          tone: "resume",
+          narrative: true,
+          text:
+            Number(e.attempt ?? 1) > 1
+              ? `瞬时错误，已续跑（第 ${e.attempt} 次）`
+              : "瞬时错误，已带上下文续跑",
+          peek: e.reason ? `原因：${e.reason}` : "",
+          seq: e.seq,
+        });
+        break;
+      case "run_forked":
+        // 用户主动分叉，界面入口在别处（对话操作条）
         break;
       default:
         break;
@@ -8772,17 +8846,20 @@ function isPlanShapedAssistantText(text) {
 
 /**
  * Thinking / 工具 / 压缩只留一个直播状态。压缩不是对话正文，结束后也不留条。
+ *
+ * 例外（走查 UX-A6）：带 `narrative` 的 notice（重试/降级/钩子拦截/段续跑）
+ * 在结束后**保留**——它们解释的是用户回看时会琢磨的异常，不是瞬时动作提示。
  */
 export function collapseLiveStatus(items, { running, streaming } = {}) {
   const notices = items.filter((it) => it.kind === "notice");
   const rest = items.filter((it) => it.kind !== "notice");
-  if (!running) return rest;
+  if (!running) return items.filter((it) => it.kind !== "notice" || it.narrative);
   const toolLive = rest.some((it) => {
     if (it.kind === "tools") return (it.tools ?? []).some((t) => t.status === "running");
     if (it.kind === "tool") return it.status === "running";
     return it.kind === "activity";
   });
-  if (streaming || toolLive) return rest;
+  if (streaming || toolLive) return [...rest, ...notices.filter((it) => it.narrative)];
   const latest = notices.at(-1);
   return latest ? [...rest, latest] : rest;
 }
@@ -8888,6 +8965,16 @@ export function collapseFinishedChat(items) {
       continue;
     }
     if (it.kind === "tools" || it.kind === "tool" || it.kind === "notice" || it.kind === "activity" || it.kind === "gate") {
+      /**
+       * 例外：带 narrative 的 notice（重试/降级/钩子拦截/段续跑，走查 UX-A6）
+       * 穿过收官收起——"中途抖过、换过端点、被拦过"是用户回看时会琢磨的异常，
+       * 而"运行详情"抽屉下线后再没有别的界面承载它们。空转那类**瞬时动作提示**
+       * 不带此标记，照旧收起。
+       */
+      if (it.kind === "notice" && it.narrative) {
+        flush();
+        out.push(it);
+      }
       continue;
     }
     // 编排计划卡在收官后仍保留——它是交付骨架，不是过程噪声
@@ -10293,6 +10380,25 @@ function renderToolGroup(it) {
     ? toolHeadline(featured.name, featured.input)
     : { verb: "", target: "", stages: [], command: "" };
   const mark = live ? "" : `<span class="aside-mark">${err ? "✗" : "✓"}</span>`;
+  /**
+   * 放行留痕（走查 UX-A6）：分组渲染只出 featured 一步的细节——「经放行 /
+   * 自动放行」以计数挂到组摘要上。顺带修一处潜伏缺口：⚠ 经放行 chip 此前只
+   * 在 renderToolRow 里，而分组 pass 把**即使单个**工具也包成 tools 组
+   * （deriveChatItems 的 flush），那条渲染路径正常流程永远到不了。
+   */
+  const gatedCount = tools.filter((t) => t.gated).length;
+  const autoTools = tools.filter((t) => t.autoApproved);
+  const gate = gatedCount
+    ? `<span class="chat-tool-gate" title="组内有 ${gatedCount} 步曾等待人工放行">⚠ 经放行${gatedCount > 1 ? ` ×${gatedCount}` : ""}</span>`
+    : "";
+  // 单步时直接亮判词（"为什么免问"是信任披露）；多步才收成计数词
+  const auto = autoTools.length
+    ? `<span class="chat-tool-auto" title="${esc(
+        autoTools.length === 1
+          ? autoTools[0].autoReason || "只读命令，免审批卡"
+          : `组内有 ${autoTools.length} 步只读免问`,
+      )}">自动放行${autoTools.length > 1 ? ` ×${autoTools.length}` : ""}</span>`
+    : "";
   const command = featured ? toolCommandText(featured) : "";
   const commandFold = command && (looksLikeHugeDocumentBody(command) || looksLikeHtmlDocument(command))
     ? foldConversationBody(command, {
@@ -10303,7 +10409,7 @@ function renderToolGroup(it) {
   const resultBody = !live && featured ? renderToolResultBody(featured) : "";
   return (
     `<details class="chat-tool-group${cls}">` +
-    `<summary>${mark}${renderToolHeadline(headline, Boolean(live))}</summary>` +
+    `<summary>${mark}${renderToolHeadline(headline, Boolean(live))}${gate}${auto}</summary>` +
     `<div class="chat-tool-group-body">` +
     (commandFold
       ? `<div class="chat-body chat-body--text">${esc(commandFold.stub)}</div>${commandFold.detailsHtml}`
@@ -10319,13 +10425,16 @@ function renderToolRow(it) {
   const mark = it.status === "error" ? "✗" : it.status === "running" ? "⋯" : "✓";
   const dur = it.durationMs != null ? `<span class="aside-peek">${it.durationMs}ms</span>` : "";
   const gate = it.gated ? '<span class="chat-tool-gate" title="这一步曾等待人工放行">⚠ 经放行</span>' : "";
+  const auto = it.autoApproved
+    ? `<span class="chat-tool-auto" title="${esc(it.autoReason || "只读命令，免审批卡")}">自动放行</span>`
+    : "";
   const peek = esc(truncate(toolPeek(it.name, it.input), 88));
   const paths = renderToolPathStrip(it.input);
   const body = paths + renderToolResultBody(it);
   return (
     `<details class="chat-tool${cls}">` +
     `<summary><span class="aside-mark">${mark}</span> <code title="${esc(it.name ?? "")}">${esc(it.name ?? "")}</code> ` +
-    `<span class="aside-peek">${peek}</span> ${gate} ${dur}</summary>${body}</details>`
+    `<span class="aside-peek">${peek}</span> ${gate} ${auto} ${dur}</summary>${body}</details>`
   );
 }
 

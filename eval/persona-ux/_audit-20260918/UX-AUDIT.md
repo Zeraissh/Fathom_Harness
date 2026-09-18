@@ -45,7 +45,7 @@
 | UX-A5 | 直播条隐藏后残留陈旧「正在想…」文本 | 进行时 | 低 | ✅ |
 | UX-B4 | 子代理浮层每帧重建（拒签理由会丢）/ 阅读模式段自收 / 产物与Progress自己弹开 / z-index 60 浮层互不互斥 / 坞收起留空槽 / 若干折叠键盘不可达 | 展开 | 中 | 🔶（E6/E7/E8/E13/E14/E15，静态证据强） |
 | UX-C2 | 文件预览坞顶条长文件名撑破（ellipsis 挂错元素成死代码）/ 消耗图表日期 `text-overflow:clip` 硬切 / 长 MCP 工具名撑行 / 工具组摘要硬切 / 审批卡首行长名不换行 / 来源表零防护 | 溢出 | 中 | 🔶（O1–O10，静态证据强） |
-| UX-A6 | 重试/换端点/段续跑/hook 等事件零视觉；右栏「等待拆步…」不可达；文案指已删抽屉 | 进行时 | 中低 | 🔶（W7/W8/W9/W13/W14/W15） |
+| UX-A6 | 重试/换端点/段续跑/hook 等事件零视觉；右栏「等待拆步…」不可达；文案指已删抽屉 | 进行时 | 中低 | ✅（2026-09-18 深夜修复，见 §11） |
 | UX-B5 | `E4 工作目录菜单每帧重建` 前提不成立（会话内触发器 `disabled`，菜单打不开） | 展开 | — | ⛔ |
 | UX-B6 | `E5 变更预览被清空` 本轮未复现（行头节点确被替换，但预览内容存活 5s+） | 展开 | — | ⛔（待更长的写盘窗口再试） |
 | UX-D2 | `@/#//$` 键现状、IME、并发直播 | 其它 | — | 未测 |
@@ -198,4 +198,24 @@
 | O10 | `.settings-model-copy strong` `overflow-wrap:anywhere`（small 早有守卫） | 修复后 copy/row 均未撑破；模拟前均撑破 |
 
 单测 +13（`ui-overflow-guards` ×8 守卫锁 + `ui-usage` ×5 标签计划表）；全量对基线：差异全在既有抖动名单内（ui-server 三条轮转），**零新增失败**。顺带修一处卫生问题：`app.js` 里 `createPathInspectCache` 的键分隔符此前是**裸 NUL 字节**（JSON `NUL` 被解码成实字符写进源码），运行语义相同但会让 grep 把整文件当二进制——已改成 `NUL` 转义。
+
+## 11. 零视觉事件收口（UX-A6，2026-09-18 深夜）
+
+原则：只给**改变语义**的事件一行安静 notice / 一枚 chip；纯内部仪表（model_call_start/end、budget_snapshot、mid_tool_replay）照旧不上屏——把对话铺成事件流是另一种难用。
+
+| 事件 | 形态 | 说明 |
+|---|---|---|
+| api_retry | notice「端点抖动 · 第 N 次重试」+ 原因/退避 | 带 narrative：收官后仍留 |
+| model_fallback | notice「端点降级：A → B」+ 原因/角色 | 同上 |
+| hook | notice「被前置钩子拦下：X」/「钩子执行出错」 | **只在 block/error**；allow 静默 |
+| segment_resume | notice「瞬时错误，已带上下文续跑」 | 取代原「整段跳过」（旧注释"Cursor/GPT 不会插已接续"被真机表现推翻） |
+| approval_auto | 工具组摘要一枚「自动放行」chip；单步时 title 直接亮判词 | 不逐条 notice（读类最频繁） |
+| W14 | 删掉与 showRail 前置条件互相矛盾的 showWaiting 死分支 + 陈旧注释/CSS | 保留「空着不占位」的较新裁决 |
+| W15 | 过程档提示不再指向已删除的「运行详情」 | |
+
+**一半的修在定局层**：`collapseLiveStatus` 非运行态原本 `return rest`（滤掉全部 notice），`collapseFinishedChat` 也把 notice 一律收起——新 notice 本会"运行时可见、收官即消失"。四类 notice 加 `narrative` 标记穿两层；空转那类**瞬时动作提示**不加，照旧收起。
+
+**顺带修一处潜伏缺口**：正常流程里工具的唯一可达渲染路径是 `renderToolGroup`（分组 pass 把即使单个工具也包成 tools 组），`renderToolRow` 里的「⚠ 经放行」chip 因此**从未显示过**——现在 gate/auto 都以计数挂到组摘要。
+
+验证：单测 +8（`ui-patch`「零视觉事件上屏」，含"收官后叙事仍留、工具过程照旧收起"）；活页——真 run 的 `cat …` 产 `approval_auto` → 组摘要 `✓ head 2 自动放行`（title=判词原文）；死端点宿主（4202，`audit-retry.env`）真造重试 → `端点抖动 · 第 1 次重试 网络错误：无法连接 API 端点 · 1091ms 后重试`，**收官后仍在**。model_fallback / hook / segment_resume 未能在活页自然诱发（单测锁形）。全量对基线**零新增失败**。
 
