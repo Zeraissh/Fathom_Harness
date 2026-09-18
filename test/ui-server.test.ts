@@ -9139,6 +9139,17 @@ describe("监控闭环：outcome 分档指标与告警文件一致性", () => {
         body: JSON.stringify({ task: "占着探针", pack: "stm32-debug" }),
       });
       const { runId: runA } = await a.json();
+      /**
+       * 先等 A **真的**把探针攥住（审批挂起 ⇒ 工具已发起 ⇒ 资源已持有），再创建 B。
+       *
+       * 旧版是"A 与 B 并发创建 + 睡 150ms 再看 B 有没有 s1 事件"——那是掷骰子：
+       * 慢跑道上 A 还没走到工具调用，B 的 s1 就先合法地拿到了探针，测试红而产品
+       * 没毛病（2026-09-18 夜 CI 两条 run 同秒挂在这一句上，本地却 8/8 绿）。
+       * 资源互斥要验的是"持有期间别人得等"，前提是先有"持有"这个既成事实。
+       */
+      const held = await waitForEvent(base, runA, (e: any) => e.event?.type === "approval_request");
+      expect(held, "run A 没挂上审批——探针未被持有，后面的断言失去前提").toBeDefined();
+
       const b = await fetch(`${base}/api/runs`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -9147,7 +9158,7 @@ describe("监控闭环：outcome 分档指标与告警文件一致性", () => {
       expect(b.status).toBe(200); // plan 模式创建不整体占资源——按子任务粒度管
       const { runId: runB } = await b.json();
 
-      // 给调度器时间走到 s1：s1 必须在等待（零 s1/ 前缀事件），而不是被 skip 或硬闯
+      // 探针此刻确定被 A 持有：s1 必须在等待（零 s1/ 前缀事件），而不是被 skip 或硬闯
       await new Promise((r) => setTimeout(r, 150));
       const midEvents = await readSSESnapshot(base, runB);
       expect(

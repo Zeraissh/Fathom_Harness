@@ -234,7 +234,10 @@ const scenarios: Scenario[] = [
       ),
     ],
     expect: {
-      exitCode: 0,
+      // 退出码 1：partial 是非成功终态（H1 走查 2026-09-18 定案——「只有 completed
+      // 是 0，其余一律 1」，单测 cli-args.test.ts 锁着）。本用例的 guards 自己
+      // 写着"partial 必须带 blockers 才算合法交付"，那就不该同时给 CI 一个 0。
+      exitCode: 1,
       includes: ["partial"],
       occurrences: [{ needle: "✗", atLeast: 2 }],
       absentFiles: ["../escaped.txt"],
@@ -280,7 +283,9 @@ const scenarios: Scenario[] = [
       turn(say("Finished again.")),
     ],
     expect: {
-      exitCode: 0,
+      // 退出码 1：同上——incomplete 是"模型宣称完成但从不交付"，本用例的 guards
+      // 写着"不能被画成绿色的成功"；退出码 0 恰恰就是把它画成绿色。
+      exitCode: 1,
       includes: ["incomplete", "空转"],
       excludes: ["■ completed"],
       ledger: { stopReason: "incomplete" },
