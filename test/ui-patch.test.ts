@@ -40,7 +40,6 @@ import {
   toolPeek,
   toolHeadline,
   toolHumanVerb,
-  foldChain,
   deriveRunListItems,
   deriveRunTitle,
   deriveThreadTitle,
@@ -83,9 +82,6 @@ import {
   revealedWindow,
   keepScrollAnchored,
   renderRunList,
-  applyCollapseOverrides,
-  nextCollapseOverride,
-  renderLogEntry,
   buildLocalPathProbePlan,
   toolPathCandidates,
   classifySessionFile,
@@ -118,11 +114,7 @@ import {
   resolveArtifactOpen,
   ensurePreviewArtifact,
   deriveSessionFiles,
-  buildFactorCards,
-  deriveLoopFace,
   deriveContextFace,
-  deriveToolsFace,
-  deriveVerificationFace,
   formatChatRelTime,
   pickTaskAt,
   writeChatRating,
@@ -290,41 +282,7 @@ describe("消息正文路径探测计划", () => {
     expect(document.body.textContent).toContain("只许升不许降");
   });
 
-  it("折叠的工具调用日志也显示经宿主确认的文件链接与定位按钮", async () => {
-    let state = createInitialState("run-tool-path", "读取报告", false);
-    state = reduceEvents(state, [
-      sse(0, "main", "turn_start", { turn: 1 }),
-      sse(1, "main", "tool_call", {
-        toolUseId: "tool-path-1",
-        name: "read_file",
-        input: { path: "out/report.md" },
-      }),
-    ]);
-    const onReveal = vi.fn();
-    renderRunDetail(state, {
-      activeTab: "loop",
-      onReveal,
-      inspectPaths: async (paths: string[]) => paths.map((input) => ({
-        input,
-        exists: true,
-        path: input,
-        kind: "file",
-      })),
-    });
-
-    await vi.waitFor(() => {
-      expect(document.querySelector(
-        '.log-entries .log-entry--collapsed .tool-path-strip .local-path-link[href*="artifact"]',
-      )).toBeTruthy();
-    });
-    const row = document.querySelector('.log-entries .log-entry[data-seq="1"]') as HTMLElement;
-    const fileLink = row.querySelector('.local-path-link[href*="artifact"]') as HTMLAnchorElement;
-    expect(decodeURIComponent(fileLink.href)).toContain("path=out/report.md");
-    const reveal = row.querySelector(".local-path-folder") as HTMLButtonElement;
-    expect(reveal.getAttribute("aria-label")).toContain("out/report.md");
-    reveal.click();
-    expect(onReveal).toHaveBeenCalledWith("out/report.md");
-  });
+  // 「折叠的工具调用日志也显示经宿主确认的文件链接」随日志视图于 2026-09-18 下线
 });
 
 // ================================================================
@@ -1020,47 +978,7 @@ describe("详情页重渲染下的状态存活 (V-10)", () => {
     expect(document.querySelector(".approval-card")).toBe(card);
   });
 
-  it("日志面板只追加：先渲染的条目在新事件到达后仍是同一节点", () => {
-    let s = createInitialState("run-log", "日志任务", false);
-    s = reduceEvents(s, [
-      sse(0, "main", "turn_start", { turn: 1 }),
-      sse(1, "main", "tool_call", { toolUseId: "t1", name: "read_file", input: {} }),
-    ]);
-    renderRunDetail(s, { activeTab: "log" });
-    const firstRow = document.querySelector(".log-entries .log-entry");
-    expect(firstRow).toBeTruthy();
-
-    s = reduceEvents(s, [
-      sse(2, "main", "tool_result", { toolUseId: "t1", result: { content: "ok" }, durationMs: 3 }),
-    ]);
-    renderRunDetail(s, { activeTab: "log" });
-
-    const rows = [...document.querySelectorAll(".log-entries .log-entry")];
-    expect(rows).toHaveLength(3);
-    expect(rows[0]).toBe(firstRow);
-  });
-
-  it("1000 条事件的日志一次渲染完成，且不重建已有节点", () => {
-    let s = createInitialState("run-big", "长运行", false);
-    const events = [];
-    for (let i = 0; i < 1000; i++) {
-      events.push(sse(i, "main", "turn_start", { turn: i + 1 }));
-    }
-    s = reduceEvents(s, events);
-    renderRunDetail(s, { activeTab: "log" });
-    const rows = document.querySelectorAll(".log-entries .log-entry");
-    expect(rows).toHaveLength(1000);
-    const firstRow = rows[0];
-
-    // 再来一条：只应新增一个节点，其余原样
-    s = reduceEvents(s, [sse(1000, "main", "turn_start", { turn: 1001 })]);
-    const createSpy = vi.spyOn(document, "createElement");
-    renderRunDetail(s, { activeTab: "log" });
-    createSpy.mockRestore();
-
-    expect(document.querySelectorAll(".log-entries .log-entry")).toHaveLength(1001);
-    expect(document.querySelectorAll(".log-entries .log-entry")[0]).toBe(firstRow);
-  });
+  // 「日志面板只追加」「1000 条事件一次渲染」随日志视图于 2026-09-18 下线
 });
 
 describe("侧栏重渲染下的焦点存活 (V-10)", () => {
@@ -1103,57 +1021,6 @@ describe("侧栏重渲染下的焦点存活 (V-10)", () => {
 
 // ================================================================
 // api_retry 的退避等待要看得见
-// ================================================================
-
-describe("重试退避等待在界面上可见", () => {
-  /**
-   * 抖动上线后，同一 attempt 的等待不再是定值——界面若仍只显示"第几次重试"，
-   * 人会以为退避是固定的。这是这个项目反复踩的那条"harness 有、宿主没接"，
-   * 新字段落地时就该锁住，而不是等第七次再补。
-   */
-  function stateWithRetry(extra: Record<string, unknown>) {
-    let s = createInitialState("run-r", "重试任务", false);
-    s = reduceEvents(s, [
-      sse(0, "main", "turn_start", { turn: 1 }),
-      sse(1, "main", "api_retry", { turn: 1, attempt: 1, reason: "限流", ...extra }),
-    ]);
-    return s;
-  }
-
-  it("带 backoffMs 时渲染出实际等待时长", () => {
-    renderRunDetail(stateWithRetry({ backoffMs: 2250 }), { activeTab: "loop" });
-    const body = document.querySelector(".log-entries")?.textContent ?? "";
-    expect(body).toContain("限流");
-    expect(body).toContain("2.3s"); // formatDuration(2250)
-    expect(body).toContain("抖动");
-  });
-
-  it("旧事件没有 backoffMs 时不渲染空占位（重放旧 run 不能显示 undefined）", () => {
-    renderRunDetail(stateWithRetry({}), { activeTab: "loop" });
-    const body = document.querySelector(".log-entries")?.textContent ?? "";
-    expect(body).toContain("限流");
-    expect(body).not.toContain("退避等待");
-    expect(body).not.toContain("undefined");
-  });
-});
-
-describe("模型 send 起止在界面上可见", () => {
-  it("model_call_end 渲染 status 与 durationMs", () => {
-    let s = createInitialState("run-m", "模型 span", false);
-    s = reduceEvents(s, [
-      sse(0, "main", "model_call_start", { turn: 1, attempt: 0 }),
-      sse(1, "main", "model_call_end", { turn: 1, attempt: 0, status: "ok", durationMs: 1500 }),
-    ]);
-    renderRunDetail(s, { activeTab: "loop" });
-    const body = document.querySelector(".log-entries")?.textContent ?? "";
-    expect(body).toContain("模型请求开始");
-    expect(body).toContain("模型请求结束");
-    expect(body).toContain("1.5s");
-  });
-});
-
-// ================================================================
-// 文本流式（backlog §4）
 // ================================================================
 
 describe("流式输出直接长在对话里", () => {
@@ -1446,90 +1313,8 @@ describe("思考正文进对话时间线", () => {
     expect(strip()).toContain("CRC");
   });
 
-  it("已有 assistant_thinking 时，事件流那一行跟增长正文，不另造正史", () => {
-    let s = runningState();
-    s = reduceEvents(s, [
-      sse(1, "main", "assistant_thinking", { turn: 1, text: "先读", redacted: false }),
-    ]);
-    const before = s.timeline.length;
-    const logs = deriveLogEntries(s, { thinking: "先读，再对照手册" });
-    const think = logs.find((e) => e.type === "assistant_thinking");
-    expect(s.timeline).toHaveLength(before);
-    expect(think?.live).toBe(true);
-    expect(think?.collapsed).toBe(false);
-    expect(think?.text).toContain("再对照手册");
-    renderRunDetail(s, { activeTab: "loop", liveThinking: "先读，再对照手册" });
-    const row = [...document.querySelectorAll(".log-entries .log-entry")].find((r) =>
-      (r.textContent ?? "").includes("思考过程"),
-    );
-    expect(row, "事件流应当露出思考那一行").toBeTruthy();
-    expect(row?.classList.contains("log-entry--live-thinking")).toBe(true);
-    expect(row?.querySelector(".log-thinking")?.textContent).toContain("再对照手册");
-    expect(row?.querySelector(".log-entry-detail")?.textContent).toContain("手册");
-  });
-
-  it("重放没有 live 缓冲时只靠 assistant_thinking 终态，残留增量拉不回来", () => {
-    let s = runningState();
-    s = reduceEvents(s, [
-      sse(1, "main", "assistant_thinking", { turn: 1, text: "终态思考", redacted: false }),
-      sse(2, "main", "done", { stopReason: "completed", messageCount: 2, usage: {} }),
-      sse(3, "host", "run_end", { outcome: "completed" }),
-    ]);
-    const logs = deriveLogEntries(s, { thinking: "不该出现的增量" });
-    const think = logs.find((e) => e.type === "assistant_thinking");
-    expect(think?.text).toBe("终态思考");
-    expect(think?.live).toBeFalsy();
-    renderRunDetail(s, { activeTab: "loop", liveThinking: "不该出现的增量" });
-    expect(document.querySelector("details.chat-thinking--live")).toBeNull();
-    expect(document.body.textContent).toContain("终态思考");
-    expect(document.body.textContent).not.toContain("不该出现的增量");
-    const row = [...document.querySelectorAll(".log-entries .log-entry")].find((r) =>
-      (r.textContent ?? "").includes("思考过程"),
-    );
-    expect(row?.querySelector(".log-thinking")).toBeNull();
-    expect(row?.textContent).toContain("终态思考".length + " 字");
-  });
-
-  it("正文 text 到了思考条让位，事件流回到终态、不再跟增量", () => {
-    let s = runningState();
-    s = reduceEvents(s, [
-      sse(1, "main", "assistant_thinking", { turn: 1, text: "先读", redacted: false }),
-    ]);
-    const logs = deriveLogEntries(s, { thinking: "还在想", text: "结论如下" });
-    const think = logs.find((e) => e.type === "assistant_thinking");
-    expect(think?.text).toBe("先读");
-    expect(think?.live).toBeFalsy();
-    renderRunDetail(s, { activeTab: "loop", liveThinking: "还在想", liveText: "结论如下" });
-    expect((document.querySelector(".live-strip") as HTMLElement).hasAttribute("hidden")).toBe(true);
-    expect(document.querySelector(".chat-msg--live")?.textContent).toContain("结论如下");
-  });
-});
-
-describe("思考过程进事件流", () => {
-  function withThinking(extra: Record<string, unknown>) {
-    let s = createInitialState("run-t", "任务", false);
-    return reduceEvents(s, [
-      sse(0, "main", "turn_start", { turn: 1 }),
-      sse(1, "main", "assistant_thinking", { turn: 1, text: "先读 **package.json**", redacted: false, ...extra }),
-    ]);
-  }
-
-  it("思考条目进日志、默认折叠、展开后按 Markdown 渲染", () => {
-    renderRunDetail(withThinking({}), { activeTab: "loop" });
-    const rows = [...document.querySelectorAll(".log-entries .log-entry")];
-    const think = rows.find((r) => (r.textContent ?? "").includes("思考过程"))!;
-    expect(think, "思考条目没进日志——大概率是 reducer 白名单投影又丢字段了").toBeTruthy();
-    // 标题带字数，正文默认折叠（思考比正文长得多，展开会淹没时间线）
-    expect(think.textContent).toContain("字");
-    expect(think.querySelector(".log-thinking")).toBeNull();
-  });
-
-  it("redacted 照实说明，不假装没发生过", () => {
-    const s = withThinking({ text: "", redacted: true });
-    renderRunDetail(s, { activeTab: "loop" });
-    const rows = [...document.querySelectorAll(".log-entries .log-entry")];
-    expect(rows.some((r) => (r.textContent ?? "").includes("已加密"))).toBe(true);
-  });
+  // 三条「事件流那一行跟思考增量」的日志断言随日志视图于 2026-09-18 下线；
+  // 对话折叠块一侧（上面那条）仍在场并继续守护。
 });
 
 describe("计划确认门的签字位", () => {
@@ -1782,83 +1567,6 @@ describe("需你决定：钉在输入框上方的固定坞", () => {
 // 换标签再切回：对话视图不许白屏
 // ================================================================
 
-describe("换标签重建时对话视图的签名要一起作废", () => {
-  const transcript = {
-    segments: [{
-      index: 0, source: "main",
-      messages: [
-        { role: "user", content: "记住暗号 alpha-7" },
-        { role: "assistant", content: [{ type: "text", text: "记住了。" }] },
-      ],
-    }],
-  };
-
-  function doneState() {
-    let s = createInitialState("run-chat", "记住暗号", false);
-    s = reduceEvents(s, [
-      sse(0, "main", "turn_start", { turn: 1 }),
-      sse(1, "main", "done", { stopReason: "completed", usage: { turns: 1 } }),
-    ]);
-    return s;
-  }
-
-  /**
-   * 旧形态下对话是 Loop 面里的子视图，换标签会把它连同下钻面一起重建——
-   * 曾因漏清一个签名导致整段对话白屏。**对话升为主干后它在下钻面之外**，
-   * 换标签结构上碰不到它。这条锁的就是这个结构事实。
-   */
-  it("对话在下钻抽屉之外：换标签不影响它", () => {
-    const s = doneState();
-    renderRunDetail(s, { activeTab: "loop", harness: null });
-    const chat = document.querySelector(".conversation")!;
-    expect(chat.textContent).toContain("记住暗号");
-
-    renderRunDetail(s, { activeTab: "tools", harness: null });
-    renderRunDetail(s, { activeTab: "loop", harness: null });
-    expect(document.querySelector(".conversation")).toBe(chat); // 同一个节点，没被重建
-    expect(chat.textContent).toContain("记住暗号");
-    expect(
-      document.getElementById("tab-content")!.contains(chat),
-      "对话不该落在下钻面里",
-    ).toBe(false);
-  });
-
-  it("Tools 面画出 run_config.projectId（白名单 + 渲染锁）", () => {
-    const s = reduceEvents(createInitialState("run-p", "任务", false), [
-      sse(0, "host", "run_config", { projectId: "board-1", workdir: "D:\\work\\alpha" }),
-    ]);
-    renderRunDetail(s, { activeTab: "tools", harness: null });
-    const text = document.getElementById("tab-content")!.textContent ?? "";
-    expect(text).toContain("项目");
-    expect(text).toContain("board-1");
-  });
-
-  it("Tools 面画出 run_config.campaignId（白名单 + 渲染锁）", () => {
-    const s = reduceEvents(createInitialState("run-c", "任务", false), [
-      sse(0, "host", "run_config", {
-        campaignId: "camp-1",
-        campaignRole: "director",
-        workdir: "D:\\work\\alpha",
-      }),
-      sse(1, "host", "campaign_child", { runId: "child-9", title: "固件", status: "running" }),
-    ]);
-    renderRunDetail(s, { activeTab: "tools", harness: null });
-    const text = document.getElementById("tab-content")!.textContent ?? "";
-    expect(text).toContain("战役");
-    expect(text).toContain("camp-1");
-    expect(text).toContain("导演");
-    const strip = document.querySelector(".campaign-strip");
-    expect(strip, "导演条应在主干对话上方").toBeTruthy();
-    expect((strip as HTMLElement).hidden).toBe(false);
-    expect(strip!.textContent).toContain("固件");
-    expect(strip!.querySelector("[data-open-run='child-9']")).toBeTruthy();
-  });
-});
-
-// ================================================================
-// 重连横幅：正常收尾不是断线
-// ================================================================
-
 describe("shouldShowReconnecting：分辨正常收流与真断线", () => {
   it("服务端列表说已完成 → 不报断线（点开历史运行走的就是这条）", () => {
     // 本地 status 此刻还是 createInitialState 的默认 "running"——那不是观测
@@ -1882,64 +1590,13 @@ describe("shouldShowReconnecting：分辨正常收流与真断线", () => {
 // AC2-18 复验补的锁：这几条此前都是"变异了也不红"
 // ================================================================
 
-describe("AC-04 展开一条默认折叠的日志：点一下就该展开", () => {
-  const entries = [
-    { seq: 0, type: "tool_call", collapsed: true },
-    { seq: 1, type: "tool_result", collapsed: true },
-    { seq: 2, type: "approval_request", collapsed: false },
-  ];
-
-  /**
-   * 实测缺陷：宿主写的是 `overrides.set(seq, !overrides.get(seq))`，
-   * 覆盖表里没有这一条时 `!undefined === true`，而多数条目默认就是 true——
-   * 第一次点击把 true 写成 true，DOM 早退，屏幕上一点反应都没有。
-   * AC-04 说"两次操作可达原始详情"，实际是三次，且第一次零反馈。
-   */
-  it("默认折叠的条目：第一次点击就翻成展开（不是第二次）", () => {
-    const overrides = new Map<number, boolean>();
-    expect(nextCollapseOverride(entries, overrides, 0), "第一次点击必须真的改变状态").toBe(false);
-  });
-
-  it("默认展开的条目（审批）：第一次点击折叠", () => {
-    expect(nextCollapseOverride(entries, new Map(), 2)).toBe(true);
-  });
-
-  it("点两次回到原状", () => {
-    const ov = new Map<number, boolean>();
-    ov.set(0, nextCollapseOverride(entries, ov, 0)!);
-    ov.set(0, nextCollapseOverride(entries, ov, 0)!);
-    expect(ov.get(0)).toBe(true);
-  });
-
-  it("不存在的 seq 返回 null，宿主据此不写覆盖表", () => {
-    expect(nextCollapseOverride(entries, new Map(), 999)).toBeNull();
-  });
-
-  it("覆盖表只影响被点过的那条", () => {
-    const ov = new Map([[0, false]]);
-    const applied = applyCollapseOverrides(entries, ov);
-    expect(applied.map((e) => e.collapsed)).toEqual([false, true, false]);
-  });
-
-  /**
-   * 这个 bug 能活下来的根因：宿主自己另写了一套 toggle，被测的纯函数
-   * 全仓零调用——**测试测的是产品不用的那份实现**。所以顺手锁住调用关系。
-   */
-  it("宿主必须调纯函数，不许自己再写一套 toggle", () => {
-    const html = readFileSync(join(__dirname, "..", "ui", "public", "index.html"), "utf-8");
-    expect(html).toContain("nextCollapseOverride(");
-    expect(html).toContain("applyCollapseOverrides(");
-    expect(html, "宿主又在自己翻转覆盖表了").not.toMatch(/overrides\.set\(\s*seq\s*,\s*!/);
-  });
-});
-
 describe("R-03 无需展开下钻面即可判断结果", () => {
   /**
    * 承载物换过两次，判据没变。v1 是"三标签的概览页"，v2 是"结果卡排在下钻面之前"，
    * 现在是"裁决就地长在对话里 + 一条收尾条"——**旧锁必须跟着迁移**，
    * 否则就是 case-07 §六 那条：验收还写着 ✅，看守它的断言却已经不在被测范围内。
    */
-  it("裁决在对话里、终止原因在收尾条上，两者都在下钻抽屉之前", () => {
+  it("裁决在对话里、终止原因在收尾条上（下钻抽屉已于 2026-09-18 下线）", () => {
     let s = createInitialState("run-r3", "任务", true);
     s = reduceEvents(s, [
       sse(0, "main", "turn_start", { turn: 1 }),
@@ -1953,22 +1610,16 @@ describe("R-03 无需展开下钻面即可判断结果", () => {
       }),
       sse(4, "host", "run_end", { stopReason: "completed" }),
     ]);
-    renderRunDetail(s, { activeTab: "loop", harness: null });
+    renderRunDetail(s, { harness: null });
 
     const conv = document.querySelector(".conversation")!;
     const outcome = document.querySelector(".outcome-card")!;
-    const tabs = document.getElementById("tab-content")!;
 
     // 不合格项就地长在对话里
     expect(conv.textContent, "裁决没有出现在对话主干里").toContain("缺收尾");
     expect(conv.querySelector(".chat-verdict")).toBeTruthy();
     // 正常收尾时那条「■ 已完成」不出现——读对话就知道，占一整行是浪费
     expect(outcome.hidden, "正常收尾不该再占一整行说废话").toBe(true);
-    // 对话排在下钻抽屉之前
-    expect(
-      conv.compareDocumentPosition(tabs) & Node.DOCUMENT_POSITION_FOLLOWING,
-      "对话被排到下钻面之后了——那正是 R-03 要修的毛病",
-    ).toBeTruthy();
   });
 
   /**
@@ -3149,15 +2800,11 @@ describe("deriveChatItems：对话从事件流派生，因此实时", () => {
     expect(v?.verdict.unverified).toEqual(["脚本不在仓库内"]);
   });
 
-  it("用量脚注默认不显示；Loop 抽屉默认**收起但入口可见**", () => {
+  it("用量脚注默认不显示", () => {
     const s = run(sse(0, "main", "assistant_text", { text: "做完了" }));
-    renderRunDetail(s, { activeTab: "loop" });
+    renderRunDetail(s, {});
     expect((document.querySelector(".usage-footer") as HTMLElement).hidden).toBe(true);
-    const drawer = document.getElementById("detail-drawer") as HTMLDetailsElement;
-    // 收起 ≠ 藏掉入口：`hidden` 会把 <summary> 一起藏掉，事件流与「变更」的逐行改动
-    // 都在这个抽屉里，藏了入口等于两处功能一起不可达（P4/P5 取证时实测到）。
-    expect(drawer.hidden).toBe(false);
-    expect(drawer.open).toBe(false);
+    // 「Loop 抽屉默认收起但入口可见」这条随抽屉于 2026-09-18 下线
   });
 
   it("裁决作为收尾卡进对话，不再是另一个页面", () => {
@@ -3268,39 +2915,6 @@ describe("view_image / describe_image 工具名人话", () => {
     expect(bar).toContain("hero.png");
   });
 });
-
-describe("foldChain：连续主轮折叠成计数", () => {
-  /**
-   * 多轮对话下会出现二十几个连着的 main 段，逐个画出来就是一排一模一样的
-   * 「■ 主轮」——委托方截图里那一行占满整屏却零信息量。
-   */
-  it("20 个连续主轮折成一个 ×20", () => {
-    const folded = foldChain(Array.from({ length: 20 }, () => ({ role: "main", round: 0, passed: null })));
-    expect(folded).toHaveLength(1);
-    expect(folded[0].count).toBe(20);
-  });
-
-  /** 只折 main：返工三次必须还看得出是三次，否则等于把失败史抹平 */
-  it("核查与返工不折叠", () => {
-    const folded = foldChain([
-      { role: "main" }, { role: "main" },
-      { role: "verifier", round: 0 }, { role: "rework", round: 1 },
-      { role: "verifier", round: 1 }, { role: "rework", round: 2 },
-    ]);
-    expect(folded.map((c) => `${c.role}${c.count > 1 ? "×" + c.count : ""}`)).toEqual([
-      "main×2", "verifier", "rework", "verifier", "rework",
-    ]);
-  });
-
-  it("空链不炸", () => {
-    expect(foldChain([])).toEqual([]);
-    expect(foldChain(undefined)).toEqual([]);
-  });
-});
-
-// ================================================================
-// 未读星：跑完了但还没看过
-// ================================================================
 
 describe("未读星取代那条「■ 已完成」", () => {
   const runs = [
@@ -3781,10 +3395,10 @@ describe("装配条不许说谎（文案交叉核对抓到的三处）", () => {
 // 跳转箭头与贴底跟随
 // ================================================================
 
-describe("deriveScrollNav：两个箭头各管各的", () => {
+describe("deriveScrollNav：回到最新", () => {
   const at = (over: any = {}) =>
     deriveScrollNav({
-      scrollTop: 0, scrollHeight: 2000, clientHeight: 600, anchorTop: null, drawerOpen: false,
+      scrollTop: 0, scrollHeight: 2000, clientHeight: 600,
       ...over,
     });
 
@@ -3796,32 +3410,12 @@ describe("deriveScrollNav：两个箭头各管各的", () => {
     expect(at({ scrollTop: 1400 }).showBottom).toBe(false);
   });
 
-  it("内容根本不够滚时两个都不出现——那是纯噪声", () => {
+  it("内容根本不够滚时不出现——那是纯噪声", () => {
     const n = at({ scrollHeight: 620, clientHeight: 600, scrollTop: 0 });
     expect(n.showBottom).toBe(false);
-    expect(n.showTop).toBe(false);
   });
 
-  /**
-   * ↑ 的判据不是"往上翻过"，而是**抽屉开着且四张卡已经滚出视野**。
-   * 抽屉没开时上面就是对话，往上翻是在读历史——那时候弹一个"回到顶部"
-   * 是在催人离开他正在读的地方。
-   */
-  it("抽屉没开时不出现「回到四决定因素」，哪怕已经滚很远", () => {
-    expect(at({ scrollTop: 1200, anchorTop: -800, drawerOpen: false }).showTop).toBe(false);
-  });
-
-  it("抽屉开着且四张卡滚出上边界 → 出现", () => {
-    expect(at({ scrollTop: 1200, anchorTop: -800, drawerOpen: true }).showTop).toBe(true);
-  });
-
-  it("抽屉开着但四张卡还在视野内 → 不出现", () => {
-    expect(at({ scrollTop: 100, anchorTop: 120, drawerOpen: true }).showTop).toBe(false);
-  });
-
-  it("量不到四张卡时不猜——宁可不显示也不乱跳", () => {
-    expect(at({ anchorTop: null, drawerOpen: true }).showTop).toBe(false);
-  });
+  // 「回到四决定因素」随「运行详情」抽屉于 2026-09-18 下线（showTop 已移除）
 });
 
 describe("对话贴底跟随", () => {
@@ -4179,34 +3773,6 @@ describe("端点降级在界面上看得见", () => {
     ]);
     return s;
   }
-
-  it("日志里渲染出「从谁换到谁 + 为什么离开」，且默认展开", () => {
-    renderRunDetail(stateWithFallback(), { activeTab: "loop" });
-    const entry = document.querySelector(".log-entries .log-entry") as HTMLElement | null;
-    const body = document.querySelector(".log-entries")?.textContent ?? "";
-    expect(body).toContain("deepseek-v4-pro");
-    expect(body).toContain("kimi-k3");
-    expect(body).toContain("503: upstream unavailable");
-    // 折叠会把这行藏起来；这条事件恰恰是后面所有轮次的前提，不能默认折叠
-    expect([...document.querySelectorAll(".log-entries .log-entry")].some(
-      (e) => e.textContent?.includes("deepseek-v4-pro") && !e.className.includes("log-entry--collapsed"),
-    )).toBe(true);
-    expect(entry).not.toBeNull();
-  });
-
-  it("熔断跳过要说成「隔离期跳过」，不能显示成一个假的错误码", () => {
-    renderRunDetail(stateWithFallback({ reason: "circuit_open" }), { activeTab: "loop" });
-    const body = document.querySelector(".log-entries")?.textContent ?? "";
-    expect(body).toContain("熔断隔离期");
-    expect(body).not.toContain("circuit_open");
-  });
-
-  it("界面要说清默认只覆盖执行者——角色须显式配置或 inherit", () => {
-    renderRunDetail(stateWithFallback(), { activeTab: "loop" });
-    const body = document.querySelector(".log-entries")?.textContent ?? "";
-    expect(body).toContain("主执行者");
-    expect(body).toContain("该角色的输出由新端点产生");
-  });
 
   it("装配条：配了链才上条，且写出完整链路", () => {
     const configured = reduceEvents(createInitialState("rc", "t", false), [
@@ -5301,7 +4867,7 @@ describe("revealedWindow：绝对放行计数 → 滑动窗口内的偏移", () 
 });
 
 describe("AGENT.md 上下文卡（docs/09 §4.7 host-lags）", () => {
-  it("加载了文件时 Context 卡写明指导不是执行", () => {
+  it("加载了文件时 Context 面记下 AGENT.md（指导不是执行；卡片文案随抽屉下线）", () => {
     let s = createInitialState("run-md", "t", false);
     s = reduceEvents(s, [
       sse(0, "host", "run_config", {
@@ -5314,19 +4880,14 @@ describe("AGENT.md 上下文卡（docs/09 §4.7 host-lags）", () => {
         },
       }),
     ]);
-    const cards = buildFactorCards({
-      loop: deriveLoopFace(s, null),
-      context: deriveContextFace(s, null),
-      tools: deriveToolsFace(s, null),
-      verification: deriveVerificationFace(s, null),
-    });
-    const ctx = cards.find((c) => c.id === "context");
-    expect(ctx.lines.some((l) => /AGENT\.md/.test(l) && /指导不是执行/.test(l))).toBe(true);
+    const ctx = deriveContextFace(s, null);
+    expect(ctx.agentMd?.guidance).toBe(true);
+    expect(ctx.agentMd?.files?.[0]?.path).toContain("AGENT.md");
   });
 });
 
 describe("hooks 日志渲染（docs/09 §4.2 host-lags）", () => {
-  it("hook 阻断在日志里可见，不是静默丢弃", () => {
+  it("hook 阻断被投影下来，不是静默丢弃（日志视图已随抽屉下线，锁数据面）", () => {
     let s = createInitialState("run-hook", "t", false);
     s = reduceEvents(s, [
       sse(0, "host", "run_config", { hooks: { timeoutMs: 5000, events: ["PreToolUse", "PostToolUse", "Stop"] } }),
@@ -5337,10 +4898,10 @@ describe("hooks 日志渲染（docs/09 §4.2 host-lags）", () => {
         detail: "no network",
       }),
     ]);
-    renderRunDetail(s, { activeTab: "log" });
-    const row = document.querySelector(".log-entries .log-entry--warning");
-    expect(row?.textContent).toMatch(/PreToolUse/);
-    expect(row?.textContent).toMatch(/阻断|no network/);
+    const entry = s.timeline.find((e) => e.type === "hook");
+    expect(entry?.hook).toBe("PreToolUse");
+    expect(entry?.outcome).toBe("block");
+    expect(entry?.detail).toContain("no network");
   });
 });
 
@@ -5852,72 +5413,8 @@ describe("persona-ux 文案锁（#4/#5/#6/#9/#10/#25）", () => {
 });
 
 // ---- P5: 组的渲染 ----
-describe("P5 组的渲染", () => {
-  it("tool_group 渲染成一条可折叠的 .log-entry--group，标题写「用了 N 步」", () => {
-    const html = renderLogEntry({
-      type: "tool_group",
-      seq: 1,
-      collapsed: true,
-      stepCount: 3,
-      names: ["read_file", "write_file"],
-      steps: [],
-    });
-    expect(html).toContain("log-entry--group");
-    expect(html).toContain("log-entry--collapsed");
-    expect(html).toContain("用了 3 步");
-    expect(html).toContain('data-seq="1"');
-    expect(html).toContain("read_file、write_file");
-  });
-
-  it("组展开时把每条以展开态渲染进 body，不留「看起来能点却点不动」的假行", () => {
-    const html = renderLogEntry({
-      type: "tool_group",
-      seq: 1,
-      collapsed: false,
-      stepCount: 2,
-      names: ["read_file"],
-      steps: [
-        { type: "tool_call", seq: 1, name: "read_file", input: { path: "a.txt" } },
-        { type: "tool_result", seq: 2, toolUseId: "u1", resultContent: "one" },
-      ],
-    });
-    expect(html).toContain("log-entry-group-body");
-    expect(html).toContain('<pre class="log-entry-body">');
-    expect(html).not.toContain('class="log-entry--collapsed"');
-  });
-
-  it("折叠的组不生成 body（与既有条目同款：不是 display:none）", () => {
-    const html = renderLogEntry({
-      type: "tool_group",
-      seq: 1,
-      collapsed: true,
-      stepCount: 2,
-      names: ["read_file"],
-      steps: [{ type: "tool_call", seq: 1, name: "read_file", input: {} }],
-    });
-    expect(html).not.toContain("log-entry-group-body");
-  });
-});
-
-// ---- 只读免问（2026-09-18 审批摩擦第一刀）：日志条渲染 ----
-describe("approval_auto 的渲染", () => {
-  it("免问的只读命令在日志里看得见：标题写明、不是警告类、默认折叠", () => {
-    const html = renderLogEntry({
-      type: "approval_auto",
-      seq: 1,
-      collapsed: true,
-      name: "bash",
-      input: { command: "ls -la" },
-      rule: "read-only-shell",
-      reason: "只读命令，参数均在工作目录内",
-    });
-    expect(html).toContain("log-entry--auto-allow");
-    expect(html).toContain("自动放行（只读命令）：bash");
-    expect(html).toContain("log-entry--collapsed");
-    expect(html).not.toContain("log-entry--approval");
-  });
-
-  it("投影层不丢字段：reducer → 派生日志，条目带 name/input/rule（纯函数测试覆不住调用点）", () => {
+describe("approval_auto 投影", () => {
+  it("投影层不丢字段：reducer 时间线条目保留 name/input/rule（纯函数测试覆不住调用点）", () => {
     const s = reduceEvents(createInitialState("rw", "t", false), [
       {
         seq: 1,
@@ -5932,11 +5429,11 @@ describe("approval_auto 的渲染", () => {
         },
       },
     ]);
-    const entry = deriveLogEntries(s, null).find((e) => e.type === "approval_auto");
+    // 日志视图随「运行详情」抽屉下线（2026-09-18），但事件本身仍进时间线——
+    // 投影不丢字段这条锁留着，未来的消费者不必重新踩一次那个坑。
+    const entry = s.timeline.find((e) => e.type === "approval_auto");
     expect(entry?.name).toBe("bash");
     expect(entry?.input).toEqual({ command: "ls -la" });
     expect(entry?.rule).toBe("read-only-shell");
-    const html = renderLogEntry({ ...entry, collapsed: true });
-    expect(html).toContain("自动放行（只读命令）：bash");
   });
 });

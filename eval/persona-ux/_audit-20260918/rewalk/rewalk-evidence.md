@@ -120,3 +120,25 @@
 - 单测 +64（分类器表 + loop 接线行为锁 + role 装配锁 + 日志渲染 + 台账计数）；
   全量 3517 条对比 HEAD 基线：**零新增失败**（基线 11 条原样）。
 - 仍不做：网络读（fetch_url / web_search）照旧逐张卡；MCP 工具能力面未知，不动。
+
+## 8. 「运行详情」抽屉下线（2026-09-18 当天，用户裁决）
+
+用户点着 `#detail-drawer` 的摘要行判：「去掉运行详情控件，平常估计不会打开看」——
+确认**整只删**（四因子卡 +「执行事件流」日志的界面入口一并消失；事件仍留档在
+`.agent-run-history/events.jsonl`，CLI 照常打印）。
+
+- 删掉的不只是那一行：整条抽屉专属链（四因子卡/标签机制/日志渲染/核查 tab/
+  裁决卡/Context·Tools 下钻/日志面板）≈ 1900 行；顺带清了同一簇里**早已零调用**
+  的死代码（`renderOverviewTab` / `renderApprovalCards` / `renderUsageFooterBody`）。
+- 保留：faces 派生（头部/右栏/结果卡在用）、对话渲染链（与日志线相邻，未动）、
+  `renderPlanReviewHtml` 等右栏共用件；滚动导航只留「回到最新」
+  （`deriveScrollNav` 的 `showTop` 删除）。
+- 测试跟着迁：四个文件里删掉日志/标签锁约 300 行，**数据面锁保留**
+  （投影、派生、事件仍进时间线——`approval_auto` 的时间线投影锁也留着）。
+- 活页复核：详情态 `#main-area` 子元素不再含 drawer、控制台零报错、
+  对话与发送栏直接相接；全量对照 HEAD 基线零新增失败
+  （ui-server 的 3 条超时在静置单跑后回到基线 1 条，别把负载抖动当回归）。
+- **CSS 没跟着清**（有意）：`styles.css` 里 `.log-entry*` / `.factor-*` / `.ctx-strip*` /
+  `.detail-drawer` 一族约 150 行已成死规则，但它们与活规则共享选择器
+  （如 `.factor-title, .overview-section-title, .rail-title` 共一条），
+  脚本化删除的误报率不低、而视觉回归单测抓不住——留给一次带 CSS 感知的专门清理。
