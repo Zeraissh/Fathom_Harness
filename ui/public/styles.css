@@ -1670,6 +1670,57 @@ body.sidebar-collapsed .sidebar {
 }
 .right-rail[data-mode="overlay"][data-collapsed="true"] { display: none; }
 
+/* ---- 窄档的重开入口与层级（二轮走查 2026-09-18 夜）----
+   实测：收起后右列 0 宽消失、全站没有第二个入口（断头路）；
+   打开时 240px 浮层盖住内容区 61% 且压输入框。修法：
+   · 把手 = 0 宽收起态唯一的入口（浮在主区右侧中部，角标=有新内容）
+   · 打开 = 全宽 sheet（宽度由 railPolicy 给 available），遮罩表达层级、点外即关
+   两条 [hidden] 守卫是必须的：[hidden] 的 UA 样式优先级极低，会被下面的
+   display 直接压过（本仓在 .live-strip 上踩过同款坑）。 */
+.right-rail-handle {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 55;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 48px;
+  border: 1px solid var(--border-1);
+  border-right: none;
+  border-radius: 10px 0 0 10px;
+  background: var(--surface-1);
+  color: var(--text-2);
+  box-shadow: -6px 0 18px color-mix(in srgb, var(--text-1) 12%, transparent);
+  cursor: pointer;
+}
+.right-rail-handle[hidden] { display: none; }
+.right-rail-handle:hover { color: var(--text-1); background: var(--surface-2); }
+.right-rail-handle:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 1px; }
+.right-rail-handle--badge,
+.right-rail-badge { position: relative; }
+.right-rail-handle--badge::after,
+.right-rail-badge::after {
+  content: "";
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.right-rail-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 59;
+  background: color-mix(in srgb, var(--text-1) 28%, transparent);
+  cursor: pointer;
+}
+.right-rail-scrim[hidden] { display: none; }
+
 /* 坞进了右列之后不再自己写宽度（preview-dock.js 的 railHosted 分支），
    这里把它的兜底 38% 让会给右列 */
 .right-rail-preview > .preview-dock {

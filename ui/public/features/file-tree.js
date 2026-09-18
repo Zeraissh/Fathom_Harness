@@ -209,6 +209,7 @@ export function initFileTree(host = {}, env = {}) {
       const settled = host.isContextReady?.() !== false;
       empty.textContent = settled ? FILE_TREE_COPY.noWorkdir : FILE_TREE_COPY.confirming;
       body.appendChild(empty);
+      host.onEntriesChanged?.(null); // 未知：右列不据此自动开（走查：内容驱动）
       return;
     }
     if (rootError) {
@@ -216,9 +217,12 @@ export function initFileTree(host = {}, env = {}) {
       err.className = "ft-error";
       err.textContent = rootError;
       body.appendChild(err);
+      host.onEntriesChanged?.(null);
       return;
     }
     renderLevel("");
+    const rootCache = cache.get("");
+    host.onEntriesChanged?.(rootCache ? rootCache.entries.length : null);
   }
 
   function appendNotice(text) {

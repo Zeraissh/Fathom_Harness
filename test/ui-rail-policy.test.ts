@@ -24,6 +24,7 @@ import {
   LEGACY_DOCK_FRACTION_KEY,
   clampRailFraction,
   railPolicy,
+  railVisibility,
   normalizeRailPref,
   readRailPref,
   writeRailPref,
@@ -249,11 +250,17 @@ describe("宿主接线锁（index.html）", () => {
    * .right-rail-tabs 里——而 split 档整排隐藏，键跟着一起消失；收起态更是
    * 无入口可回去。修法：键移出 tab 行成为右列直接子节点（布局无关地存活），
    * 点击写偏好。
+   *
+   * 2026-09-18 二轮（内容驱动）：按键语义升级为"关当前显示层"——开/关走
+   * railOpen/railClose（仍写偏好，但显示层由 railVisibility 判），
+   * 欢迎页/无内容时 pref 与显示层不再是一回事。
    */
-  it("右列收起键：接线了，且不在 tab 行里", () => {
+  it("右列收起键：接线了（走内容驱动开关），且不在 tab 行里", () => {
     expect(html).toMatch(
-      /right-rail-collapse[\s\S]{0,400}?saveRailPref\(\{ collapsed: !/,
+      /right-rail-collapse[\s\S]{0,400}?railVisibilityNow\(\)/,
     );
+    expect(html).toMatch(/function railClose\(\)[\s\S]{0,200}?saveRailPref\(\{ collapsed: true \}\)/);
+    expect(html).toMatch(/function railOpen\(\)[\s\S]{0,200}?saveRailPref\(\{ collapsed: false \}\)/);
     const tabs = html.match(/<div class="right-rail-tabs"[\s\S]*?<\/div>/);
     expect(tabs?.[0] ?? "", "收起键还关在 tab 行里——split 档会跟着消失").not.toContain(
       "right-rail-collapse",
@@ -294,6 +301,72 @@ describe("宿主接线锁（index.html）", () => {
     expect(dockSrc).toMatch(/preview:reveal/);
     // railHosted 下浮出钮让位（它的重开入口改走「预览」tab）
     expect(dockSrc).toMatch(/revealBtn\.hidden = [\s\S]{0,120}railHosted\(\)/);
+  });
+});
+
+/**
+ * 二轮走查（2026-09-18 夜）：右列从"常驻家具"改「内容的家」。
+ * 委托方拍板：①欢迎页一律不显示（细条/把手保留，手动可开）
+ *            ②窄档永不自动展开，角标提示 → 点开是全宽 sheet。
+ */
+describe("railVisibility：内容驱动（欢迎页不显示 / 窄档不抢屏）", () => {
+  it("欢迎页一律收起——有文件也不自动开；对话里没内容同样收起", () => {
+    expect(
+      railVisibility({ context: "welcome", hasContent: true, mode: "side", userCollapsed: false }),
+    ).toEqual({ collapsed: true, badge: false });
+    expect(
+      railVisibility({ context: "conversation", hasContent: false, mode: "side" }),
+    ).toEqual({ collapsed: true, badge: false });
+  });
+
+  it("对话 + 有内容 + 宽档：默认开；手动收起过 → 收 + 角标（dismiss 粘住，R3）", () => {
+    expect(
+      railVisibility({ context: "conversation", hasContent: true, mode: "side", userCollapsed: false }),
+    ).toEqual({ collapsed: false, badge: false });
+    expect(
+      railVisibility({ context: "conversation", hasContent: true, mode: "side", userCollapsed: true }),
+    ).toEqual({ collapsed: true, badge: true });
+  });
+
+  it("窄档永不自动展开（一律收起 + 角标）；本次会话手动打开过才让位", () => {
+    expect(
+      railVisibility({ context: "conversation", hasContent: true, mode: "overlay", userCollapsed: false }),
+    ).toEqual({ collapsed: true, badge: true });
+    expect(
+      railVisibility({ context: "conversation", hasContent: true, mode: "overlay", userOpenNow: true }),
+    ).toEqual({ collapsed: false, badge: false });
+    // 手动开过之后连"没内容/欢迎页"也尊重——那是用户主动要看的
+    expect(
+      railVisibility({ context: "welcome", hasContent: false, mode: "overlay", userOpenNow: true }),
+    ).toEqual({ collapsed: false, badge: false });
+  });
+
+  it("窄档打开的抽屉是全宽 sheet，不是 240px 浮层（修 61% 遮挡的那条）", () => {
+    const r = railPolicy({ viewportWidth: 935, sidebarWidth: SIDEBAR, collapsed: false });
+    expect(r.mode).toBe("overlay");
+    expect(r.railWidth).toBe(935 - SIDEBAR); // 全宽
+    expect(r.centerWidth).toBe(935 - SIDEBAR); // 覆盖档：中心列不缩，靠遮罩表达层级
+  });
+});
+
+describe("宿主接线锁（index.html）：内容驱动的把手/角标/遮罩", () => {
+  const html = readFileSync(join(__dirname, "..", "ui", "public", "index.html"), "utf-8");
+
+  it("把手与遮罩存在，可见性走纯函数", () => {
+    expect(html).toMatch(/id="right-rail-handle"/);
+    expect(html).toMatch(/id="right-rail-scrim"/);
+    expect(html).toMatch(/railVisibilityNow\(/);
+  });
+
+  it("自动打开不再强写用户偏好（R3：dismiss 粘住）", () => {
+    // 旧写法：preview:open → saveRailPref({ panel: "preview", collapsed: false })
+    expect(html).not.toMatch(/saveRailPref\(\{\s*panel:\s*"preview",\s*collapsed:\s*false\s*\}\)/);
+    expect(html).toMatch(/preview:open/);
+  });
+
+  it("窄档 sheet 的三种关闭路径：Esc / 遮罩点外 / 收起键", () => {
+    expect(html).toMatch(/right-rail-scrim[\s\S]{0,400}?railClose/);
+    expect(html).toMatch(/Escape[\s\S]{0,300}?railClose/);
   });
 });
 

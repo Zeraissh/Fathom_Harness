@@ -114,15 +114,17 @@ export function railPolicy(input = {}) {
   // ---- 窄档：预算关不上，右列不占位 ----
   // 先定档、再在档内解释 collapsed —— 两档里它不是一个意思：
   //   窄档 = 抽屉关着（不占位）；宽中档 = 收成细条。
+  // 二轮走查（2026-09-18 夜）：抽屉打开时是**全宽 sheet**（240px 浮层在 390 屏上
+  // 盖住 61% 且读不了代码），中心列照旧不缩——层级交给遮罩与关闭路径表达。
   if (railBudget < RAIL_MIN_PX) {
     const closed = collapsed;
     return {
       mode: "overlay",
       layout: "tabbed",
-      railWidth: closed ? 0 : railCap,
+      railWidth: closed ? 0 : available,
       centerWidth: available,
-      tree: closed ? 0 : panel === "tree" ? railCap : 0,
-      preview: closed ? 0 : panel === "preview" ? railCap : 0,
+      tree: closed ? 0 : panel === "tree" ? available : 0,
+      preview: closed ? 0 : panel === "preview" ? available : 0,
       collapsed: closed,
     };
   }
@@ -161,6 +163,40 @@ export function railPolicy(input = {}) {
     preview,
     collapsed: false,
   };
+}
+
+/**
+ * 内容驱动可见性（二轮走查 2026-09-18 夜，委托方拍板）：
+ * 右列是**内容的家**，不是常驻家具。返回显示层的收起态与把手角标——
+ * 与"用户偏好"（pref.collapsed）是两件事：前者是判据，后者是意图。
+ *
+ * 规则：
+ *   ① 本次会话手动打开过（userOpenNow）→ 尊重，一律让位；
+ *   ② 欢迎页 → 收起（有文件也不自动开；细条/把手仍在，手动可开）；
+ *   ③ 对话里没内容 → 收起；
+ *   ④ 窄档（overlay）→ 永不自动展开，角标提示；点开是全宽 sheet；
+ *   ⑤ 宽档手动收起过 → 收 + 角标（dismiss 粘住，新产物不抢屏）。
+ *
+ * @param {{
+ *   context?: "welcome"|"conversation",
+ *   hasContent?: boolean,
+ *   mode?: "side"|"overlay",
+ *   userCollapsed?: boolean,
+ *   userOpenNow?: boolean,
+ * }} input
+ * @returns {{collapsed:boolean, badge:boolean}}
+ */
+export function railVisibility(input = {}) {
+  const context = input.context === "welcome" ? "welcome" : "conversation";
+  const mode = input.mode === "side" ? "side" : "overlay";
+  const hasContent = input.hasContent === true;
+  const userCollapsed = Boolean(input.userCollapsed);
+  if (input.userOpenNow === true) return { collapsed: false, badge: false };
+  if (context === "welcome") return { collapsed: true, badge: false };
+  if (!hasContent) return { collapsed: true, badge: false };
+  if (mode === "overlay") return { collapsed: true, badge: true };
+  if (userCollapsed) return { collapsed: true, badge: true };
+  return { collapsed: false, badge: false };
 }
 
 /** @returns {{collapsed:boolean, layout:"split"|"tabbed", fraction:number, splitRatio:number, panel:"tree"|"preview"}|null} */

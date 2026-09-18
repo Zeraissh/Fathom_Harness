@@ -223,6 +223,12 @@
       <!-- 预览坞占位：preview-dock.js 把自己挂进来（原先是 #center-row，见其 host 解析） -->
       <div id="right-rail-preview" class="right-rail-preview"></div>
     </div>
+    <!-- 窄档把手：收起=0 宽时全站唯一的重开入口（二轮走查实锤：此前收起即断头路）。
+         角标 = 有新内容没看（railVisibility 的 badge）。 -->
+    <button type="button" id="right-rail-handle" class="right-rail-handle" hidden
+      aria-label="打开右列" title="打开右列"><i class="ph ph-caret-left" aria-hidden="true"></i></button>
+    <!-- 窄档 sheet 的遮罩：只有 overlay 且打开时可见；点它 = 关闭 -->
+    <div id="right-rail-scrim" class="right-rail-scrim" hidden></div>
   </div>
   <!-- 跳转箭头：**在滚动容器之外**，所以它自己不会被滚走。
        ↓ 回到底部（流式时往上翻过之后用）。 -->
@@ -511,6 +517,7 @@
  */
 import {
   railPolicy,
+  railVisibility,
   clampRailFraction,
   readRailPref,
   writeRailPref,
@@ -1246,6 +1253,13 @@ let officeCatalogOpen = false;
  * 把设置默认值和「默认关；需要时再开」的文案一起悄悄盖掉（走查 U2）。
  */
 let codeVerifyPref = composerDefaults(uiSettings).verify;
+/**
+ * 本次会话手动打开过右列？——内容驱动让位判据之一（二轮走查）。
+ * 不落盘：把"打开"持久化会让窄档 sheet 下次进来自动弹出来抢屏。
+ */
+let railOpenedThisSession = false;
+/** 文件树根层条目数：null=未知（未加载/未落定），由 file-tree 的 onEntriesChanged 维护 */
+let railTreeEntryCount = null;
 let selectedDesignTab = /** @type {string|null} */ (null);
 let selectedDesignId = /** @type {string|null} */ (null);
 let selectedDesignSample = /** @type {string|null} */ (null);
@@ -1513,6 +1527,8 @@ function applyWorkspaceFace(next, { persist = true, refresh = true } = {}) {
 
 function paintEmptyState() {
   mainPanel.classList.add("is-welcome");
+  // 欢迎页 = 右列内容驱动的一个上下文（二轮走查：欢迎页一律收起）
+  paintRightRail();
   const gallery = document.getElementById("starter-gallery");
   if (gallery) gallery.hidden = false;
   renderEmptyState(runs.length > 0, {
@@ -1545,6 +1561,8 @@ function paintEmptyState() {
 
 function leaveWelcomeLayout() {
   mainPanel.classList.remove("is-welcome");
+  // 进对话：右列回到内容驱动（有内容按意图开，没内容收）
+  paintRightRail();
   const gallery = document.getElementById("starter-gallery");
   if (gallery) {
     gallery.hidden = true;
@@ -5134,6 +5152,11 @@ try {
       mount: fileTreeMount,
       getWorkdir: () => currentWorkdir(),
       isContextReady: () => harnessSettled,
+      // 内容驱动（二轮走查）：根层条目数上报——null=未知；≥1 才让右列按意图自动开
+      onEntriesChanged: (count) => {
+        railTreeEntryCount = count;
+        paintRightRail();
+      },
       onPreview: (path) => {
         const wd = currentWorkdir();
         if (!path || !wd) return;
@@ -5177,23 +5200,79 @@ function railSidebarWidth() {
   return Math.round(el.getBoundingClientRect?.().width ?? 0);
 }
 
+/** 手动关：收偏好 + 清会话标记（窄档 sheet 三路关闭共用）。 */
+function railClose() {
+  railOpenedThisSession = false;
+  saveRailPref({ collapsed: true });
+}
+
+/** 手动开：清收起偏好 + 记会话标记（把手/细条展开键/切面板共用）。 */
+function railOpen() {
+  railOpenedThisSession = true;
+  saveRailPref({ collapsed: false });
+}
+
+/** 右列有没有可看的内容：树非空 ∪ 预览坞里有可见内容。 */
+function railHasContent() {
+  if (railTreeEntryCount !== null && railTreeEntryCount > 0) return true;
+  const host = document.getElementById("right-rail-preview");
+  if (!host) return false;
+  return [...host.children].some((el) => !el.hidden);
+}
+
+/** 当前该不该显示：纯函数 railVisibility 的宿主适配层（上下文/内容/档位在这拼）。 */
+function railVisibilityNow() {
+  const pref = readRailPref(window.localStorage);
+  const mode = railPolicy({
+    viewportWidth: window.innerWidth,
+    sidebarWidth: railSidebarWidth(),
+    preferredFraction: pref.fraction,
+    splitRatio: pref.splitRatio,
+    panel: pref.panel,
+    collapsed: false,
+  }).mode;
+  const context = document.getElementById("main-panel")?.classList.contains("is-welcome")
+    ? "welcome"
+    : "conversation";
+  return {
+    pref,
+    mode,
+    vis: railVisibility({
+      context,
+      hasContent: railHasContent(),
+      mode,
+      userCollapsed: pref.collapsed,
+      userOpenNow: railOpenedThisSession,
+    }),
+  };
+}
+
 /** 把算出来的契约落在 DOM 上。纯应用，不含判断。 */
 function paintRightRail() {
   const rail = railElement();
   if (!rail) return;
-  const pref = readRailPref(window.localStorage);
+  const { pref, vis } = railVisibilityNow();
   const p = railPolicy({
     viewportWidth: window.innerWidth,
     sidebarWidth: railSidebarWidth(),
     preferredFraction: pref.fraction,
     splitRatio: pref.splitRatio,
     panel: pref.panel,
-    collapsed: pref.collapsed,
+    collapsed: vis.collapsed, // 显示层收起态由内容驱动；pref.collapsed 仍是用户意图
   });
   rail.dataset.mode = p.mode;
   rail.dataset.layout = p.layout;
   rail.dataset.panel = pref.panel;
   rail.dataset.collapsed = String(p.collapsed);
+  // 窄档 sheet 的遮罩：只有 overlay 且打开时可见（点它 = railClose，见 bindRightRail）
+  const railScrim = document.getElementById("right-rail-scrim");
+  if (railScrim) railScrim.hidden = !(p.mode === "overlay" && !p.collapsed);
+  // 窄档把手：0 宽收起时全站唯一的重开入口（此前收起即断头路，走查实锤）
+  const railHandle = document.getElementById("right-rail-handle");
+  if (railHandle) {
+    railHandle.hidden = !(p.mode === "overlay" && p.collapsed);
+    railHandle.classList.toggle("right-rail-handle--badge", vis.badge);
+  }
   rail.style.setProperty("--rail-width", `${p.railWidth}px`);
   rail.style.setProperty("--rail-tree-w", `${p.tree}px`);
   rail.style.setProperty("--rail-preview-w", `${p.preview}px`);
@@ -5225,6 +5304,8 @@ function paintRightRail() {
     const label = p.collapsed ? "展开右列" : "收起右列";
     btn.setAttribute("aria-label", label);
     btn.setAttribute("title", label);
+    // 细条上的角标：宽档手动收起后有新内容，提示"里面有东西"
+    btn.classList.toggle("right-rail-badge", vis.badge);
   }
   // 可聚焦的 separator 是 window splitter：必须报当前值，否则 axe 判 critical。
   // 顺带让读屏用户听得到宽度（键盘 ±2% 改的就是它）。
@@ -5242,8 +5323,9 @@ function saveRailPref(patch) {
   paintRightRail();
 }
 
-/** 切到某个面板。覆盖档下切面板等于把抽屉拉出来。 */
+/** 切到某个面板。覆盖档下切面板等于把抽屉拉出来（也算用户手动打开）。 */
 function showRailPanel(panel) {
+  railOpenedThisSession = true;
   saveRailPref({ panel, collapsed: false });
 }
 
@@ -5258,7 +5340,9 @@ function showRailPanel(panel) {
     // 两档里语义不同（side 收成细条 / overlay 抽屉关着），由 railPolicy 解释。
     const collapseBtn = event.target.closest?.("#right-rail-collapse");
     if (collapseBtn) {
-      saveRailPref({ collapsed: !readRailPref(window.localStorage).collapsed });
+      // 开没开由内容驱动判（不是 pref.collapsed）：欢迎页/无内容时 pref 与显示层是两回事
+      if (railVisibilityNow().vis.collapsed) railOpen();
+      else railClose();
       return;
     }
     const tab = event.target.closest?.("[data-rail-panel]");
@@ -5273,11 +5357,20 @@ function showRailPanel(panel) {
   });
 
   // 坞（产物画布 / 文件预览）打开时把自己"抬"到前台：右列切到预览面板。
-  // 否则从文件树点一个文件，坞开了但列还停在「文件」上——屏幕上什么都没发生，
-  // 那正是 P4 第一条「点文件必开」。
+  // 宽档按用户意图自动开；窄档永不自动展开（只更新角标）——不再强写偏好（R3）。
   rail.addEventListener("preview:open", () => {
-    const pref = readRailPref(window.localStorage);
-    if (pref.panel !== "preview" || pref.collapsed) saveRailPref({ panel: "preview", collapsed: false });
+    if (!railVisibilityNow().vis.collapsed) saveRailPref({ panel: "preview" });
+    else paintRightRail();
+  });
+
+  // 窄档 sheet 的另外两条关闭路径（遮罩点外 / Esc）。把手是 0 宽收起态唯一的重开入口。
+  document.getElementById("right-rail-scrim")?.addEventListener("click", () => railClose());
+  document.getElementById("right-rail-handle")?.addEventListener("click", () => railOpen());
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") return;
+    const current = railElement();
+    if (!current || current.dataset.mode !== "overlay" || current.dataset.collapsed === "true") return;
+    railClose();
   });
 
   const drag = rail.querySelector("#right-rail-drag");
