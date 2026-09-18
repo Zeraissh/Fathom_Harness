@@ -5660,12 +5660,27 @@ body.sidebar-collapsed .sidebar {
   justify-content: center;
   overflow: auto;
 }
+/* 欢迎页的收起态右列**彻底不占位**（二轮走查密度收拢）：40px 细条占着 center-row
+   的位、把中栏推左 20px，而输入框在主栏全宽上居中——两条中心轴差 20px 就是
+   「零散」的来源之一。收成 0 宽后主轴合一；重开入口交给右侧把手
+   （见 paintRightRail 的 welcomeQuiet 分支）。 */
+#main-panel.is-welcome .right-rail[data-collapsed="true"] {
+  width: 0;
+  border-left: none;
+  overflow: hidden;
+}
 #main-panel.is-welcome #center-row {
   flex: 0 0 auto;
   min-height: 0;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+/* 密度收拢：快捷按钮到输入框的间距 51px → ~27px——按钮是"这句话怎么说"的示范，
+   属于输入框的引力场，不该浮在标题与输入框之间的半空。base 的 .content-area
+   底衬是 var(--space-xl)（24px），这里收回 8px。 */
+#main-panel.is-welcome #main-area {
+  padding-bottom: 8px;
 }
 #main-panel.is-welcome #main-area {
   overflow: hidden;
@@ -5677,7 +5692,7 @@ body.sidebar-collapsed .sidebar {
 #main-panel.is-welcome .empty-state {
   min-height: 0;
   height: auto;
-  padding-bottom: var(--space-md);
+  padding-bottom: 4px;
   justify-content: center;
 }
 #main-panel.is-welcome #submit-form {
@@ -5703,7 +5718,9 @@ body.sidebar-collapsed .sidebar {
   flex: 0 0 auto;
   min-height: 0;
   width: min(100%, 40rem);
-  margin: 10px auto 0;
+  /* 密度收拢：卡片与输入框之间 10px 黏在一起会把输入框的边界吃掉；
+     留出 ~22px 让它读作"输入框下方的一排起步卡"，而不是输入框的一部分 */
+  margin: 22px auto 0;
   padding: 0 var(--space-lg) var(--space-lg);
   overflow: visible;
 }

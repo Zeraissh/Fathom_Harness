@@ -5237,6 +5237,7 @@ function railVisibilityNow() {
   return {
     pref,
     mode,
+    context,
     vis: railVisibility({
       context,
       hasContent: railHasContent(),
@@ -5251,7 +5252,7 @@ function railVisibilityNow() {
 function paintRightRail() {
   const rail = railElement();
   if (!rail) return;
-  const { pref, vis } = railVisibilityNow();
+  const { pref, context, vis } = railVisibilityNow();
   const p = railPolicy({
     viewportWidth: window.innerWidth,
     sidebarWidth: railSidebarWidth(),
@@ -5267,10 +5268,12 @@ function paintRightRail() {
   // 窄档 sheet 的遮罩：只有 overlay 且打开时可见（点它 = railClose，见 bindRightRail）
   const railScrim = document.getElementById("right-rail-scrim");
   if (railScrim) railScrim.hidden = !(p.mode === "overlay" && !p.collapsed);
-  // 窄档把手：0 宽收起时全站唯一的重开入口（此前收起即断头路，走查实锤）
+  // 窄档把手：0 宽收起时全站唯一的重开入口（此前收起即断头路，走查实锤）。
+  // 欢迎页的收起也收成 0 宽（styles.css：细条不占位才不会把中栏推离输入框的轴）——
+  // 所以它同样要靠这把手上车。
   const railHandle = document.getElementById("right-rail-handle");
   if (railHandle) {
-    railHandle.hidden = !(p.mode === "overlay" && p.collapsed);
+    railHandle.hidden = !(p.collapsed && (p.mode === "overlay" || context === "welcome"));
     railHandle.classList.toggle("right-rail-handle--badge", vis.badge);
   }
   rail.style.setProperty("--rail-width", `${p.railWidth}px`);
