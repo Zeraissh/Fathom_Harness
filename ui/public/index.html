@@ -530,6 +530,7 @@ import {
   writeSidebarCollapsed,
   deriveWrittenPaths,
   artifactWriteState,
+  editHunksFromTimeline,
   writeAnnouncement,
   deriveArtifacts,
   deliveryFace,
@@ -672,6 +673,8 @@ import { initFileTree } from "/features/file-tree.js";
 /** @type {Map<string, import('/app.js').RunState>} */
 const runStates = new Map();
 let selectedRunId = /** @type {string|null} */ (null);
+/** 命令面板句柄（动态 import 之后才有）。`/` 打在第一格时用它开面板。 */
+let commandPaletteApi = /** @type {{open?:()=>void}|null} */ (null);
 /** @type {Map<string, string>} 当前打开的子代理详情，按 run 记 */
 const selectedAgentByRun = new Map();
 let runs = /** @type {{runId:string, task:string, status:string, verify:boolean, createdAt:number, finishedAt:number|null}[]} */ ([]);
@@ -3424,6 +3427,14 @@ submitBtn.addEventListener("click", (e) => {
  * 选词上屏，绝不许触发发送。
  */
 taskInput.addEventListener("keydown", (e) => {
+  // `/` 打在第一格（输入框还空着）时打开命令面板。这是 REPL 惯例，也是 09-15 审计
+  // 的建议：「`/` 要么弹出命令面板，要么不当命令」——此前它什么都不做，纯空响。
+  // 有内容时照常插入斜杠：路径、除法、日期都要用它，不能占着。
+  if (e.key === "/" && taskInput.value === "" && commandPaletteApi) {
+    e.preventDefault();
+    commandPaletteApi.open?.();
+    return;
+  }
   if (e.key === "Escape") {
     const picker = document.getElementById("cite-picker");
     if (picker && !picker.hidden) {
@@ -5176,6 +5187,14 @@ function showRailPanel(panel) {
     if (tab) showRailPanel(tab.dataset.railPanel);
   });
 
+  // 坞（产物画布 / 文件预览）打开时把自己"抬"到前台：右列切到预览面板。
+  // 否则从文件树点一个文件，坞开了但列还停在「文件」上——屏幕上什么都没发生，
+  // 那正是 P4 第一条「点文件必开」。
+  rail.addEventListener("preview:open", () => {
+    const pref = readRailPref(window.localStorage);
+    if (pref.panel !== "preview" || pref.collapsed) saveRailPref({ panel: "preview", collapsed: false });
+  });
+
   const drag = rail.querySelector("#right-rail-drag");
   // 拖宽：宽度归右列管（坞自己那套在同宿主下已让位，见 preview-dock.js 的 railHosted）
   drag?.addEventListener("mousedown", (event) => {
@@ -5364,7 +5383,7 @@ subscribeLifecycle();
 // 动态加载，失败不影响主流程。回调全部委托给本控制器已有函数，
 // 模块不反向 import 这里，保持单向依赖。
 import("./features/command-palette.js").then((palette) => {
-  palette.initCommandPalette({
+  commandPaletteApi = palette.initCommandPalette({
     getConversations: () => runs.map((r) => ({
       runId: r.runId,
       title: r.task,
@@ -5655,6 +5674,17 @@ try {
 import("./features/changes-panel.js").then((changes) => {
   changesApi = changes.initChangesPanel({
     onAnnounce: (msg) => announceStatus(msg),
+    // P4：展开一行时显示"改了哪几行"。数据来自 edit_file 的入参（字节精确的
+    // old_string / new_string），所以**不需要磁盘上的旧版本**——那正是覆盖写场景
+    // 拿不到的东西，拿不到时不显示，不编。
+    getEditHunks: (path) => {
+      if (!selectedRunId) return null;
+      const st = runStates.get(selectedRunId);
+      if (!st) return null;
+      const want = String(path ?? "").split("\\").join("/");
+      for (const [k, v] of editHunksFromTimeline(st)) if (k === want) return v;
+      return null;
+    },
   });
   // 模块就绪时可能已有选中会话（深链直达）：立刻补上挂载与命令注册
   if (selectedRunId) {

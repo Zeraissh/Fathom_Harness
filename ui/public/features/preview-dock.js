@@ -295,6 +295,13 @@ export function createPreviewDock(opts = {}, env = {}) {
     if (isNarrow()) root.classList.add("preview-dock--narrow");
     else root.classList.remove("preview-dock--narrow");
     syncRevealChrome();
+    // 挂在 #right-rail 里时，坞打开必须让右列切到「预览」面板——否则列还停在
+    // 「文件」上，CSS 会把坞整个 display:none，表现为"点了文件没反应"（P4 第一条）。
+    // 用事件而不是直接改 DOM：右列状态归它的所有者（index.html 的 railPref），
+    // 坞绕过它写 data-panel 会在下一次 paintRightRail 被覆盖。
+    if (railHosted() && typeof CustomEvent === "function") {
+      root.dispatchEvent(new CustomEvent("preview:open", { bubbles: true }));
+    }
   }
 
   function finishHide({ clear } = { clear: false }) {

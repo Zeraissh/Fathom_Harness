@@ -5609,8 +5609,12 @@ function ensureDetailSkeleton(mainEl, state, callbacks) {
     // 结果卡排在对话之后：它是这次运行的收尾，不是开场白
     '<div class="outcome-card"></div>' +
     '<div class="usage-footer" hidden></div>' +
-    // 仪表盘抽屉：四因子卡仍是标签栏，只是不再占首屏。委托方："Loop 不用显示，留档即可"
-    '<details class="detail-drawer" id="detail-drawer" hidden>' +
+    // 仪表盘抽屉：四因子卡仍是标签栏，只是不再占首屏。委托方："Loop 不用显示，留档即可"。
+    //
+    // 这里**不要**加 `hidden`：`<details>` 本身默认收起就够了，而 `hidden` 会把
+    // `<summary>` 一起藏掉，于是抽屉彻底不可达——事件流（P5 的成组）与「变更」的
+    // 逐行改动（P4）都在这抽屉里，两处独立功能一起被堵死。收起 ≠ 藏掉入口。
+    '<details class="detail-drawer" id="detail-drawer">' +
     '<summary class="drawer-summary">运行详情：Loop / 上下文 / 工具 / 核查</summary>' +
     '<div class="factor-grid" role="tablist" aria-label="四决定因素"></div>' +
     '<div class="tab-content" id="tab-content" role="tabpanel" tabindex="0"></div>' +
@@ -10414,6 +10418,45 @@ export function artifactWriteState(state, path) {
   return intended ? "intended" : "unknown";
 }
 
+/**
+ * 从事件流派生**编辑的具体改动**（P4「看『改了什么』」）。
+ *
+ * 为什么不需要 before 内容：`edit_file` 的入参必带字节精确的 `old_string` /
+ * `new_string`（`src/tools/edit-file.ts` 的 required），工具自己也是按这两个串出 hunk 的
+ * （它的注释：不做通用 LCS，改动形态已知）。所以"哪几行变了"在**调用入参里**就有，
+ * 不必去读磁盘上的旧版本——而 `write_file` 覆盖场景根本拿不到旧版本，那时诚实地说没有。
+ *
+ * 只收**成功**的编辑：失败/等批准的调用改了别的东西，不该算作"改了"。
+ *
+ * @param {RunState|null|undefined} state
+ * @returns {Map<string, {oldText:string, newText:string}[]>} 路径 → 改动列表（按 seq 升序）
+ */
+export function editHunksFromTimeline(state) {
+  const results = new Map();
+  for (const e of state?.timeline ?? []) {
+    if (e.type === "tool_result") results.set(e.toolUseId, e);
+  }
+  /** @type {Map<string, {oldText:string,newText:string}[]>} */
+  const out = new Map();
+  for (const e of state?.timeline ?? []) {
+    if (e.type !== "tool_call") continue;
+    if (e.name !== "edit_file" && e.name !== "write_pptx") continue;
+    const input = e.input && typeof e.input === "object" ? e.input : {};
+    const path = String(input.path ?? input.file_path ?? "").replace(/\\/g, "/").trim();
+    if (!path) continue;
+    const res = results.get(e.toolUseId);
+    if (!res || res.resultIsError) continue;
+    const oldText = typeof input.old_string === "string" ? input.old_string : null;
+    const newText = typeof input.new_string === "string" ? input.new_string : null;
+    // 纯新增（write_pptx / 没有 old_string）没有"改成什么"可言，不算改动
+    if (oldText === null || newText === null) continue;
+    const list = out.get(path) ?? [];
+    list.push({ oldText, newText });
+    out.set(path, list);
+  }
+  return out;
+}
+
 /** 会引起"换段"的事件类型：turn_start 这类噪声不该产生分界 */
 const CHAT_SOURCED = new Set([
   "user_message", "assistant_text", "assistant_thinking", "tool_call", "approval_request",
@@ -11325,7 +11368,9 @@ function patchUsageFooter(parts, state) {
     setAttr(parts.usage, "hidden", "");
     parts.usage.innerHTML = "";
   }
-  if (parts.drawer) setAttr(parts.drawer, "hidden", "");
+  // 抽屉只**收起**，不再 `hidden`——`hidden` 会把 summary 一起藏掉，入口就没了。
+  // 收起由 `<details>` 自身的 open=false 表达（默认就是 false）。
+  if (parts.drawer) parts.drawer.open = false;
 }
 
 

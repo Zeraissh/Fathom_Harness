@@ -3149,11 +3149,15 @@ describe("deriveChatItems：对话从事件流派生，因此实时", () => {
     expect(v?.verdict.unverified).toEqual(["脚本不在仓库内"]);
   });
 
-  it("用量脚注和 Loop 抽屉默认不显示", () => {
+  it("用量脚注默认不显示；Loop 抽屉默认**收起但入口可见**", () => {
     const s = run(sse(0, "main", "assistant_text", { text: "做完了" }));
     renderRunDetail(s, { activeTab: "loop" });
     expect((document.querySelector(".usage-footer") as HTMLElement).hidden).toBe(true);
-    expect((document.getElementById("detail-drawer") as HTMLElement).hidden).toBe(true);
+    const drawer = document.getElementById("detail-drawer") as HTMLDetailsElement;
+    // 收起 ≠ 藏掉入口：`hidden` 会把 <summary> 一起藏掉，事件流与「变更」的逐行改动
+    // 都在这个抽屉里，藏了入口等于两处功能一起不可达（P4/P5 取证时实测到）。
+    expect(drawer.hidden).toBe(false);
+    expect(drawer.open).toBe(false);
   });
 
   it("裁决作为收尾卡进对话，不再是另一个页面", () => {

@@ -38,6 +38,7 @@ import {
   groupToolSteps,
   writeAnnouncement,
   artifactWriteState,
+  editHunksFromTimeline,
   toggleEntryCollapsed,
   isEntryCollapsedByDefault,
   deriveRunListItems,
@@ -3655,5 +3656,57 @@ describe("P3 artifactWriteState 三态", () => {
     const winPath = `out${String.fromCharCode(92)}a.txt`;
     const st = makeState({ timeline: [call("t1", winPath), res("t1", false)] });
     expect(artifactWriteState(st, "out/a.txt")).toBe("written");
+  });
+});
+
+// ---- P4: 编辑的具体改动（不需要 before 内容）----
+describe("P4 editHunksFromTimeline", () => {
+  const editCall = (toolUseId, path, oldS, newS) => ({
+    seq: 1, source: "main", type: "tool_call", name: "edit_file", toolUseId,
+    input: { path, old_string: oldS, new_string: newS },
+  });
+  const res = (toolUseId, isError = false) => ({
+    seq: 2, source: "main", type: "tool_result", toolUseId,
+    resultContent: isError ? "boom" : "ok", resultIsError: isError,
+  });
+
+  it("成功的 edit_file → 按路径收到 old/new", () => {
+    const st = makeState({ timeline: [editCall("t1", "a/b.ts", "let x = 1", "let x = 2"), res("t1")] });
+    const m = editHunksFromTimeline(st);
+    expect(m.get("a/b.ts")).toEqual([{ oldText: "let x = 1", newText: "let x = 2" }]);
+  });
+
+  it("失败的编辑不算改动", () => {
+    const st = makeState({ timeline: [editCall("t1", "a/b.ts", "x", "y"), res("t1", true)] });
+    expect(editHunksFromTimeline(st).size).toBe(0);
+  });
+
+  it("同一文件多次编辑按发生顺序累积", () => {
+    const st = makeState({
+      timeline: [
+        editCall("t1", "a.ts", "1", "2"), res("t1"),
+        editCall("t2", "a.ts", "2", "3"), res("t2"),
+      ],
+    });
+    expect(editHunksFromTimeline(st).get("a.ts")).toEqual([
+      { oldText: "1", newText: "2" },
+      { oldText: "2", newText: "3" },
+    ]);
+  });
+
+  it("write_file / 纯新增没有 old→new，不算改动（诚实说没有）", () => {
+    const st = makeState({
+      timeline: [
+        { seq: 1, source: "main", type: "tool_call", name: "write_file", toolUseId: "w1", input: { path: "n.txt", content: "hi" } },
+        res("w1"),
+      ],
+    });
+    expect(editHunksFromTimeline(st).size).toBe(0);
+  });
+
+  it("反斜杠与正斜杠视为同一路径", () => {
+    const win = `a${String.fromCharCode(92)}b.ts`;
+    const st = makeState({ timeline: [editCall("t1", win, "x", "y"), res("t1")] });
+    expect(editHunksFromTimeline(st).has("a/b.ts")).toBe(true);
   });
 });
