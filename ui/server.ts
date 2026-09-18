@@ -142,7 +142,7 @@ import {
   validateRunContextBudget,
   type ContextPlan,
 } from "../src/context-window.js";
-import { allPacks, clearFilePacks, getPack, selectPackTools, PACKS, DEFAULT_HOST_DISCIPLINES, type DomainPack } from "../src/presets.js";
+import { allPacks, clearFilePacks, getPack, selectPackTools, verifierMeansFor, PACKS, DEFAULT_HOST_DISCIPLINES, type DomainPack } from "../src/presets.js";
 import {
   discardDraftPack,
   filePackListView,
@@ -312,7 +312,7 @@ import {
   resolveOfficeNotifyFromEnv,
   type OfficeNotifyConfig,
 } from "../src/notify.js";
-import { DEFAULT_VERIFIER_MAX_TURNS, resolveVerifierReadOnlyCommands, verifierCanExecute } from "../src/verifier.js";
+import { DEFAULT_VERIFIER_MAX_TURNS, resolveVerifierReadOnlyCommands, verifierCanExecute, type VerifierMeans } from "../src/verifier.js";
 import type { Plan, PlanNodeState, SubTask } from "../src/planner.js";
 import {
   applyPlanShortEdits,
@@ -7806,6 +7806,8 @@ export function createUiServer(options: UiServerOptions = {}): UiServerHandle {
      * 意义就是逐子任务配置，按 run 级包算等于把 s1 与 s2 混成一个。
      */
     const subtaskPack = new Map<string, DomainPack | undefined>();
+    /** 子任务 → 该子任务核查者的动手面（包声明 + 实际挂上的 MCP 工具） */
+    const subtaskMeans = new Map<string, VerifierMeans>();
 
     try {
       const usePlanner = run.usePlannerModel ?? true;
@@ -7938,6 +7940,9 @@ export function createUiServer(options: UiServerOptions = {}): UiServerHandle {
               || MEMORY_TOOL_NAMES.has(tool.name),
           );
           const domainTools = injectedTools ?? selectPackTools(sp, toolPool, mcpTools);
+          // 核查者的动手面按**这个子任务实际装配出来的工具**算（判据③要的是
+          // "这次真有没有探针"，不是包声明里写了没有）
+          subtaskMeans.set(sub.id, verifierMeansFor(sp, domainTools));
           const proposeForSub = sp?.handoffs?.length
             ? [(run.proposeHandoffTool ??= makeProposeHandoffTool(run))]
             : [];
@@ -7996,8 +8001,11 @@ export function createUiServer(options: UiServerOptions = {}): UiServerHandle {
             verdict: vo.verdict,
             usage: vo.usage,
             recovery: vo.recovery,
-            // H8：核查侧无执行手段 → 裁决是静态推导。按**该子任务**的包算
-            ...(verifierCanExecute(readOnlyFor(subtaskPack.get(subtaskId)).commands)
+            // H8：核查侧无执行手段 → 裁决是静态推导。按**该子任务**的包与工具面算
+            ...(verifierCanExecute(
+              readOnlyFor(subtaskPack.get(subtaskId)).commands,
+              subtaskMeans.get(subtaskId),
+            )
               ? {}
               : { staticOnly: true }),
           });
@@ -8144,6 +8152,10 @@ export function createUiServer(options: UiServerOptions = {}): UiServerHandle {
     driverEpoch?: number,
   ): Promise<void> {
     const judgedTurn = run.conversationTurn;
+    // H8 的判据②③（包声明 + 实际挂上的 MCP 工具）在这里算一次，供下面两处
+    // 裁决事件共用——同一轮里逐轮裁决与末轮 verdict 的口径必须一致
+    const verifyPack = run.packName ? getPack(run.packName) : pack;
+    const verifyMeans = verifierMeansFor(verifyPack, cfg.tools);
     let mainStopReason: string | undefined;
     let mainError: string | null = null;
     try {
@@ -8177,7 +8189,7 @@ export function createUiServer(options: UiServerOptions = {}): UiServerHandle {
             // 的三种误伤形态可计量，也是 §2.1 该不该做的判据
             recovery: vo.recovery,
             // H8（走查）：核查侧无执行手段 → 裁决是静态推导，界面如实标注
-            ...(verifierCanExecute(readOnlyFor(run.packName ? getPack(run.packName) : pack).commands)
+            ...(verifierCanExecute(readOnlyFor(verifyPack).commands, verifyMeans)
               ? {}
               : { staticOnly: true }),
           });
@@ -8192,7 +8204,7 @@ export function createUiServer(options: UiServerOptions = {}): UiServerHandle {
           type: "verdict",
           judgedTurn,
           verdict: lastVerdict,
-          ...(verifierCanExecute(readOnlyFor(run.packName ? getPack(run.packName) : pack).commands)
+          ...(verifierCanExecute(readOnlyFor(verifyPack).commands, verifyMeans)
             ? {}
             : { staticOnly: true }),
         });

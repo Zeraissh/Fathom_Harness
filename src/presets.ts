@@ -6,6 +6,8 @@ import {
 } from "./mcp.js";
 import { STM32_FIX_THEN_VERIFY, type PackHandoff } from "./handoff.js";
 import { githubMcpPermissionPolicy, mergeHostGithubTools } from "./mcp-github.js";
+// 仅取类型：verifier 侧不反向依赖包定义（它用的是结构化类型），这里也不引运行时环
+import type { VerifierMeans } from "./verifier.js";
 
 export interface DomainMcpPolicy extends McpPermissionPolicy {
   /** 只暴露这些 MCP 原始工具名；缺省全部暴露 */
@@ -893,6 +895,24 @@ export function selectPackTools(
     return applyMcpPackPermission(tool, rawName, packPolicy);
   });
   return mergeHostGithubTools(pack, [...builtins, ...resolvedMcp], mcpPool);
+}
+
+/**
+ * 这次核查的"动手面"（H8 徽标的判据②③，见 `verifierCanExecute`）：
+ * 包声明 + **实际装配出来的**工具一起看，宿主四处调用点共用这一处口径。
+ *
+ * 为什么按实际工具而不是按包声明：MCP 工具会因"宿主没配 MCP""包用
+ * includeTools 收窄""权限被 deny"而不在场——那时核查者手里确实没有探针，
+ * 标「静态推导」是对的。声明说"能"，装配说"这次真有没有"，要的是后者。
+ */
+export function verifierMeansFor(
+  pack: DomainPack | undefined,
+  tools: readonly Tool[] | undefined,
+): VerifierMeans {
+  return {
+    programmatic: pack?.verify.mode === "programmatic",
+    mcpTools: (tools ?? []).filter((tool) => originalMcpToolName(tool) !== undefined).length,
+  };
 }
 
 // ————— 兼容别名（v0.8 及之前的 Preset 命名）—————

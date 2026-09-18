@@ -21,7 +21,12 @@ const REPO = join(dirname(fileURLToPath(import.meta.url)), "..");
 const TSX = join(REPO, "node_modules", "tsx", "dist", "cli.mjs");
 const CLI = join(REPO, "src", "cli.ts");
 
-/** 两个子任务的包刻意不同：一个白名单无可运行器，一个有 */
+/**
+ * 三个子任务的包刻意各不同，各代表判据的一条：
+ *   consult       白名单只有只读探查 → 静态（唯一该标的一步）
+ *   python-coding 通用可运行器在名单里 → 判据①
+ *   kicad         领域自带可运行器 kicad-cli（宿主认不全）+ 声明程序化验收 → 判据②
+ */
 const PLAN_JSON = JSON.stringify({
   subtasks: [
     {
@@ -39,6 +44,14 @@ const PLAN_JSON = JSON.stringify({
       description: "用脚本复算并对比",
       acceptance: ["数字一致"],
       dependsOn: ["s1"],
+    },
+    {
+      id: "s3",
+      title: "重跑 ERC 验收",
+      pack: "kicad",
+      description: "用 kicad-cli 重跑 ERC/DRC",
+      acceptance: ["无违规"],
+      dependsOn: ["s2"],
     },
   ],
 });
@@ -82,13 +95,15 @@ function spawnCli(
 }
 
 describe("H8 · 编排路径的裁决口径（CLI 活页）", () => {
-  it("逐子任务注「静态推导」：consult 标、python-coding 不标", async () => {
+  it("逐子任务注「静态推导」：只有真跑不了的 consult 那一步标", async () => {
     const mock: MockProviderHandle = await startMockProvider({
       scripts: [
         { content: [{ type: "text", text: ["```json", PLAN_JSON, "```"].join("\n") }] },
         { content: [{ type: "text", text: "s1 数完了" }] },
         { content: [{ type: "text", text: PASS }] },
         { content: [{ type: "text", text: "s2 复算完成" }] },
+        { content: [{ type: "text", text: PASS }] },
+        { content: [{ type: "text", text: "s3 ERC 重跑完毕" }] },
         { content: [{ type: "text", text: PASS }] },
       ],
     });
@@ -120,13 +135,18 @@ describe("H8 · 编排路径的裁决口径（CLI 活页）", () => {
       const row = (id: string) => tail.findIndex((l) => l.includes(id) && /[✔✘－]/.test(l));
       const s1At = row("s1");
       const s2At = row("s2");
+      const s3At = row("s3");
       expect(s1At, stdout).toBeGreaterThanOrEqual(0);
       expect(s2At, `未找到 s2 结果行：\n${tail.join("\n")}`).toBeGreaterThan(s1At);
-      // 归属：注必须落在自己那一步的结果行与下一步之间
+      expect(s3At, `未找到 s3 结果行：\n${tail.join("\n")}`).toBeGreaterThan(s2At);
+      // 归属：唯一那条注必须落在 s1 的结果行与 s2 之间
       const notes = tail
         .map((line, i) => ({ i, line }))
         .filter((x) => x.line.includes("静态推导"));
-      expect(notes, `未注静态推导：\n${tail.join("\n")}`).toHaveLength(1);
+      expect(
+        notes.length,
+        `注的条数不对（python-coding / kicad 两步都有可运行器，不该标）：\n${tail.join("\n")}`,
+      ).toBe(1);
       expect(notes[0]!.i).toBeGreaterThan(s1At);
       expect(notes[0]!.i).toBeLessThan(s2At);
     } finally {

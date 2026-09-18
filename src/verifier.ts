@@ -258,11 +258,24 @@ export function resolveVerifierReadOnlyCommands(
 }
 
 /**
- * 核查侧有没有"把产物跑起来"的手段（H8 · 走查 2026-09-18）：白名单里有没有可运行器。
+ * 核查侧有没有"把产物跑起来 / 实测"的手段（H8 · 走查 2026-09-18，同日深夜扩判据）。
  *
  * 无包运行的通用缺省只有 ls/cat/grep/stat/od/diff——产物不可能被实际执行验证过。
  * 真机实录：裁决卡写「核查通过」，细则里才写着"未能亲自运行复现"。口径要上标题：
- * 宿主按白名单算（不猜核查者的意图），没有执行手段就在裁决旁标「静态推导」。
+ * 宿主按**声明与实际工具面**算（不猜核查者的意图），没有动手手段就在裁决旁标
+ * 「静态推导」。
+ *
+ * 三条判据，任一命中即"有手段"：
+ *   ① 白名单里放行了通用可运行器（下面那张名单）。
+ *   ② 包声明了程序化验收（verify.mode="programmatic"）**且**白名单非空——
+ *      "我的核查要重跑东西"是领域知识，领域自带的可运行器（kicad-cli 重跑
+ *      ERC/DRC、arm-none-eabi-* 查符号）宿主认不全，别指望一张名单猜得到。
+ *      要求白名单非空，是为了挡住"声明了程序化验收却什么命令都没放行"的
+ *      自相矛盾的包——那种包手里确实什么都没有，仍该标静态。
+ *   ③ 工具面上**实际**挂上了 MCP 工具：探针那类非 bash 的动手面（案例 #8 的
+ *      真机核查全程靠探针取证，bash 白名单却是空的）。看实际挂上的数量，
+ *      不看包声明——宿主没配 MCP / 包被 includeTools 收窄掉时，核查者手里
+ *      确实没有它，那时标静态是对的。
  */
 const EXECUTION_CAPABLE_COMMANDS = new Set([
   "node", "deno", "bun", "npm", "npx", "yarn", "pnpm",
@@ -274,13 +287,25 @@ const EXECUTION_CAPABLE_COMMANDS = new Set([
   "tsc", "vitest", "jest", "mocha", "playwright",
 ]);
 
-export function verifierCanExecute(commands: readonly string[]): boolean {
-  return (Array.isArray(commands) ? commands : []).some((raw) => {
-    const name = String(raw ?? "").trim().toLowerCase();
-    if (!name) return false;
-    const base = name.split(/[\\/]/).pop() ?? name; // ./node → node
-    const head = (base.split(/\s+/)[0] ?? "").trim(); // "node --test" → node
-    if (!head) return false;
+/** 核查者手里除"命令白名单"以外的动手面（由宿主按当前 run 的实际装配填）。 */
+export interface VerifierMeans {
+  /** 包声明了程序化验收（`verify.mode === "programmatic"`） */
+  programmatic?: boolean;
+  /** 这次核查工具面上实际挂上的 MCP 工具数（探针那类非 bash 动手面） */
+  mcpTools?: number;
+}
+
+export function verifierCanExecute(commands: readonly string[], means?: VerifierMeans): boolean {
+  const heads = (Array.isArray(commands) ? commands : [])
+    .map((raw) => {
+      const name = String(raw ?? "").trim().toLowerCase();
+      if (!name) return "";
+      const base = name.split(/[\\/]/).pop() ?? name; // ./node → node
+      return (base.split(/\s+/)[0] ?? "").trim(); // "node --test" → node
+    })
+    .filter(Boolean);
+  // ① 通用可运行器
+  const generic = heads.some((head) => {
     for (const tool of EXECUTION_CAPABLE_COMMANDS) {
       if (head === tool) return true;
       // 版本后缀形态：node18 / python3 / gcc-12 / clang++-17
@@ -289,6 +314,11 @@ export function verifierCanExecute(commands: readonly string[]): boolean {
     }
     return false;
   });
+  if (generic) return true;
+  // ② 领域声明的程序化验收（要求它确实放行了命令，见上）
+  if (means?.programmatic && heads.length > 0) return true;
+  // ③ 非 bash 的动手面
+  return (means?.mcpTools ?? 0) > 0;
 }
 
 /**

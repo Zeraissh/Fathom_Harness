@@ -1143,4 +1143,38 @@ describe("H8 · verifierCanExecute：核查侧有没有执行手段", () => {
     expect(verifierCanExecute(["Node"])).toBe(true);
     expect(verifierCanExecute(["./node"])).toBe(true);
   });
+
+  /**
+   * 2026-09-18 二轮走查 §6 遗留（本块是那次走查的收尾）。
+   *
+   * 通用可运行器名单是**宿主猜的**：猜不到领域自带的工具（kicad-cli 重跑
+   * ERC/DRC、arm-none-eabi-* 查符号），也完全看不见非 bash 的动手面（真机
+   * 探针走 MCP）。断言的准星必须落在"这次核查手里实际有什么"上——
+   * 名单只留作无包/通用形态的兜底。
+   */
+  it("领域自带可运行器：包声明程序化验收 + 白名单非空 → 有手段", () => {
+    // kicad 白名单 kicad-cli 不在通用名单里，但它确实是"把产物跑起来"（ERC/DRC）
+    expect(verifierCanExecute(["kicad-cli", "ls", "grep", "wc"], { programmatic: true })).toBe(true);
+  });
+
+  it("rubric 包不做这个兑换：它的白名单是探查工具链，不是执行面", () => {
+    expect(verifierCanExecute(["ls", "head", "tail", "wc", "grep", "rg"], { programmatic: false })).toBe(false);
+    expect(verifierCanExecute(["ls", "find", "grep", "rg", "wc", "head", "file"], { programmatic: false })).toBe(false);
+    // 但真配了通用可运行器照样算数（判据①先命中，与 mode 无关）
+    expect(verifierCanExecute(["ls", "node"], { programmatic: false })).toBe(true);
+  });
+
+  it("非 bash 的动手面：工具面挂上了 MCP 探针（stm32-debug 的形态）", () => {
+    // 包没声明任何 readOnlyCommands（bash 全 deny），但探针工具在手 → 不是静态推导
+    expect(verifierCanExecute([], { mcpTools: 3 })).toBe(true);
+    expect(verifierCanExecute(["ls"], { mcpTools: 1 })).toBe(true);
+    // 宿主没配 MCP 时核查者手里确实没有它——看**实际挂上的**，不看包声明
+    expect(verifierCanExecute([], { mcpTools: 0 })).toBe(false);
+    expect(verifierCanExecute([], {})).toBe(false);
+  });
+
+  it("自相矛盾的包：声明程序化验收却一条命令都不放行 → 仍是静态推导", () => {
+    expect(verifierCanExecute([], { programmatic: true })).toBe(false);
+    expect(verifierCanExecute([], { programmatic: true, mcpTools: 0 })).toBe(false);
+  });
 });

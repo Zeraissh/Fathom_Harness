@@ -10920,7 +10920,7 @@ function renderVerdictInline(it) {
   // H8（走查）：核查侧无执行手段时裁决是静态推导——"未能亲自运行"不能只躺在
   // 细则里。徽标紧贴结论，hover 给出来由。
   const staticBadge = it.staticOnly === true
-    ? '<span class="aside-peek chat-verdict-static" data-static-only title="核查侧白名单不含可运行器——产物未经运行验证">（静态推导）</span>'
+    ? '<span class="aside-peek chat-verdict-static" data-static-only title="核查侧只有只读文本手段（白名单无可运行器、也没有探针类工具）——产物未经运行验证">（静态推导）</span>'
     : "";
   // H8 边界另一半（编排）：裁决必须说清是哪一步判的——多子任务并行时
   // 一张没署名的"核查通过"根本不知道在给谁背书。标题取自计划，缺则退化成 id。
@@ -10931,7 +10931,7 @@ function renderVerdictInline(it) {
     : "";
   return (
     `<div class="chat-verdict chat-verdict--${tone}">` +
-    `<div class="chat-verdict-head">◆ ${esc(label)}` +
+    `<div class="chat-verdict-head"><span class="chat-verdict-label">◆ ${esc(label)}</span>` +
     who +
     staticBadge +
     judged +

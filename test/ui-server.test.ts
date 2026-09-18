@@ -8769,10 +8769,12 @@ describe("监控闭环：outcome 分档指标与告警文件一致性", () => {
       await waitForDone(base, runId);
 
       const events = await readSSEAll(await fetch(`${base}/api/runs/${runId}/events`));
-      const verifs = events.filter((e: any) => e.event.type === "verification");
+      const verifs = events
+        .filter((e: any) => e.event.type === "verification")
+        .map((e: any) => ({ source: String(e.source), event: e.event as Record<string, any> }));
       // 每个子任务各一发；来源带子任务前缀（同 plan / plan_result 的口径），
       // 否则并行下根本分不清是谁的裁决
-      expect(verifs.map((e: any) => [e.event.subtaskId, e.source])).toEqual([
+      expect(verifs.map((v) => [v.event.subtaskId, v.source])).toEqual([
         ["s1", "s1/verifier"],
         ["s2", "s2/verifier"],
       ]);
@@ -8784,7 +8786,7 @@ describe("监控闭环：outcome 分档指标与告警文件一致性", () => {
       for (const v of verifs) {
         expect(v.event.judgedTurn).toBe(1);
         expect(v.event.round).toBe(0);
-        expect((v.event.verdict as any).passed).toBe(true);
+        expect(v.event.verdict.passed).toBe(true);
         expect(v.event.usage).toBeTruthy();
       }
     } finally {
@@ -8792,6 +8794,79 @@ describe("监控闭环：outcome 分档指标与告警文件一致性", () => {
       await rm(dir, { recursive: true, force: true });
     }
   });
+
+  it("H8 判据③：包里真挂上 MCP 探针 → 不再误标「静态推导」（stm32-debug 的形态）", async () => {
+    // 同一个子任务跑两遍，只差"探针在不在场"：
+    //   ① 宿主没开 MCP（AGENT_UI_MCP 未置 1）→ 核查者手里确实没有探针 → 标静态
+    //   ② 挂上探针 server（工具名落在 stm32-debug 的 includeTools 里）→ 不许标
+    // 病：stm32-debug 不声明 readOnlyCommands（bash 默认全 deny），而真机核查
+    // 全靠探针取证——旧判据只看 bash 白名单，于是一份真机核查被判成"未经运行验证"。
+    const planJson = JSON.stringify({
+      subtasks: [
+        {
+          id: "s1",
+          title: "烧录并读数",
+          pack: "stm32-debug",
+          description: "烧录后读心跳",
+          acceptance: ["心跳递增"],
+          dependsOn: [],
+        },
+      ],
+    });
+    const pass = () =>
+      fakeMessage([textBlock(JSON.stringify({ passed: true, issues: [], summary: "通过" }))], "end_turn");
+    const dir = await mkdtemp(join(tmpdir(), "plan-h8-mcp-"));
+    const fixture = join(dirname(fileURLToPath(import.meta.url)), "fixtures", "mcp-probe-server.mjs");
+    await writeFile(
+      join(dir, "mcp.json"),
+      JSON.stringify({
+        servers: { probe: { command: process.execPath, args: [fixture], permission: "auto" } },
+      }),
+      "utf8",
+    );
+    const runOnce = async (withMcp: boolean): Promise<Record<string, any> | undefined> => {
+      if (withMcp) process.env.AGENT_UI_MCP = "1";
+      else delete process.env.AGENT_UI_MCP;
+      const handle = createUiServer({
+        modelClient: new FakeModelClient([
+          fakeMessage([textBlock(["```json", planJson, "```"].join("\n"))], "end_turn"),
+          fakeMessage([textBlock("s1 完成")], "end_turn"),
+          pass(),
+        ]),
+        workdir: dir,
+        mcpConfigFile: join(dir, "mcp.json"),
+      });
+      try {
+        const port = await startServer(handle);
+        const base = baseUrl(port);
+        const { runId } = await (await fetch(`${base}/api/runs`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ task: "烧录并读数", mode: "plan" }),
+        })).json() as { runId: string };
+        await waitForDone(base, runId);
+        const events = await readSSEAll(await fetch(`${base}/api/runs/${runId}/events`));
+        return events.find((e: any) => e.event.type === "verification")?.event as
+          | Record<string, any>
+          | undefined;
+      } finally {
+        await handle.close();
+      }
+    };
+    try {
+      const bare = await runOnce(false);
+      expect(bare, "未发出裁决事件").toBeDefined();
+      expect(bare!.staticOnly, "探针不在场时标静态推导是对的").toBe(true);
+
+      const probed = await runOnce(true);
+      expect(probed, "未发出裁决事件").toBeDefined();
+      expect(probed!.subtaskId).toBe("s1");
+      expect(probed!.staticOnly, "探针在手还被标「未经运行验证」= 误标").toBeUndefined();
+    } finally {
+      delete process.env.AGENT_UI_MCP;
+      await rm(dir, { recursive: true, force: true });
+    }
+  }, 60_000);
 
   it("token 计量 plan 模式三角色全链路：planner/execution/verification 各归各档", async () => {
     // 五段脚本（同 v2-17 形状）：planner 拆两步 + s1 执行/裁决 + s2 执行/裁决。

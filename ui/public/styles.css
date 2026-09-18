@@ -7069,10 +7069,21 @@ body.sidebar-collapsed .sidebar {
 .chat-verdict--warn { border-left-color: var(--yellow); }
 .chat-verdict--bad { border-left-color: var(--red); }
 /* 编排裁决卡的归属（id · 标题）：子任务标题可以很长，撑破卡片就是另一场
-   事故（.aside-peek 在 390px 越界的同款教训）。让它做唯一可缩的一项。 */
+   事故（.aside-peek 在 390px 越界的同款教训）。三条一起才成立：
+     ① 结论词（「核查未通过」）钉死不折行——一屏里最该一眼看清的就是它；
+     ② 归属行做唯一可缩项，但**留 5em 下限**：宽度不够时把它整个挪到下一行，
+        而不是压成「s」这种比不显示还糟的残字；
+     ③ 整行允许换行，换行比横向溢出好（窄档 390 的实测要求）。 */
+.chat-verdict-head {
+  flex-wrap: wrap;
+}
+.chat-verdict-head > * {
+  flex: none;
+  white-space: nowrap;
+}
 .chat-verdict-subtask {
   flex: 0 1 auto;
-  min-width: 0;
+  min-width: 5em;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

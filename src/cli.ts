@@ -180,8 +180,8 @@ import {
 } from "./cli-plan-gate.js";
 import { readArchivedState, readArchivedTranscript } from "../ui/history.js";
 import { seedDurableBudget, snapshotDurableBudget } from "./run-state.js";
-import { resolveVerifierReadOnlyCommands, verifierCanExecute, type VerifyOutcome } from "./verifier.js";
-import { allPacks, getPack, DEFAULT_HOST_DISCIPLINES, selectPackTools, ALWAYS_ON_BUILTIN_TOOLS, type DomainPack } from "./presets.js";
+import { resolveVerifierReadOnlyCommands, verifierCanExecute, type VerifyOutcome, type VerifierMeans } from "./verifier.js";
+import { allPacks, getPack, DEFAULT_HOST_DISCIPLINES, selectPackTools, verifierMeansFor, ALWAYS_ON_BUILTIN_TOOLS, type DomainPack } from "./presets.js";
 import { loadInstalledFilePacksSync, packsRootFromEnv } from "./pack-files.js";
 import {
   DESIGN_CATALOG,
@@ -1799,6 +1799,9 @@ async function main(): Promise<void> {
       cliDurable?.apply({ type: "plan_begin" });
     }
     let outcome: Awaited<ReturnType<typeof runPlanned>> | undefined;
+    /** 子任务 → 该子任务核查者的动手面（包声明 + 实际挂上的 MCP 工具），见 verifierMeansFor。
+     *  声明在 try 之外：结果打印在 try/catch 之后的 else 分支里，也要读它。 */
+    const subtaskMeans = new Map<string, VerifierMeans>();
     try {
     outcome = await runPlanned(config, modelClient, plannedTask, {
       packs: allPacks(),
@@ -1948,18 +1951,21 @@ async function main(): Promise<void> {
               }),
             ]
           : [];
+        const subTools = [
+          ...selectPackTools(p, builtinPool, mcpPool),
+          ...memTools,
+          ...controlTools,
+          ...proposeForSub,
+        ].filter((tool, i, all) => all.findIndex((candidate) => candidate.name === tool.name) === i);
+        // H8 的判据②③：核查者的动手面按这个子任务**实际装配出来的工具**算
+        subtaskMeans.set(sub.id, verifierMeansFor(p, subTools));
         return {
           cfg: {
             ...config,
             systemPrompt: p?.systemPrompt
               ? withEnabledSkills(p.systemPrompt, catalogSkillRoot)
               : config.systemPrompt,
-            tools: [
-              ...selectPackTools(p, builtinPool, mcpPool),
-              ...memTools,
-              ...controlTools,
-              ...proposeForSub,
-            ].filter((tool, i, all) => all.findIndex((candidate) => candidate.name === tool.name) === i),
+            tools: subTools,
             ...(p?.guardrails?.maxTurns !== undefined ? { maxTurns: p.guardrails.maxTurns } : {}),
             ...(p?.guardrails?.maxTokens !== undefined && !process.env.AGENT_MAX_TOKENS
               ? { maxTokens: p.guardrails.maxTokens }
@@ -2093,8 +2099,11 @@ async function main(): Promise<void> {
           // H8 边界另一半（走查 2026-09-18）：与单执行者路径同一条注，但口径
           // 按**子任务自己的包**算——编排的全部意义就是逐子任务配置，按 run 级
           // 包算等于把 s1 与 s2 混成一个（一个能跑、一个不能，终端上却是同一行）。
-          if (!verifierCanExecute(readOnlyFor(sub.pack ? getPack(sub.pack) : undefined).commands)) {
-            finalOut(c.dim("    静态推导：核查侧白名单不含可运行器——产物未经运行验证"));
+          if (!verifierCanExecute(
+            readOnlyFor(sub.pack ? getPack(sub.pack) : undefined).commands,
+            subtaskMeans.get(sub.id),
+          )) {
+            finalOut(c.dim("    静态推导：核查侧只有只读文本手段——产物未经运行验证"));
           }
         }
       }
@@ -2180,8 +2189,8 @@ async function main(): Promise<void> {
     printVerdictSignal("  ", outcome.finalPassed, outcome.verifications.at(-1)?.verdict);
     // H8（走查 2026-09-18）：核查侧没有执行手段时，裁决是静态推导——真机实录
     // 里"未能亲自运行"只写在细则里，标题却直书「核查通过」。口径上标题。
-    if (!verifierCanExecute(readOnlyFor(pack).commands)) {
-      finalOut(c.dim("  静态推导：核查侧白名单不含可运行器——产物未经运行验证"));
+    if (!verifierCanExecute(readOnlyFor(pack).commands, verifierMeansFor(pack, config.tools))) {
+      finalOut(c.dim("  静态推导：核查侧只有只读文本手段——产物未经运行验证"));
     }
     // 终态口径（走查 H3）：--verify 路径此前从不收尾 durable——档案永远停在
     // "running"（僵尸工厂）。核查未通过不改执行段 stopReason，裁决由 outcome 另记。

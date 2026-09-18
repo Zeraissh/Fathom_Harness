@@ -41,7 +41,7 @@ await page.addInitScript(() => {
 const shot = (name) => page.screenshot({ path: join(OUT, `${name}${SUFFIX}.png`) });
 const settle = (ms = 1500) => page.waitForTimeout(ms);
 
-// ① 三张裁决卡 + 归属行 + 徽标（s1 两轮 + s2 一轮）
+// ① 四张裁决卡 + 归属行 + 徽标（s1 两轮 + s2 + s3）
 await page.goto(`${BASE}/#/run/${runId}/loop`, { waitUntil: "domcontentloaded" });
 await settle();
 const cards = await page.evaluate(() => {
@@ -53,7 +53,16 @@ const cards = await page.evaluate(() => {
   }));
 });
 console.log("裁决卡：", JSON.stringify(cards, null, 1));
-if (cards.length < 3) throw new Error(`裁决卡只有 ${cards.length} 张——期望 3（s1 两轮 + s2 一轮）`);
+if (cards.length < 4) throw new Error(`裁决卡只有 ${cards.length} 张——期望 4（s1 两轮 + s2 + s3）`);
+// 徽标只该出现在真跑不了的那一步：s1(consult) 两张卡都标；
+// s2(python-coding) 有通用可运行器、s3(stm32-debug) 手里有探针——都不许标
+const badged = cards.filter((c) => c.staticOnly).map((c) => c.subtask);
+if (badged.length !== 2 || badged.some((id) => id !== "s1")) {
+  throw new Error(`静态推导徽标该只出现在 s1 的两张卡上，实际：${JSON.stringify(badged)}`);
+}
+if (cards.some((c) => c.subtask === "s3" && c.staticOnly)) {
+  throw new Error("stm32-debug 手里有探针却被标「未经运行验证」——判据③没生效");
+}
 await page.evaluate(() => document.querySelector(".chat-verdict")?.scrollIntoView({ block: "center" }));
 await settle(400);
 await shot("pv1-plan-verdicts-wide");
@@ -78,7 +87,7 @@ await page.setViewportSize({ width: 1280, height: 900 });
 await page.goto(`${BASE}/#/run/${runId}/loop`, { waitUntil: "domcontentloaded" });
 await settle();
 const scoped = [];
-for (const id of ["s1", "s2"]) {
+for (const id of ["s1", "s2", "s3"]) {
   await page.evaluate((agent) => {
     const btn = [...document.querySelectorAll(`button[data-agent-id='${agent}']`)][0];
     btn?.click();
