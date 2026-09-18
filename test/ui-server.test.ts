@@ -10275,6 +10275,7 @@ describe("设计模式建 run：包锁定", () => {
 
   it("内置工程包被忽略；已安装文件包两条点名路都认", async () => {
     const { handle, base, dir } = await designHost();
+    const started: string[] = [];
     try {
       const create = async (body: Record<string, unknown>) => {
         const res = await fetch(`${base}/api/runs`, {
@@ -10283,6 +10284,7 @@ describe("设计模式建 run：包锁定", () => {
           body: JSON.stringify(body),
         });
         const { runId } = (await res.json()) as { runId: string };
+        started.push(runId);
         return runId;
       };
 
@@ -10294,12 +10296,23 @@ describe("设计模式建 run：包锁定", () => {
       const byDesignField = await create({ task: "问接线", mode: "design", designFilePack: FILE_PACK });
       expect(await packOfRun(base, byDesignField)).toBe(FILE_PACK);
 
-      // ③ 直接放进 pack：同样认（它是已安装文件包，不是内置工程包）
-      const byPackField = await create({ task: "问接线", mode: "design", pack: FILE_PACK });
+      // ③ 直接放进 pack：同样认（它是已安装文件包，不是内置工程包）。
+      //    注意必须先"点了模板"才会走进这段路由——只传 pack 的话整块被跳过，
+      //    断言会因为别的原因通过（parsed.pack 本来就留着），线却没跑到。
+      const byPackField = await create({
+        task: "问接线",
+        mode: "design",
+        designTemplate: "not-a-real-template",
+        pack: FILE_PACK,
+      });
       expect(await packOfRun(base, byPackField)).toBe(FILE_PACK);
     } finally {
+      // 设计 run 会往 workdir 里铺模板文件——不停掉就删不掉（Windows 句柄）
+      for (const id of started) {
+        await fetch(`${base}/api/runs/${id}/stop`, { method: "POST" }).catch(() => {});
+      }
       await handle.close();
-      await rm(dir, { recursive: true, force: true });
+      await rm(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 200 });
     }
   }, 30_000);
 });

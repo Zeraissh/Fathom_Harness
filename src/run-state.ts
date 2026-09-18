@@ -534,13 +534,12 @@ export function recoverDurableStateOnCrash(
   if (action === "close_archive") {
     return transitionRunState(state, { type: "close" }, at) ?? { ...state, phase: "closed", updatedAt: at };
   }
-  return (
-    transitionRunState(state, { type: "interrupt" }, at) ?? {
-      ...state,
-      phase: "interrupted",
-      updatedAt: at,
-      pendingApprovalIds: [],
-      pendingQuestionIds: [],
-    }
-  );
+  /**
+   * 走到这里 action 是 fork_from_checkpoint / expire_waits_and_fork，对应相位只可能是
+   * executing / verifying / reworking / awaiting_* ——而 interrupt 迁移只对
+   * completed / failed / closed 返回 null，那三个相位在上面的 `readonly` 分支就返回了。
+   * 所以这里的迁移**不会**返回 null（changed-line 门把原先那个 `?? {...}` 兜底捞了出来：
+   * 一行都进不去的分支）。守卫仍写死在 transitionRunState 里，不在这里重复一遍。
+   */
+  return transitionRunState(state, { type: "interrupt" }, at)!;
 }
