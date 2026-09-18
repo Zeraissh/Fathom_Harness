@@ -529,6 +529,7 @@ import {
   readSidebarCollapsed,
   writeSidebarCollapsed,
   deriveWrittenPaths,
+  artifactWriteState,
   writeAnnouncement,
   deriveArtifacts,
   deliveryFace,
@@ -5692,15 +5693,14 @@ try {
   artifactCanvasApi = initArtifactCanvas({
     getRunId: () => selectedRunId,
     getArtifacts: () => (selectedRunId ? openedPreviewArtifacts(selectedRunId) : []),
-    // P3：预览读不到时先回答「它写过没有」。判据是**成功的写结果**——
-    // deriveArtifacts 已经把失败/等批准的调用滤掉了，不新增状态。
+    // P3：预览读不到时先回答「它写过没有」。三态——工作区既有文件会落回 unknown，
+    // 不许把它们说成「还没写到磁盘」（它们本来就不该由本 run 写）。
     hasWrittenPath: (path) => {
-      if (!selectedRunId) return false;
+      if (!selectedRunId) return undefined;
       const st = runStates.get(selectedRunId);
-      if (!st) return false;
-      const want = String(path ?? "").replace(/\/g, "/");
-      if (!want) return false;
-      return deriveArtifacts(st).some((a) => String(a.path ?? "").replace(/\/g, "/") === want);
+      if (!st) return undefined;
+      const s = artifactWriteState(st, path);
+      return s === "unknown" ? undefined : s === "written";
     },
     onClose: () => closeArtifactRoute(),
     onSwitch: (index) => {

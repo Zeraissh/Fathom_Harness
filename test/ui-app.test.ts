@@ -37,6 +37,7 @@ import {
   deriveLogEntries,
   groupToolSteps,
   writeAnnouncement,
+  artifactWriteState,
   toggleEntryCollapsed,
   isEntryCollapsedByDefault,
   deriveRunListItems,
@@ -3624,5 +3625,35 @@ describe("P3 已写出播报", () => {
   });
   it("不说「产物画布已打开」这类视图事件", () => {
     expect(writeAnnouncement(["a.html"])).not.toMatch(/画布|已打开/);
+  });
+});
+
+// ---- P3: 路径相对本 run 的写盘状态（三态）----
+describe("P3 artifactWriteState 三态", () => {
+  const call = (toolUseId, path) => ({ seq: 1, source: "main", type: "tool_call", name: "write_file", toolUseId, input: { path } });
+  const res = (toolUseId, isError) => ({ seq: 2, source: "main", type: "tool_result", toolUseId, resultContent: isError ? "boom" : "ok", resultIsError: isError });
+
+  it("有成功的写结果 → written", () => {
+    const st = makeState({ timeline: [call("t1", "out/a.txt"), res("t1", false)] });
+    expect(artifactWriteState(st, "out/a.txt")).toBe("written");
+  });
+
+  it("只有调用、没有成功结果（在等批准/失败）→ intended", () => {
+    expect(artifactWriteState(makeState({ timeline: [call("t1", "out/a.txt")] }), "out/a.txt")).toBe("intended");
+    expect(artifactWriteState(makeState({ timeline: [call("t1", "out/a.txt"), res("t1", true)] }), "out/a.txt")).toBe("intended");
+  });
+
+  it("本 run 没提过这个路径 → unknown（工作区既有文件走这条，不许说成没写盘）", () => {
+    const st = makeState({ timeline: [call("t1", "out/a.txt"), res("t1", false)] });
+    expect(artifactWriteState(st, "out/other.txt")).toBe("unknown");
+    expect(artifactWriteState(st, "src/main.rs")).toBe("unknown");
+    expect(artifactWriteState(null, "x")).toBe("unknown");
+  });
+
+  it("反斜杠与正斜杠视为同一路径", () => {
+    // 用 fromCharCode 而不是字面反斜杠：这条测试本身要断言转义，写法上别再依赖转义
+    const winPath = `out${String.fromCharCode(92)}a.txt`;
+    const st = makeState({ timeline: [call("t1", winPath), res("t1", false)] });
+    expect(artifactWriteState(st, "out/a.txt")).toBe("written");
   });
 });

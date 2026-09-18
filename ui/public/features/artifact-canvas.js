@@ -546,15 +546,17 @@ function renderPreviewErrorCard(body, message) {
  *     deriveWrittenPaths 那套从成功的写工具结果派生）
  *   - `status`：这次读取的 HTTP 状态（拿不到就是 null）
  *
- * @param {{ writtenInRun?: boolean, status?: number|null, reason?: string|null }} [facts]
+ * @param {{ writtenInRun?: boolean|null, status?: number|null, reason?: string|null }} [facts]
+ *   `writtenInRun` 是**三态里的"是不是"**：true=本 run 写过、false=本 run 打算写但没写成、
+ *   null/undefined=本 run 没提过这个路径（如工作区既有文件）。第三态不许说「还没写到磁盘。」
  * @returns {string}
  */
 export function previewReadFailureMessage(facts = {}) {
-  const written = Boolean(facts.writtenInRun);
+  const written = facts.writtenInRun;
   const status = Number.isFinite(Number(facts.status)) ? Number(facts.status) : null;
   const reason = String(facts.reason ?? "").trim();
-  // 没写成功的证据最要紧：先回答「它到底写过没有」
-  if (!written) return "还没写到磁盘。";
+  // 只有"确实打算写但没写成"才配说这句（审计 N2 的形状）
+  if (written === false) return "还没写到磁盘。";
   if (status === 404 || status === 410) return "文件不在了（可能被移动或删除）。";
   return `读不动：${reason || "预览服务没有返回内容。"}`;
 }
@@ -651,9 +653,10 @@ export async function renderPreviewBody(body, opts) {
   const isStale = typeof opts?.isStale === "function" ? opts.isStale : () => false;
   const kind = artifactRendererKind(path);
   const name = artifactBasename(path);
-  // 本 run 有没有**成功**写过这个路径（P3 三分类的第一判据）。宿主注入；
-  // 缺省当作"写过"——独立用法与老调用点不该因为拿不到证据就改口径。
-  const writtenInRun = opts?.writtenInRun !== false;
+  // 本 run 有没有**成功**写过这个路径（P3 三分类的第一判据）。宿主注入三态；
+  // 宿主没给这个能力时留 undefined（"不认识这个路径"）——**不是** false，
+  // 因为 false 专指"打算写但没写成"，不该由缺省值冒充。
+  const writtenInRun = opts?.writtenInRun === true ? true : opts?.writtenInRun === false ? false : undefined;
 
   /** 最近一次取件失败的状态码（fetchText 吞了 res，这里把它留下来给分诊用） */
   let lastStatus = null;
@@ -1609,9 +1612,10 @@ export function initArtifactCanvas(host = {}, env = {}) {
       fetch: fetchImpl,
       isStale: () => token !== renderToken,
       inspect: inspectOn && (kind === "html" || isOfficeKind(kind)),
-      // P3：读不到时先回答「它写过没有」。宿主按本 run 成功的写结果回答；
-      // 宿主没提供这个能力时缺省 true（保持老口径，不因为拿不到证据就改说法）。
-      writtenInRun: typeof host.hasWrittenPath === "function" ? Boolean(host.hasWrittenPath(path)) : true,
+      // P3：读不到时先回答「它写过没有」。宿主按本 run 的写状态答三态：
+      // true=写过、false=打算写但没写成、undefined=本 run 没提过这个路径
+      // （工作区既有文件走这一路，不许说成"还没写到磁盘"）。
+      writtenInRun: typeof host.hasWrittenPath === "function" ? host.hasWrittenPath(path) : undefined,
     });
     if (result && token === renderToken) setSize(result.size);
     if (token === renderToken && kind === "html") bindInspectBridge(htmlPreviewFrame());

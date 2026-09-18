@@ -10375,6 +10375,45 @@ export function writeAnnouncement(paths, basename) {
   return list.length === 1 ? head : `${head} 等 ${list.length} 个文件`;
 }
 
+/**
+ * 某个路径相对**本 run** 的写盘状态（P3 三分类的第一判据）。
+ *
+ * 三种，不能压成布尔：
+ *   "written"  —— 有成功的写结果（deriveArtifacts 那套口径）
+ *   "intended" —— 有写工具的调用，但没有成功的结果（在等批准 / 失败了）
+ *   "unknown"  —— 本 run 根本没提过这个路径
+ *
+ * 为什么必须分开：预览坞不只服务产物，也服务**工作区里的既有文件**（从文件树点开）。
+ * 对那些文件，本 run 没写过**不等于**"还没写到磁盘"——它们本来就不该由本 run 写。
+ * 把它们说成没写盘，是把「不认识」说成了「不存在」。
+ *
+ * 只有 "intended" 才配说「还没写到磁盘。」——那正是审计 N2 的形状：
+ * 工具在等批准，磁盘上没有，而界面先报了「读取失败——文件可能已被移动或删除」。
+ *
+ * @param {RunState|null|undefined} state
+ * @param {string} path
+ * @returns {"written"|"intended"|"unknown"}
+ */
+export function artifactWriteState(state, path) {
+  const want = String(path ?? "").replace(/\\/g, "/");
+  if (!want) return "unknown";
+  const same = (p) => String(p ?? "").replace(/\\/g, "/") === want;
+  const results = new Map();
+  for (const e of state?.timeline ?? []) {
+    if (e.type === "tool_result") results.set(e.toolUseId, e);
+  }
+  let intended = false;
+  for (const e of state?.timeline ?? []) {
+    if (e.type !== "tool_call" || !ARTIFACT_TOOLS.has(e.name)) continue;
+    const input = e.input && typeof e.input === "object" ? e.input : {};
+    if (!same(input.path ?? input.file_path)) continue;
+    const res = results.get(e.toolUseId);
+    if (res && !res.resultIsError) return "written";
+    intended = true;
+  }
+  return intended ? "intended" : "unknown";
+}
+
 /** 会引起"换段"的事件类型：turn_start 这类噪声不该产生分界 */
 const CHAT_SOURCED = new Set([
   "user_message", "assistant_text", "assistant_thinking", "tool_call", "approval_request",
