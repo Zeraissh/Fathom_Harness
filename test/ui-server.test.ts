@@ -10225,3 +10225,81 @@ describe("对话回退 POST /api/runs/:id/rewind", () => {
   });
 });
 
+
+/**
+ * 设计模式建 run 时的**包锁定**（changed-line 门捞出来的未覆盖分支）。
+ *
+ * 逐条：
+ *   ① 请求体带一个内置工程包（如 ts-coding）时，设计模式把它忽略掉——
+ *      否则会回落到进程 AGENT_PACK，设计任务被工程包接走；
+ *   ② 已安装文件包有两条点名路：`designFilePack`，或直接把它放进 `pack`；
+ *   ③ 路由 resolved 成 r2 时不该发生（进了这段就说明点了芯片，r2 上一句已 400）。
+ */
+describe("设计模式建 run：包锁定", () => {
+  const FILE_PACK = "thermo-consult";
+
+  async function designHost(): Promise<{ handle: UiServerHandle; base: string; dir: string }> {
+    const dir = await mkdtemp(join(tmpdir(), "design-pack-lock-"));
+    const packsDir = join(dir, "packs");
+    const packDir = join(packsDir, "installed", FILE_PACK);
+    await mkdir(packDir, { recursive: true });
+    await writeFile(
+      join(packDir, "pack.json"),
+      JSON.stringify({
+        schemaVersion: 1,
+        name: FILE_PACK,
+        description: "热电偶接线咨询",
+        builtinTools: ["read_file"],
+        mcp: false,
+        verify: { enabled: false, mode: "rubric" },
+      }),
+      "utf8",
+    );
+    await writeFile(join(packDir, "SYSTEM.md"), "先问冷端补偿，再谈接线。\n", "utf8");
+    const handle = createUiServer({
+      modelClient: new FakeModelClient([fakeMessage([textBlock("ok")], "end_turn")]),
+      workdir: dir,
+      packsDir,
+    });
+    const port = await startServer(handle);
+    return { handle, base: baseUrl(port), dir };
+  }
+
+  async function packOfRun(base: string, runId: string): Promise<string | null> {
+    const list = (await (await fetch(`${base}/api/runs`)).json()) as {
+      runId: string;
+      packName: string | null;
+    }[];
+    return list.find((r) => r.runId === runId)?.packName ?? null;
+  }
+
+  it("内置工程包被忽略；已安装文件包两条点名路都认", async () => {
+    const { handle, base, dir } = await designHost();
+    try {
+      const create = async (body: Record<string, unknown>) => {
+        const res = await fetch(`${base}/api/runs`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        const { runId } = (await res.json()) as { runId: string };
+        return runId;
+      };
+
+      // ① 内置工程包：被清掉 → 落回 design
+      const builtin = await create({ task: "做一个落地页", mode: "design", pack: "ts-coding" });
+      expect(await packOfRun(base, builtin)).toBe("design");
+
+      // ② designFilePack 点名已安装文件包
+      const byDesignField = await create({ task: "问接线", mode: "design", designFilePack: FILE_PACK });
+      expect(await packOfRun(base, byDesignField)).toBe(FILE_PACK);
+
+      // ③ 直接放进 pack：同样认（它是已安装文件包，不是内置工程包）
+      const byPackField = await create({ task: "问接线", mode: "design", pack: FILE_PACK });
+      expect(await packOfRun(base, byPackField)).toBe(FILE_PACK);
+    } finally {
+      await handle.close();
+      await rm(dir, { recursive: true, force: true });
+    }
+  }, 30_000);
+});

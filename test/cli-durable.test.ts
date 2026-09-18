@@ -4,7 +4,8 @@ import {
   planMidToolReplay,
 } from "../src/mid-tool-replay.js";
 import { canonicalInputHash, type DurableToolTx } from "../src/tool-tx.js";
-import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { spawn } from "node:child_process";
+import { mkdir, mkdtemp, readFile, rm } from "node:fs/promises";
 import { readFileSync, writeFileSync } from "node:fs";
 import os, { tmpdir } from "node:os";
 import path from "node:path";
@@ -31,7 +32,7 @@ import {
 } from "../src/cli-durable.js";
 import type { TurnEvent } from "../src/types.js";
 import { STOP_REASONS } from "../src/types.js";
-import { archiveOwnerLiveness, loadArchivedMetas } from "../ui/history.js";
+import { archiveOwnerLiveness, loadArchivedMetas, pidIsAlive } from "../ui/history.js";
 import { durablePlanFromPlan, planNodesFromSubtasks } from "../src/planner.js";
 import { initialRunState, transitionRunState } from "../src/run-state.js";
 import type { Plan } from "../src/planner.js";
@@ -918,6 +919,26 @@ describe("僵尸档案收殓（owner 门控）", () => {
     ).toBe("self-dead");
   });
 
+  /**
+   * `pidIsAlive` 是收殓器 `alive` 的默认实现——判据全在这一处。
+   * 方向必须保守：判不准就当活着（EPERM 也返回 true），宁愿漏收不能误收。
+   */
+  it("pidIsAlive：自己活着、退出的子进程死了、非法 pid 直接判死", async () => {
+    expect(pidIsAlive(process.pid)).toBe(true);
+    // 非法输入连 process.kill 都不该碰：pid 0 在 Windows 上会"成功"（信号发进程组）
+    expect(pidIsAlive(0)).toBe(false);
+    expect(pidIsAlive(-1)).toBe(false);
+    expect(pidIsAlive(1.5)).toBe(false);
+    expect(pidIsAlive(Number.NaN)).toBe(false);
+    // 不可能存在的 pid：确定性，不依赖时序
+    expect(pidIsAlive(2_147_483_647)).toBe(false);
+
+    const child = spawn(process.execPath, ["-e", "process.exit(0)"], { stdio: "ignore" });
+    const pid = child.pid!;
+    await new Promise((r) => child.on("exit", r));
+    expect(pidIsAlive(pid)).toBe(false);
+  });
+
   it("收殓：同机死 pid → state 收成终态、meta 落 done/aborted、run_end 补进事件流", async () => {
     const root = await freshRoot();
     const handle = createCliDurable({ runId: "cli-zombie", historyRoot: root });
@@ -946,6 +967,50 @@ describe("僵尸档案收殓（owner 门控）", () => {
       .map((l) => (JSON.parse(l) as { event: { type: string; outcome?: string; mainStopReason?: string } }).event)
       .filter((e) => e.type === "run_end");
     expect(ends.some((e) => e.outcome === "closed" && e.mainStopReason === "aborted")).toBe(true);
+  });
+
+  /**
+   * 收殓一轮是**逐条**的，每条各起一个 RunHistoryWriter：某一条的写链熄火
+   * （盘满 / 权限 / 结构坏），不许把后面的档案一起带停——启动路径上的清理器
+   * 最忌讳"一个坏档案卡住启动"。
+   */
+  it("坏档案不阻断整轮：它的 writer 熄火，下一条照常收干净", async () => {
+    const root = await freshRoot();
+    const mk = async (runId: string): Promise<string> => {
+      const h = createCliDurable({ runId, historyRoot: root });
+      h.apply({ type: "start" });
+      await h.writer.flush();
+      const p = path.join(root, runId, "meta.json");
+      const m = JSON.parse(readFileSync(p, "utf8")) as Record<string, unknown>;
+      m.owner = { pid: 4242, host: os.hostname(), startedAt: m.createdAt };
+      writeFileSync(p, JSON.stringify(m), "utf8");
+      return p;
+    };
+    // 坏的那个先建 → 排序在前，确保它先被处理，"不阻断"才验得实。
+    // 触发器：把它的 events.jsonl 换成**目录**——收殓末尾要追一条 run_end，
+    // 追加重定向到目录必 EISDIR（Windows/Linux 一致），它的 writer 当场熄火。
+    const badDir = path.join(root, "cli-bad");
+    const badEvents = path.join(badDir, "events.jsonl");
+    const goodMeta = await mk("cli-good");
+    await mk("cli-bad");
+    await rm(badEvents, { force: true });
+    await mkdir(badEvents, { recursive: true });
+    try {
+      const reaped = await reconcileCliHistoryRoot(root, { host: os.hostname(), alive: () => false });
+      expect(reaped).toContain("cli-good");
+      const good = JSON.parse(readFileSync(goodMeta, "utf8")) as Record<string, unknown>;
+      expect(good.status).toBe("done");
+      expect(good.mainStopReason).toBe("aborted");
+      // 好的那条连 run_end 都补上了：没被上一条的死 writer 带停
+      const ends = readFileSync(path.join(root, "cli-good", "events.jsonl"), "utf8")
+        .trim()
+        .split("\n")
+        .map((l) => JSON.parse(l) as { event: { type: string; mainStopReason?: string } })
+        .filter((e) => e.event.type === "run_end" && e.event.mainStopReason === "aborted");
+      expect(ends.length).toBeGreaterThan(0);
+    } finally {
+      await rm(badEvents, { recursive: true, force: true });
+    }
   });
 
   it("不碰：活 owner（并行 CLI）/ 他机 owner / 无章老档案 / 已终态", async () => {

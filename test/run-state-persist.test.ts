@@ -81,6 +81,26 @@ describe("RUN-01 state.json persistence", () => {
     expect(recoverDurableStateOnCrash(done).phase).toBe("completed");
   });
 
+  /**
+   * 相位不在表里时不许"顺着走"：`recoveryActionForPhase` 的 default 会给出
+   * fork_from_checkpoint，而 interrupt 迁移对不认识的相位返回 null——那时必须
+   * 落到兜底形态（interrupted + 清空等待项），而不是把原状态原样当结果交出去。
+   * 今天没有哪条路径能产出这种相位（parseDurableRunState 会按 RUN_PHASES 校验），
+   * 这条锁的是**防御面**：喂进不认识的相位，收尾仍然是一份合法的终态。
+   */
+  it("不认识的相位 → 兜底成 interrupted，且清空等待项", () => {
+    const bogus = {
+      ...initialRunState("r"),
+      phase: "quantum" as never,
+      pendingApprovalIds: ["a1"],
+      pendingQuestionIds: ["q1"],
+    };
+    const out = recoverDurableStateOnCrash(bogus);
+    expect(out.phase).toBe("interrupted");
+    expect(out.pendingApprovalIds).toEqual([]);
+    expect(out.pendingQuestionIds).toEqual([]);
+  });
+
   it("durablePlanFromPlan captures dependsOn edges", () => {
     const snap = durablePlanFromPlan({
       subtasks: [

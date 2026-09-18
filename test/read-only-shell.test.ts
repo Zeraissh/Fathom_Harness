@@ -304,4 +304,19 @@ describe("统计链收紧：find \( \) 组合 / 无 -i 的 sed", () => {
       expect(classifyReadOnlyShellCommand(cmd, wd).allow, cmd).toBe(false);
     }
   });
+
+  it("旗标的 =value 照样按路径圈禁（`--include=../x` 不是免死金牌）", async () => {
+    // 参数圈禁的取值只有两条支路：裸词，和旗标的 `=value`。统计样本里
+    // `--include=…` 这类形态真实出现过——只判裸词等于给它留了一条绕道。
+    const wd = await mkdtemp(path.join(tmpdir(), "read-only-eq-"));
+    try {
+      const outside = classifyReadOnlyShellCommand("grep --include=../outside.txt x .", wd);
+      expect(outside.allow, outside.reason).toBe(false);
+      expect(outside.reason).toContain("工作目录外");
+      // 圈内的值（通配 / 相对路径）不许误伤
+      expect(classifyReadOnlyShellCommand("grep --include=*.ts todo .", wd).allow).toBe(true);
+    } finally {
+      await rm(wd, { recursive: true, force: true });
+    }
+  });
 });

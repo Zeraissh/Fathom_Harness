@@ -14,6 +14,14 @@ import { resolve } from "node:path";
 
 export function coverageInclude(file) {
   const n = file.replace(/\\/g, "/").replace(/^\.\//, "");
+  /**
+   * `src/cli.ts` 排除（2026-09-19 实测 0/2053 行）：CLI 的测试全是 spawn 子进程
+   * 跑的（test/cli-*.ts），子进程里的 V8 插桩不进父进程的 lcov——**没有任何测试
+   * 在本进程里加载它**。于是凡改动它的 PR 这门必红，红灯却说不出一句有用的话。
+   * 它的行为由那批 spawn 用例守（退出码 / --json / 收尾 durable / 计划门都各有锁）；
+   * 与 vitest 配置里 `ui/serve.ts` 的排除同性质：入口文件的覆盖记在它调用的模块上。
+   */
+  if (n === "src/cli.ts") return false;
   if (n.startsWith("src/") && n.endsWith(".ts") && !n.endsWith(".d.ts")) return true;
   if (/^ui\/[^/]+\.ts$/.test(n) && !n.endsWith(".d.ts")) return true;
   return false;

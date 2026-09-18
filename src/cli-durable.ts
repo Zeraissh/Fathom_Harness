@@ -659,21 +659,19 @@ export async function reconcileCliHistoryRoot(
   },
 ): Promise<string[]> {
   const reaped: string[] = [];
-  let metas: Awaited<ReturnType<typeof loadArchivedMetas>>;
-  try {
-    metas = await loadArchivedMetas(root);
-  } catch {
-    return reaped; // 档案目录不可读：不阻断启动
-  }
+  /**
+   * 这里**刻意不包** try/catch：两个依赖各自已经把"不阻断启动"兑现了——
+   * `loadArchivedMetas` 把根目录不可读当空历史返回（ui/history.ts），
+   * RunHistoryWriter 的 enqueue 把写失败收进 `dead` 健康位、永不 reject。
+   * 原先那两层 catch 一行都进不去（changed-line 门把它捞了出来：真跑不进的分支）。
+   * 收殓是逐条的：某条写不进去，循环照走，后面的档案照收。
+   */
+  const metas = await loadArchivedMetas(root);
   for (const a of metas) {
     if (a.meta.status !== "running") continue;
     if (archiveOwnerLiveness(a.meta, deps) !== "self-dead") continue;
-    try {
-      await reapDeadArchive(a.dir, a.meta);
-      reaped.push(a.meta.runId);
-    } catch {
-      // 单条收殓失败不阻断启动；下次启动再来
-    }
+    await reapDeadArchive(a.dir, a.meta);
+    reaped.push(a.meta.runId);
   }
   return reaped;
 }

@@ -33,6 +33,16 @@ describe("TEST-01 changed-line coverage", () => {
     expect(coverageInclude("scripts/changed-line-coverage.mjs")).toBe(false);
   });
 
+  it("src/cli.ts 不入本门（子进程覆盖看不见，等于一行都恒为 0）", () => {
+    // 实测 0/2053：CLI 测试全是 spawn，子进程插桩不进父进程 lcov。
+    // 不排除的话，凡改动 CLI 的 PR 这门必红，而红灯说不出任何有用的话。
+    expect(coverageInclude("src/cli.ts")).toBe(false);
+    // 邻居不受影响：CLI 的逻辑模块照旧入门
+    expect(coverageInclude("src/cli-args.ts")).toBe(true);
+    expect(coverageInclude("src/cli-durable.ts")).toBe(true);
+    expect(coverageInclude("ui/cli.ts")).toBe(true); // 只排除 src/ 下那一个确切路径
+  });
+
   it("unified diff 只把 + 行记到新文件行号", () => {
     const diff = [
       "--- a/src/foo.ts",

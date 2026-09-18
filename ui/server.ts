@@ -10121,10 +10121,12 @@ export function createUiServer(options: UiServerOptions = {}): UiServerHandle {
             },
           };
         }
+        // 落到这里 kind 必不是 r2：进了 `if (pickedDesignTemplate)` 就说明点了芯片，
+        // 而 r2 + 点了芯片在上面已经被 designRouteBlocksCreate 拦成 400 了。
+        // （原先这里还有个 `else { admittedDesignRoute = undefined }`——一行永远
+        // 进不去的死分支，changed-line 门把它捞了出来。）
         if (admittedDesignRoute.kind !== "r2") {
           parsed.pack = admittedDesignRoute.pack;
-        } else {
-          admittedDesignRoute = undefined;
         }
       }
       if (!parsed.pack) parsed.pack = "design";
