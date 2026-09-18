@@ -360,7 +360,9 @@ describe("运行列表的 ARIA 语义（真实 DOM 断言，取代原先的源�
     // 字符串扫描抓不住的部分：选中态必须真的落在被选中那一项上
     expect(items[0].getAttribute("aria-selected")).toBe("true");
     expect(items[1].getAttribute("aria-selected")).toBe("false");
-    expect(document.getElementById("run-list")!.getAttribute("role")).toBe("listbox");
+    // 走查 UX-B4/E15 起 listbox 身份下移到条目容器（分组头要放可聚焦的展开钮，
+    // 而 listbox 的子项只允许 option/group 是 axe critical）：required-parent 由它满足
+    expect(items[0].closest('[role="listbox"]')).toBeTruthy();
   });
 
   it("重渲染复用节点：选中态更新但 DOM 节点是同一个（焦点得以保持）", () => {
@@ -390,8 +392,9 @@ describe("扫描器双向自检：植入已知缺陷必须被抓到", () => {
   // 项目纪律：checker 本身要能证明"它抓得住"，否则全绿可能只是没在看
   it("植入 s3d 的真实缺陷（role=option 脱离 listbox）→ aria-required-parent 必须报错", async () => {
     renderRunList([{ runId: "r", task: "t", status: "done", verify: false }], "r", () => {}, new Map());
-    // 复刻当时的错误形态：父容器丢掉 role="listbox"
-    document.getElementById("run-list")!.removeAttribute("role");
+    // 复刻当时的错误形态：摘掉 option **所在条目容器**的 listbox 身份
+    // （B4/E15 起身份在 .run-group-items 上，不在 #run-list）
+    document.querySelector("#run-list .run-group-items")!.removeAttribute("role");
     const violations = await runAxe();
     expect(violations.map((v) => v.id)).toContain("aria-required-parent");
   });
@@ -1083,9 +1086,11 @@ describe("侧栏按工作目录分组", () => {
     const groups = [...document.querySelectorAll('#run-list [role="group"]')];
     expect(groups).toHaveLength(2);
     expect(groups.map((g) => g.getAttribute("aria-label"))).toEqual(["proj-a", "proj-b"]);
-    // 分组不改变 option 总数，也不改变 listbox 身份
+    // 分组不改变 option 总数；listbox 身份在条目容器上（B4/E15 起）
     expect(document.querySelectorAll("#run-list .run-item")).toHaveLength(3);
-    expect(document.getElementById("run-list")!.getAttribute("role")).toBe("listbox");
+    expect(
+      document.querySelector("#run-list .run-group-items")!.getAttribute("role"),
+    ).toBe("listbox");
   });
 
   it("分组后 option 仍在 listbox 的合法子树内（axe 零 violations）", async () => {

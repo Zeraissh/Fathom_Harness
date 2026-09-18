@@ -1678,6 +1678,13 @@ body.sidebar-collapsed .sidebar {
   min-width: 0;
   border-left: 0;
 }
+/* 走查 UX-B4/E14：坞收起只写 root.hidden，槽还是 display:flex——右列留一块空槽。
+   注意槽里有**两个**坞实例（文件预览 overlay + 产物画布），判据必须是
+   "没有任何可见坞"而不是"存在 hidden 坞"，否则一个收起会把另一个也连坐藏掉。 */
+.right-rail-preview:not(:has(> .preview-dock:not([hidden]))) { display: none; }
+/* 坞自带的手柄（z-40）压住右列拖柄（z-30），且 railHosted 下 mousedown 早退
+   ——右列拖宽在坞打开时被静默吞掉。手柄在列里本就不该有拖拽语义。 */
+.right-rail-preview .preview-dock .pd-handle { pointer-events: none; }
 
 /* 右列自己管收起（键在 tab 行右侧）。树自带的收起键让位——否则两个收起键
    各写一份偏好，"一份记忆"就不成立了。树模块内部的折叠逻辑保留不动，
@@ -3899,7 +3906,23 @@ body.sidebar-collapsed .sidebar {
 }
 .run-group-caret { color: var(--text-3); font-size: var(--font-sm); }
 .run-group--collapsed .run-group-items { display: none; }
-.run-group-identity { min-width: 0; display: inline-flex; align-items: center; gap: 7px; }
+/* 分组头的展开钮是**真按钮**（走查 UX-B4/E15：键盘可达）：重置 UA 样式，
+   外观与当 span 时一致 */
+.run-group-identity {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  border-radius: var(--radius-xs);
+}
+.run-group-identity:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 .run-group-identity > .ph { color: var(--accent); }
 .run-group-name {
   min-width: 0;
@@ -7108,6 +7131,16 @@ body.sidebar-collapsed .sidebar {
 .rail-section-title::-webkit-details-marker { display: none; }
 .rail-section-title .ph { font-size: 0.95em; }
 .rail-section-title .aside-peek { margin-left: auto; font-weight: 400; }
+/* 分区标题也有折叠提示（走查 UX-B4/E15）：与 progress-card / composer-scope 同款。
+   summary 是 flex，peek 已 margin-left:auto 顶右，三角跟在它后面收尾。 */
+.rail-section-title::after {
+  content: "▾";
+  flex: 0 0 auto;
+  color: var(--text-3);
+  font-weight: 400;
+  font-size: var(--font-xs);
+}
+.rail-section:not([open]) .rail-section-title::after { content: "▸"; }
 .artifact {
   padding: 0.45em 0 0.45em 1.15em;
   border-bottom: 1px solid var(--border);

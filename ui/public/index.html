@@ -5257,7 +5257,14 @@ function showRailPanel(panel) {
       return;
     }
     const tab = event.target.closest?.("[data-rail-panel]");
-    if (tab) showRailPanel(tab.dataset.railPanel);
+    if (tab) {
+      showRailPanel(tab.dataset.railPanel);
+      // 走查 UX-B4/E14：坞收起后浮出钮不再占窗口右上角（与收起键打架），
+      // 由「预览」tab 广播唤回——坞只在真有内容时响应。
+      if (tab.dataset.railPanel === "preview") {
+        document.dispatchEvent(new CustomEvent("preview:reveal"));
+      }
+    }
   });
 
   // 坞（产物画布 / 文件预览）打开时把自己"抬"到前台：右列切到预览面板。
@@ -5479,11 +5486,40 @@ loadHarness();
 loadRuns().then(applyHash);
 subscribeLifecycle();
 
+/**
+ * 浮层互斥（走查 UX-B4/E13）：命令面板/通知/记忆/全局搜索四块 z-60 浮层此前
+ * 互不相斥——开着记忆点铃铛，通知开在它底下（看着像"点了没反应"）；各自还都
+ * 挂了文档级 Esc，一次 Esc 连关两层。谁 open 之前先关其余。
+ *
+ * 做成"包装 open"而不是改四个模块：互斥是宿主的编排职责，模块保持互不知情；
+ * 迟到的模块（搜索等是动态 import）注册一个挂一个。
+ */
+const floatingPanelApis = [];
+function registerFloatingPanel(api) {
+  if (api && typeof api.open === "function" && typeof api.close === "function") {
+    const rawOpen = api.open.bind(api);
+    api.open = function (...args) {
+      for (const other of floatingPanelApis) {
+        if (other !== api && other.isOpen?.()) other.close();
+      }
+      return rawOpen(...args);
+    };
+    floatingPanelApis.push(api);
+  }
+  return api;
+}
+/** 面板内部开面板前调它（走查 UX-B4/E13）：触发器由各模块自己绑，外部包 open 拦不到。 */
+function closeOtherFloatingPanels(keep) {
+  for (const api of floatingPanelApis) {
+    if (api && api !== keep && api.isOpen?.()) api.close();
+  }
+}
+
 // ---- 命令面板（T3）----
 // 动态加载，失败不影响主流程。回调全部委托给本控制器已有函数，
 // 模块不反向 import 这里，保持单向依赖。
 import("./features/command-palette.js").then((palette) => {
-  commandPaletteApi = palette.initCommandPalette({
+  commandPaletteApi = registerFloatingPanel(palette.initCommandPalette({
     getConversations: () => runs.map((r) => ({
       runId: r.runId,
       title: r.task,
@@ -5503,14 +5539,14 @@ import("./features/command-palette.js").then((palette) => {
     onFocusSearch: () => { runSearch?.focus(); },
     onSelectTheme: (theme) => applyTheme(theme),
     onAnnounce: (msg) => announceStatus(msg),
-  });
+  }));
 }).catch(() => { /* 面板是增强项，加载失败静默降级 */ });
 
 // ---- 通知中心（T4）----
 // 动态加载，失败不影响主流程。事件经 batcher 节拍里的 notificationsApi.ingest
 // 逐条喂入；run 列表刷新（loadRuns / 生命周期流）后调 syncRuns 对账。
 import("./features/notifications.js").then((notifications) => {
-  notificationsApi = notifications.initNotifications({
+  notificationsApi = registerFloatingPanel(notifications.initNotifications({
     getRuns: () => runs,
     getRunTitle: (runId) =>
       runs.find((r) => r.runId === runId)?.task ?? runStates.get(runId)?.task ?? null,
@@ -5522,7 +5558,9 @@ import("./features/notifications.js").then((notifications) => {
     // 待决定类直达 action-dock：选中会话后让决定坞闪一下，视线落在该落的地方
     onRevealDock: (runId) => revealDecisionDock(runId),
     onAnnounce: (msg) => announceStatus(msg),
-  });
+    // 浮层互斥（E13）：铃铛的触发器是模块自己绑的，开前先关其余三块
+    onOpen: () => closeOtherFloatingPanels(notificationsApi),
+  }));
   // 初始化时 run 列表多半已经就位：立刻播种基线（不生成历史条目）
   notificationsApi.syncRuns();
 }).catch(() => { /* 通知中心是增强项，加载失败静默降级 */ });
@@ -5531,11 +5569,13 @@ import("./features/notifications.js").then((notifications) => {
 // 动态加载，失败不影响主流程。同时把「查看记忆」注册进命令面板——
 // 两个 import 命中同一个模块缓存，registerPaletteCommand 是模块级注册表。
 import("./features/memory-panel.js").then((memory) => {
-  memoryPanelApi = memory.initMemoryPanel({
+  memoryPanelApi = registerFloatingPanel(memory.initMemoryPanel({
     onAnnounce: (msg) => announceStatus(msg),
     getWorkdir: () => workdirSelect?.value ?? "",
     onClose: () => { void refreshGateChip(); },
-  });
+    // 浮层互斥（E13）：记忆钮的触发器是模块自己绑的，开前先关其余三块
+    onOpen: () => closeOtherFloatingPanels(memoryPanelApi),
+  }));
   import("./features/command-palette.js").then((palette) => {
     palette.registerPaletteCommand({
       id: "view-memory",
@@ -5552,10 +5592,12 @@ import("./features/memory-panel.js").then((memory) => {
 // （上方既有逻辑），回车/按钮触发正文级全局搜索。同时把「全局搜索」注册进
 // 命令面板——两个 import 命中同一个模块缓存，registerPaletteCommand 是模块级注册表。
 import("./features/global-search.js").then((search) => {
-  const searchApi = search.initGlobalSearch({
+  const searchApi = registerFloatingPanel(search.initGlobalSearch({
     onOpenConversation: (runId) => selectRun(runId),
     onAnnounce: (msg) => announceStatus(msg),
-  });
+    // 浮层互斥（E13）：搜索的触发器也是模块自己绑的（回车/按钮），开前先关其余
+    onOpen: () => closeOtherFloatingPanels(searchApi),
+  }));
   import("./features/command-palette.js").then((palette) => {
     palette.registerPaletteCommand({
       id: "global-search",

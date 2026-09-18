@@ -287,6 +287,10 @@ export function initFileTree(host = {}, env = {}) {
     const nameBtn = doc.createElement("button");
     nameBtn.type = "button";
     nameBtn.className = "ft-name";
+    // 走查 UX-B4/E15：目录的行名按钮也能切换折叠，展开态得让读屏听得见
+    if (entry.kind === "directory") {
+      nameBtn.setAttribute("aria-expanded", String(expanded.has(entry.relative)));
+    }
     const icon = entry.kind === "directory" ? "ph-folder" : "ph-file";
     nameBtn.innerHTML = `<i class="ph ${icon}" aria-hidden="true"></i>`;
     const label = doc.createElement("span");

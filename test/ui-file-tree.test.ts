@@ -147,6 +147,25 @@ describe("initFileTree DOM", () => {
     expect(onCite).toHaveBeenCalledWith("hello.txt", "file");
   });
 
+  it("E15：目录行名按钮带 aria-expanded（折叠状态不只靠三角图标）", async () => {
+    const fetchFn = vi.fn(async (url) => {
+      if (String(url).includes("q=src%2F")) return mockResponse(200, { files: [] });
+      return mockResponse(200, { files: [{ name: "src", relative: "src", kind: "directory" }] });
+    });
+    const { root } = mountTree({ getWorkdir: () => "D:/proj" }, { fetch: fetchFn });
+    await root.__fileTreeApi.reload();
+    await flush();
+    expect(
+      root.querySelector('.ft-row[data-path="src"] .ft-name').getAttribute("aria-expanded"),
+    ).toBe("false");
+    root.querySelector('.ft-row[data-path="src"] .ft-twist').click();
+    await flush();
+    await flush();
+    expect(
+      root.querySelector('.ft-row[data-path="src"] .ft-name').getAttribute("aria-expanded"),
+    ).toBe("true");
+  });
+
   it("圈禁逃逸 notice 与 403 都是人话，没有 HTTP 码", async () => {
     const escaped = vi.fn(async () => mockResponse(200, {
       files: [{

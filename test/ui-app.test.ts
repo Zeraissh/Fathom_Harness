@@ -2226,9 +2226,11 @@ describe("AC6 无障碍语义 (R-05)", () => {
     // 空态分支摘掉 role/aria-label——空壳 listbox 违反 aria-required-children（critical）
     expect(appSrc).toMatch(/removeAttribute\("role"\)/);
     expect(appSrc).toMatch(/removeAttribute\("aria-label"\)/);
-    // 有 option 子项时才挂上 listbox 身份
-    expect(appSrc).toMatch(/setAttribute\("role", "listbox"\)/);
-    expect(appSrc).toMatch(/setAttribute\("aria-label", "项目与对话"\)/);
+    // 走查 UX-B4/E15：listbox 身份下移到**条目容器**——分组头要放可聚焦的展开钮，
+    // 而 listbox 的子项只允许 option/group（axe aria-required-children critical）；
+    // 分组壳自身保留 role=group
+    expect(appSrc).toMatch(/class="run-group-items" role="listbox"/);
+    expect(appSrc).toMatch(/setAttribute\("role", "group"\)/);
     // 静态 HTML 不得预挂 role，否则加载态即违规
     const html = readFileSync(join(__dirname, "..", "ui", "public", "index.html"), "utf-8");
     expect(html).not.toMatch(/id="run-list"[^>]*role="listbox"/);

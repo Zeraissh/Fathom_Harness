@@ -265,7 +265,9 @@ export function createPreviewDock(opts = {}, env = {}) {
   // ---- 开 / 收起 / 关 ----
   function syncRevealChrome() {
     const shown = open && !collapsed;
-    revealBtn.hidden = !(open && collapsed);
+    // 走查 UX-B4/E14：进了右列之后，浮出钮（fixed 钉窗口右上角）与右列的收起键
+    // 像素级打架——让位给「预览」tab（它广播 preview:reveal，见下方监听）。
+    revealBtn.hidden = railHosted() ? true : !(open && collapsed);
     revealBtn.setAttribute("aria-expanded", String(shown));
     closeBtn.setAttribute("aria-expanded", String(shown));
   }
@@ -303,6 +305,16 @@ export function createPreviewDock(opts = {}, env = {}) {
       root.dispatchEvent(new CustomEvent("preview:open", { bubbles: true }));
     }
   }
+
+  /**
+   * 走查 UX-B4/E14：右列「预览」tab 广播 preview:reveal——把收起的坞唤回。
+   * 浮出钮在 railHosted 下已让位（fixed 钉窗口右上角会和右列收起键打架），
+   * 这条就是它的替代入口；只在真有内容时响应（没加载过文件不该拉出空面板）。
+   */
+  doc.addEventListener("preview:reveal", () => {
+    if (!railHosted()) return;
+    if (open && collapsed) openDock();
+  });
 
   function finishHide({ clear } = { clear: false }) {
     closeTimer = 0;

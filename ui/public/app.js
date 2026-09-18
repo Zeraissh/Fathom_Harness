@@ -4771,8 +4771,11 @@ export function renderRunList(runs, selectedRunId, onSelect, metaMap, onDelete, 
     return;
   }
   // 有 option 子项时才挂 listbox 身份
-  listEl.setAttribute("role", "listbox");
-  listEl.setAttribute("aria-label", "项目与对话");
+  // 走查 UX-B4/E15：listbox 身份**下移到每个分组的条目容器**——分组头要带
+  // 可聚焦的展开钮，而 listbox 的子项只允许 option/group（axe aria-required-children
+  // critical）。分组结构：.run-group[role=group] > 按钮+ .run-group-items[role=listbox]。
+  listEl.removeAttribute("role");
+  listEl.removeAttribute("aria-label");
   // 空态留下的占位节点不属于 patchList 管辖，先清掉
   const placeholder = listEl.querySelector(".run-list-empty");
   if (placeholder) placeholder.remove();
@@ -4792,12 +4795,15 @@ export function renderRunList(runs, selectedRunId, onSelect, metaMap, onDelete, 
       box.setAttribute("aria-label", g.label);
       box.innerHTML =
         '<div class="run-group-label">' +
-        '<span class="run-group-identity"><i class="ph ph-caret-down run-group-caret" aria-hidden="true"></i><i class="ph ph-folder-simple" aria-hidden="true"></i><span class="run-group-name"></span></span>' +
+        // 展开钮用**真按钮**：listbox 身份已下移到条目容器，分组头里放得下
+        // （Enter/Space 点燃 click 冒泡到下面 label 的委托处理器，单次切换）
+        '<button type="button" class="run-group-identity"><i class="ph ph-caret-down run-group-caret" aria-hidden="true"></i><i class="ph ph-folder-simple" aria-hidden="true"></i><span class="run-group-name"></span></button>' +
         '<span class="run-group-actions">' +
         '<button type="button" class="run-group-artifacts" hidden aria-label="查看产物">' +
         '<i class="ph ph-folder-open" aria-hidden="true"></i></button>' +
         '<span class="run-group-count"></span>' +
-        "</span></div><div class=\"run-group-items\"></div>";
+        "</span></div>" +
+        '<div class="run-group-items" role="listbox"></div>';
       const toggle = box.querySelector(".run-group-label");
       toggle?.addEventListener("click", (event) => {
         if (event.target instanceof Element && event.target.closest(".run-group-artifacts")) return;
@@ -4830,6 +4836,10 @@ function patchRunGroupHeader(box, group, groupState) {
   setText(box.querySelector(".run-group-name"), group.label);
   setText(box.querySelector(".run-group-count"), String(group.runs.length));
   setAttr(label, "title", group.key === "(default)" ? "默认工作目录" : group.key);
+  // 键盘可达（走查 UX-B4/E15）：展开态落在真按钮上；条目容器的 listbox 身份
+  // 也按组名标注
+  setAttr(box.querySelector(".run-group-identity"), "aria-expanded", String(!isCollapsed));
+  setAttr(box.querySelector(".run-group-items"), "aria-label", `${group.label}的对话`);
   setClass(box, "run-group--collapsed", isCollapsed);
   const caret = box.querySelector(".run-group-caret");
   if (caret) caret.className = `ph ${isCollapsed ? "ph-caret-right" : "ph-caret-down"} run-group-caret`;
@@ -7455,42 +7465,84 @@ function patchAgentOverlay(parts, state, callbacks, live = null) {
   host.hidden = false;
   host.setAttribute("role", "dialog");
   host.setAttribute("aria-label", `子代理 ${title}`);
-  const liveSig = running
-    ? `${String(live?.text ?? "").length}:${String(live?.thinking ?? "").length}`
-    : "0";
-  const sig = `${items.length}:${pending.length}:${items.at(-1)?.key ?? ""}:${liveSig}`;
-  if (host.__agentId !== agentId || host.__sig !== sig) {
+  /**
+   * 走查 UX-B4/E6：这里原来每帧整块重建（sig 含 live 长度，流式下每帧都变）
+   * ——浮层里展开的详情被关、拒绝理由输入框被清空。改成与主对话/主坞同一套
+   * 纪律：骨架只在换子代理时建一次，聊天区与审批区走 patchList 键控——已存在
+   * key 的节点永不重建（拒签理由、展开态、光标全都原地活）。
+   */
+  if (host.__agentId !== agentId) {
     host.__agentId = agentId;
-    host.__sig = sig;
-    let html =
+    host.innerHTML =
       `<div class="agent-overlay-head">` +
       `<button type="button" class="agent-overlay-back" data-agent-back>返回主对话</button>` +
-      `<strong class="agent-overlay-title">${esc(title)}</strong>` +
-      `<span class="agent-overlay-meta${running ? " thinking-shimmer" : ""}">${esc(running ? "工作中" : agent?.status === "error" ? "未完成" : "已完成")}</span>` +
-      `</div><div class="agent-overlay-chat">`;
-    html += items.map((it) => `<div class="chat-item">${renderChatItem(it, thinkingPrefOpen())}</div>`).join("");
-    html += "</div>";
-    if (pending.length > 0) {
-      html += `<div class="agent-overlay-approvals" role="region" aria-label="子代理审批">`;
-      for (const a of pending) {
-        html +=
-          `<div class="approval-card" data-approval-id="${esc(a.approvalId || a.toolUseId)}" data-tool-name="${esc(a.name ?? "")}">` +
-          `<div class="approval-card-header"><span class="approval-tool-name">${esc(describeApprovalAction(a.name, a.input))}</span></div>` +
-          `<p class="approval-summary">${esc(describeApprovalAction(a.name, a.input))}</p>` +
-          `<details class="approval-details"><summary>详情</summary>` +
-          `<pre class="approval-input">${esc(typeof a.input === "string" ? a.input : JSON.stringify(a.input ?? {}, null, 2))}</pre>` +
-          `<button type="button" class="btn btn--allow-always" data-action="allow-always">短期允许相同参数</button>` +
-          `</details>` +
-          `<div class="approval-actions">` +
-          `<button type="button" class="btn btn--allow" data-action="allow">允许</button>` +
-          `<button type="button" class="btn btn--deny" data-action="deny">拒绝</button>` +
-          `<input class="deny-reason" placeholder="拒绝理由（可选）" />` +
-          `</div></div>`;
-      }
-      html += "</div>";
-    }
-    host.innerHTML = html;
+      `<strong class="agent-overlay-title"></strong>` +
+      `<span class="agent-overlay-meta"></span>` +
+      `</div><div class="agent-overlay-chat"></div>` +
+      `<div class="agent-overlay-approvals" role="region" aria-label="子代理审批"></div>`;
   }
+  setText(host.querySelector(".agent-overlay-title"), title);
+  const overlayMeta = host.querySelector(".agent-overlay-meta");
+  if (overlayMeta) {
+    setText(overlayMeta, running ? "工作中" : agent?.status === "error" ? "未完成" : "已完成");
+    setClass(overlayMeta, "thinking-shimmer", running);
+  }
+
+  patchList(host.querySelector(".agent-overlay-chat"), items, {
+    key: (it) => it.key,
+    create: (it) => {
+      const node = document.createElement("div");
+      node.className = "chat-item";
+      node.__sig = chatItemSig(it);
+      node.innerHTML = renderChatItem(it, thinkingPrefOpen());
+      return node;
+    },
+    update: (node, it) => {
+      const nextSig = chatItemSig(it);
+      if (node.__sig === nextSig) return;
+      const wasOpen = [...node.querySelectorAll("details")].map((d) => d.open);
+      node.__sig = nextSig;
+      // 流式那条就地改文本（与主对话同款）；其余重画时保留展开态
+      if (it.kind === "live" && updateLiveNode(node, it)) return;
+      node.innerHTML = renderChatItem(it, thinkingPrefOpen());
+      [...node.querySelectorAll("details")].forEach((d, i) => {
+        if (wasOpen[i]) d.open = true;
+      });
+    },
+  });
+
+  patchList(host.querySelector(".agent-overlay-approvals"), pending, {
+    key: (a) => a.approvalId || a.toolUseId,
+    create: (a) => {
+      const card = document.createElement("div");
+      card.className = "approval-card";
+      card.setAttribute("data-approval-id", a.approvalId || a.toolUseId);
+      card.innerHTML =
+        '<div class="approval-card-header">' +
+        '<span class="approval-tool-name"></span>' +
+        '<span class="approval-result" hidden></span>' +
+        "</div>" +
+        '<p class="approval-summary"></p>' +
+        '<details class="approval-details">' +
+        "<summary>详情</summary>" +
+        '<pre class="approval-input"></pre>' +
+        '<button type="button" class="btn btn--allow-always" data-action="allow-always">短期允许相同参数</button>' +
+        "</details>" +
+        '<div class="approval-resolved" hidden></div>' +
+        '<div class="approval-actions" hidden>' +
+        '<button type="button" class="btn btn--allow" data-action="allow">允许</button>' +
+        '<button type="button" class="btn btn--deny" data-action="deny">拒绝</button>' +
+        '<input class="deny-reason" placeholder="拒绝理由（可选）" />' +
+        "</div>" +
+        '<div class="approval-meta" hidden></div>' +
+        '<div class="approval-reason" hidden></div>';
+      const input = card.querySelector(".deny-reason");
+      input.setAttribute("data-fk", `approval:${a.approvalId || a.toolUseId}:reason`);
+      updateApprovalCard(card, a, Boolean(running));
+      return card;
+    },
+    update: (card, a) => updateApprovalCard(card, a, Boolean(running)),
+  });
   if (!host.__bound) {
     host.__bound = true;
     host.addEventListener("click", (e) => {
@@ -7840,7 +7892,17 @@ function patchProgressPanel(parts, progress, extras) {
   }
 
   html += "</details>";
+  /**
+   * 走查 UX-B4/E8：重建前记住用户手动收起的状态。signature 只认数据——用户把
+   * 卡收起来不改变 sig，但数据一变整块就重建、以硬编码的 open 弹开，等于每次
+   * 进度推进都把用户的选择抹掉。
+   */
+  const wasOpen = host.querySelector("details.progress-card")?.open;
   host.innerHTML = html;
+  if (wasOpen === false) {
+    const next = host.querySelector("details.progress-card");
+    if (next) next.open = false;
+  }
 }
 
 /**
@@ -7885,6 +7947,13 @@ function patchArtifacts(parts, files, runId, callbacks) {
       "</div></div></div>"
     );
   };
+  // 走查 UX-B4/E8：产物分组也是硬编码 open——按标签记住用户收起过的组，
+  // 重建后还原（新出现的组默认展开）。
+  const collapsedGroups = new Set(
+    [...host.querySelectorAll("details.rail-section")]
+      .filter((d) => !d.open)
+      .map((d) => d.querySelector(".rail-section-title")?.textContent?.trim() ?? ""),
+  );
   host.innerHTML = groups
     .map((g) => (
       `<details class="rail-section" open>` +
@@ -7893,6 +7962,12 @@ function patchArtifacts(parts, files, runId, callbacks) {
       "</details>"
     ))
     .join("");
+  if (collapsedGroups.size > 0) {
+    for (const d of host.querySelectorAll("details.rail-section")) {
+      const label = d.querySelector(".rail-section-title")?.textContent?.trim() ?? "";
+      if (collapsedGroups.has(label)) d.open = false;
+    }
+  }
 
   // 事件委托：清单每次重画，逐个绑会漏也会重
   if (!host.__revealBound) {
@@ -8526,7 +8601,9 @@ export function deriveChatItems(state, live, opts = {}) {
           items[items.length - 1] = {
             ...last,
             text: [last.text, text].filter(Boolean).join("\n\n"),
-            seq: e.seq,
+            // 走查 UX-B4/E7：合并后保留**首段**的 seq——条目键是 `thinking:${seq}`，
+            // 跟着新事件改键会被阅读模式判成"另一段"，把用户展开的段收回去
+            seq: last.seq,
             live: Boolean(last.live || liveTurn),
           };
         } else {
@@ -8873,7 +8950,8 @@ function mergeThinkingItems(thinkings) {
     text: thinkings.map((t) => t.text).filter(Boolean).join("\n\n"),
     redacted: thinkings.some((t) => t.redacted),
     live: thinkings.some((t) => t.live),
-    seq: thinkings.at(-1).seq,
+    // 键稳定性：保留首段 seq（走查 UX-B4/E7，理由见对话侧合并处）
+    seq: first.seq,
   };
 }
 
@@ -8942,7 +9020,8 @@ export function collapseFinishedChat(items) {
               ...first,
               text: thinkings.map((t) => t.text).filter(Boolean).join("\n\n"),
               redacted: thinkings.some((t) => t.redacted),
-              seq: thinkings.at(-1).seq,
+              // 键稳定性：保留首段 seq（走查 UX-B4/E7）
+              seq: first.seq,
             },
       );
       thinkings = [];

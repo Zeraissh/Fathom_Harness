@@ -263,6 +263,38 @@ describe("宿主接线锁（index.html）", () => {
   it("放大态的左伸量由宿主算（坞在右列里，要盖主区就得向左伸过对话列）", () => {
     expect(html).toMatch(/--rail-expand-inset/);
   });
+
+  /**
+   * 走查 UX-B4/E13：命令面板/通知/记忆/全局搜索四块浮层都是 z-index 60 且互不
+   * 相斥——开着记忆点铃铛，通知会开在它底下（看着像"点了没反应"）；各自还都
+   * 挂了文档级 Esc，一次 Esc 连关两层。宿主在四者 open 前先关其余。
+   */
+  it("E13：四块浮层开前互斥（宿主接线）", () => {
+    expect(html).toMatch(/function registerFloatingPanel\(/);
+    expect(html).toMatch(/commandPaletteApi = registerFloatingPanel\(/);
+    expect(html).toMatch(/notificationsApi = registerFloatingPanel\(/);
+    expect(html).toMatch(/memoryPanelApi = registerFloatingPanel\(/);
+    expect(html).toMatch(/searchApi = registerFloatingPanel\(search\.initGlobalSearch/);
+    // 触发器由各模块**自己绑**——外部包 api.open 拦不到，必须走 onOpen 钩子
+    expect(html).toMatch(/onOpen: \(\) => closeOtherFloatingPanels\(notificationsApi\)/);
+    expect(html).toMatch(/onOpen: \(\) => closeOtherFloatingPanels\(memoryPanelApi\)/);
+    expect(html).toMatch(/onOpen: \(\) => closeOtherFloatingPanels\(searchApi\)/);
+    for (const f of ["notifications.js", "memory-panel.js", "global-search.js"]) {
+      const src = readFileSync(join(__dirname, "..", "ui", "public", "features", f), "utf-8");
+      expect(src, `${f} 应在 openPanel 里调 host.onOpen`).toMatch(/host\.onOpen\?\.\(\)/);
+    }
+  });
+
+  it("E14：右列「预览」tab 能唤回收起的坞（preview:reveal 有发有听）", () => {
+    expect(html).toMatch(/preview:reveal/);
+    const dockSrc = readFileSync(
+      join(__dirname, "..", "ui", "public", "features", "preview-dock.js"),
+      "utf-8",
+    );
+    expect(dockSrc).toMatch(/preview:reveal/);
+    // railHosted 下浮出钮让位（它的重开入口改走「预览」tab）
+    expect(dockSrc).toMatch(/revealBtn\.hidden = [\s\S]{0,120}railHosted\(\)/);
+  });
 });
 
 describe("样式锁（styles.css）：split 真并排", () => {
@@ -304,5 +336,22 @@ describe("样式锁（styles.css）：split 真并排", () => {
    */
   it("坞顶条长文件名可省略：.ac-title 允许收缩（ellipsis 不许是死代码）", () => {
     expect(css).toMatch(/\.ac-title\s*\{[^}]*flex:\s*0 1 auto/);
+  });
+
+  /**
+   * 走查 UX-B4/E14：坞收起只写 root.hidden，右列留一块 display:flex 的空槽；
+   * 且坞自带手柄（z-40）压住右列拖柄（z-30），railHosted 下 mousedown 早退
+   * ——右列拖宽在坞打开时静默失效。
+   */
+  it("E14：坞收起不留空槽；坞自带手柄不再吞右列拖宽（railHosted）", () => {
+    // 槽里有两个坞实例，判据是"没有任何可见坞"——存在 hidden 坞不能连坐
+    expect(css).toMatch(
+      /\.right-rail-preview:not\(:has\(> \.preview-dock:not\(\[hidden\]\)\)\)[^{]*\{[^}]*display:\s*none/,
+    );
+    expect(css).toMatch(/\.right-rail-preview\s+\.preview-dock\s+\.pd-handle\s*\{[^}]*pointer-events:\s*none/);
+  });
+
+  it("E15：右栏分区标题有折叠三角（与 progress-card/scope 同款提示）", () => {
+    expect(css).toMatch(/\.rail-section-title::(before|after)/);
   });
 });

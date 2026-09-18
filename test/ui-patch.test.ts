@@ -5650,3 +5650,95 @@ describe("零视觉事件上屏（UX-A6）", () => {
     ).toBe(true);
   });
 });
+
+/**
+ * 走查 UX-B4：展开/隐藏批的静态条目落成行为锁。
+ * E6 子代理浮层每帧整块重建（拒签理由/展开态全丢）；E7 连续思考合并换键
+ * （阅读模式展开的段自收）；E8 进度卡/产物分组重建即弹开；E15 项目分组
+ * 键盘不可达。
+ */
+describe("展开/隐藏批（UX-B4）", () => {
+  it("E6：子代理浮层重渲染不重建节点（展开态原地活）", () => {
+    let s = createInitialState("run-b4-overlay", "浮层稳定", false);
+    s = reduceEvents(s, [
+      sse(0, "host", "spawn_start", { title: "查竞品" }),
+      sse(1, "spawn/查竞品", "assistant_text", { text: "我先打开官网" }),
+      sse(2, "spawn/查竞品", "approval_request", {
+        toolUseId: "tu_child",
+        name: "bash",
+        input: { command: "curl example.com" },
+      }),
+    ]);
+    const open = (liveText) =>
+      renderRunDetail(s, { activeTab: "loop", selectedAgentId: "spawn/查竞品", liveText });
+    open("");
+    const overlay = document.getElementById("agent-overlay");
+    const card = overlay.querySelector(".approval-card");
+    const details = overlay.querySelector(".approval-details");
+    expect(card, "浮层里应有子审批卡").toBeTruthy();
+    details.open = true;
+    // 流式推进：live 文本每帧都在变——旧实现每帧整块 innerHTML 重建
+    open("输出一行");
+    open("输出两行，再长一点");
+    expect(
+      document.getElementById("agent-overlay").querySelector(".approval-card"),
+      "重建把审批卡换成了新节点（拒签理由会丢）",
+    ).toBe(card);
+    expect(document.querySelector("#agent-overlay .approval-details")?.open).toBe(true);
+  });
+
+  it("E7：连续思考合并后条目键不变（阅读模式展开段不再自收）", () => {
+    const base = createInitialState("run-b4-think", "思考合并", false);
+    const one = reduceEvents(base, [
+      sse(0, "main", "turn_start", { turn: 1 }),
+      sse(1, "main", "assistant_thinking", { text: "第一段" }),
+    ]);
+    const two = reduceEvents(one, [sse(2, "main", "assistant_thinking", { text: "第二段" })]);
+    const keyOf = (st) => deriveChatItems(st, {}).find((it) => it.kind === "thinking")?.key;
+    expect(keyOf(one)).toBeTruthy();
+    expect(keyOf(two), "合并改了 seq → 键变了 → 展开态被判成另一段").toBe(keyOf(one));
+  });
+
+  it("E8：用户收起的 Progress 卡不因重建自己弹开", () => {
+    let s = createInitialState("run-b4-prog", "进度卡", false);
+    s = reduceEvents(s, [
+      sse(0, "main", "progress", { items: [{ id: "1", title: "写页面", status: "running" }] }),
+    ]);
+    renderRunDetail(s, { activeTab: "loop" });
+    const card = () => document.querySelector(".progress-card");
+    expect(card()).toBeTruthy();
+    card().open = false;
+    s = reduceEvents(s, [
+      sse(1, "main", "progress", {
+        items: [
+          { id: "1", title: "写页面", status: "done" },
+          { id: "2", title: "收口", status: "running" },
+        ],
+      }),
+    ]);
+    renderRunDetail(s, { activeTab: "loop" });
+    expect(card()?.open, "重建把用户收起的卡弹开了").toBe(false);
+  });
+
+  it("E15：会话项目分组标题键盘可达（真按钮 + aria-expanded + 点击切换）", () => {
+    const toggled = [];
+    const runs = [
+      { runId: "r1", task: "a", status: "done", verify: false, workdir: "D:\\proj" },
+      { runId: "r2", task: "b", status: "done", verify: false, workdir: "D:\\other" },
+    ];
+    renderRunList(runs, "r1", () => {}, new Map(), undefined, {
+      collapsed: new Set(),
+      onToggle: (key) => toggled.push(key),
+    });
+    // listbox 身份下移到条目容器——分组头才放得下可聚焦控件（axe aria-required-children）
+    const itemsBox = document.querySelector(".run-group-items");
+    expect(itemsBox?.getAttribute("role"), "条目容器应是 listbox").toBe("listbox");
+    expect(document.getElementById("run-list")?.getAttribute("role")).toBeNull();
+    const identity = document.querySelector(".run-group-identity");
+    expect(identity?.tagName, "分组头应是真按钮（Enter/Space 点燃 click）").toBe("BUTTON");
+    expect(identity?.getAttribute("aria-expanded")).toBe("true");
+    // 按钮的 Enter/Space 在浏览器里合成 click，冒泡到 label 的委托——单次切换
+    identity.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(toggled.length, "点分组头应收起分组").toBe(1);
+  });
+});
