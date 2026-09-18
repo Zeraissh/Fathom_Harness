@@ -13,6 +13,8 @@ import {
   formatUsd,
   formatChartDay,
   formatChartDayFull,
+  formatChartDayShort,
+  chartLabelPlan,
   formatCompactCount,
   niceAxisMax,
   periodStartDay,
@@ -28,6 +30,42 @@ import {
   formatThisRunSpend,
   todayUsageOf,
 } from "../ui/public/features/usage.js";
+
+/**
+ * 走查 UX-C2 / O2：日期标签此前 `overflow:hidden; text-overflow:clip` 被列宽硬切
+ * （30d/90d 必现"半个字"）。修法不是继续裁，而是**按容器宽度算标签节奏**：
+ * 间距放得下全日期就用全日期，放不下退日号，再放不下才减枚数——标签允许
+ * 溢出自己的窄列（邻居间距由步长保证），不再在列内被裁。
+ */
+describe("chartLabelPlan（UX-C2 / O2）", () => {
+  it("窄容器：步长按全日期宽度（≈58px）算，铺不开才退日号", () => {
+    // 240px / 7 天 = 34px 列：全日期放不下 1 枚/列 → 每 2 列一枚
+    expect(chartLabelPlan({ plotWidth: 240, days: 7 })).toEqual({ step: 2, form: "full" });
+    // 240px / 30 天 = 8px 列：全日期每 8 列一枚（保住可读性）
+    expect(chartLabelPlan({ plotWidth: 240, days: 30 })).toEqual({ step: 8, form: "full" });
+    // 240px / 90 天 = 2.7px 列
+    expect(chartLabelPlan({ plotWidth: 240, days: 90 })).toEqual({ step: 22, form: "full" });
+  });
+
+  it("极窄且窗口短：全日期两枚都铺不下才退日号", () => {
+    // 100px / 30 天 = 3.3px 列：全日期要 18 列 > 15 列上限 → 日号每 6 列
+    expect(chartLabelPlan({ plotWidth: 100, days: 30 })).toEqual({ step: 6, form: "day" });
+  });
+
+  it("宽容器：贴住固定节奏不加密", () => {
+    expect(chartLabelPlan({ plotWidth: 1200, days: 7 })).toEqual({ step: 1, form: "full" });
+    expect(chartLabelPlan({ plotWidth: 1200, days: 30 })).toEqual({ step: 4, form: "full" });
+  });
+
+  it("量不到宽度（隐藏面板）时不乱算：退固定步长", () => {
+    expect(chartLabelPlan({ plotWidth: 0, days: 30 })).toEqual({ step: 4, form: "full" });
+    expect(chartLabelPlan({ days: 90 })).toEqual({ step: 10, form: "full" });
+  });
+
+  it("formatChartDayShort：只给日号（工具提示里仍是全日期）", () => {
+    expect(formatChartDayShort("2026-09-18")).toBe("18");
+  });
+});
 
 const NOW = Date.parse("2026-09-09T12:00:00");
 

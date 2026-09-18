@@ -6884,7 +6884,7 @@ function joinDisplayedPath(dir, file) {
  */
 export function createPathInspectCache({ ttlMs = 30000, now = () => Date.now() } = {}) {
   const cache = new Map();
-  const keyOf = (runId, path) => `${runId} ${path}`;
+  const keyOf = (runId, path) => `${runId}\u0000${path}`;
   return {
     get(runId, path) {
       const hit = cache.get(keyOf(runId, path));
@@ -10178,7 +10178,7 @@ export function renderChatItem(it, thinkingOpen = false) {
       case "activity":
         html +=
           `<div class="chat-activity" role="status">` +
-          `<span class="thinking-shimmer">正在</span> <code>${esc(it.name ?? "")}</code>` +
+          `<span class="thinking-shimmer">正在</span> <code title="${esc(it.name ?? "")}">${esc(it.name ?? "")}</code>` +
           (it.peek ? ` <span class="aside-peek">${esc(truncate(String(it.peek), 72))}</span>` : "") +
           `</div>`;
         break;
@@ -10324,7 +10324,7 @@ function renderToolRow(it) {
   const body = paths + renderToolResultBody(it);
   return (
     `<details class="chat-tool${cls}">` +
-    `<summary><span class="aside-mark">${mark}</span> <code>${esc(it.name ?? "")}</code> ` +
+    `<summary><span class="aside-mark">${mark}</span> <code title="${esc(it.name ?? "")}">${esc(it.name ?? "")}</code> ` +
     `<span class="aside-peek">${peek}</span> ${gate} ${dur}</summary>${body}</details>`
   );
 }

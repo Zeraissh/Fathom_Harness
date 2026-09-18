@@ -200,6 +200,12 @@ export function formatChartDayFull(day) {
   return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
 }
 
+/** 密区间用的短标签：只给日号（区间的月份由视图标题与 tooltip 的全日期兜底）。 */
+export function formatChartDayShort(day) {
+  const d = parseLocalDay(day);
+  return d ? String(d.getDate()) : String(day ?? "");
+}
+
 export function formatCompactCount(value) {
   const n = Number(value);
   if (!Number.isFinite(n)) return "0";
@@ -233,6 +239,31 @@ export function dayLabelStep(days) {
   if (n <= 7) return 1;
   if (n <= 30) return 4;
   return 10;
+}
+
+/** 全日期标签（"9月18日" @ --font-xs）的保守宽度 */
+export const CHART_LABEL_FULL_PX = 58;
+/** 日号标签（"18"）的保守宽度 */
+export const CHART_LABEL_DAY_PX = 18;
+
+/**
+ * 日期标签的节奏计划（走查 UX-C2/O2）。
+ *
+ * 此前标签被 `overflow:hidden; text-overflow:clip` 按列宽硬切——30d/90d 必现
+ * "半个字"。修法不裁而是**按容器宽度算节奏**：间距放得下全日期就用全日期
+ * （枚数变少但整枚可读），全日期连两枚都铺不下才退日号；标签允许溢出自己
+ * 那根窄列，邻居间距由 step 保证。量不到宽度（面板隐藏）时退回固定步长。
+ */
+export function chartLabelPlan({ plotWidth, days } = {}) {
+  const n = Math.max(1, Number(days) || 7);
+  const fixed = dayLabelStep(n);
+  const w = Number(plotWidth);
+  if (!Number.isFinite(w) || w <= 0) return { step: fixed, form: "full" };
+  const colW = w / n;
+  const fullStep = Math.max(fixed, Math.ceil(CHART_LABEL_FULL_PX / colW));
+  if (fullStep <= n / 2) return { step: fullStep, form: "full" };
+  const dayStep = Math.max(fixed, Math.ceil(CHART_LABEL_DAY_PX / colW));
+  return { step: Math.min(dayStep, n), form: "day" };
 }
 
 function addUsd(current, next) {
@@ -512,7 +543,12 @@ function renderLegend(el, win) {
 function renderPlot(el, win) {
   if (!el) return;
   const axisMax = niceAxisMax(Math.max(0, ...win.columns.map((c) => c.turns)));
-  const step = dayLabelStep(win.days);
+  // 量的是上次渲染留下的列区（首次没有就退整块宽度）——y 轴那截 24px 会高估
+  // 列宽，但 58px 的全日期宽度本就保守，少一枚标签好过互相压字。
+  const measured = el.querySelector(".usage-cols")?.clientWidth || el.clientWidth;
+  const plan = chartLabelPlan({ plotWidth: measured, days: win.days });
+  const step = plan.step;
+  const dayLabel = plan.form === "full" ? formatChartDay : formatChartDayShort;
   const ticks = [axisMax, axisMax / 2, 0];
   const yHtml = ticks
     .map((t) => `<span>${escapeHtml(formatCompactCount(t))}</span>`)
@@ -532,7 +568,7 @@ function renderPlot(el, win) {
       return (
         `<button type="button" class="usage-col" data-day="${escapeHtml(col.day)}" aria-label="${escapeHtml(aria)}">` +
         `<span class="usage-col-track"><span class="usage-col-stack" style="height:${heightPct}%">${segs}</span></span>` +
-        `<span class="usage-col-label${showLabel ? "" : " is-muted"}">${showLabel ? escapeHtml(formatChartDay(col.day)) : ""}</span>` +
+        `<span class="usage-col-label${showLabel ? "" : " is-muted"}">${showLabel ? escapeHtml(dayLabel(col.day)) : ""}</span>` +
         `<span class="usage-tip" hidden><strong>${escapeHtml(formatChartDayFull(col.day))}</strong>` +
         (col.turns
           ? col.parts
@@ -570,6 +606,28 @@ function renderPlot(el, win) {
     col.addEventListener("focus", show);
     col.addEventListener("mouseleave", hide);
     col.addEventListener("blur", hide);
+  }
+
+  /**
+   * 标签节奏跟着列宽走（chartLabelPlan），所以宽度变了要重画——否则拉窗后
+   * 旧节奏可能让标签互相压字。jsdom 没有 ResizeObserver，守卫后跳过；
+   * 关闭面板时元素一并消失，观察器随元素回收。
+   */
+  if (typeof ResizeObserver === "function") {
+    if (!el.__usagePlotRO) {
+      el.__usagePlotLastW = measured;
+      el.__usagePlotWin = win;
+      el.__usagePlotRO = new ResizeObserver(() => {
+        const nowW = el.querySelector(".usage-cols")?.clientWidth || el.clientWidth;
+        if (Math.abs(nowW - (el.__usagePlotLastW ?? 0)) < 8) return;
+        el.__usagePlotLastW = nowW;
+        renderPlot(el, el.__usagePlotWin ?? win);
+      });
+      el.__usagePlotRO.observe(el);
+    } else {
+      el.__usagePlotWin = win;
+      el.__usagePlotLastW = measured;
+    }
   }
 }
 

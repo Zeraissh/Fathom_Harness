@@ -123,7 +123,7 @@
 - 花费芯片 `这次约 $0.0017 · 本机今日 $5.59`（149/170）、工作目录（139/175）、模型名（124/139）：**都有省略号 + 完整 title**，为设计内截断。
 - 侧栏会话行、项目分组、文件树长名（含我的超长中文名种子）、tab、命令中心、通知——静态清单核对有 `ellipsis/min-width:0/overflow-wrap` 守卫。
 
-### UX-C2 静态未复现批 🔶（都带 file:line，按撞见概率排序）
+### UX-C2 溢出批 ✅（原为静态条目；2026-09-18 深夜全部修复并活页 A/B 验收，见 §10）
 1. **O1 预览坞顶条**：`.ac-title { flex: 0 0 auto }` 使 `.ac-name` 的三件套成死代码（父不缩，子不被裁）——超长文件名会把面板撑出右列（`features/file-preview.js:164-205`、`styles.css:9156-9171`）。
 2. **O2 消耗图表日期**：`.usage-col-label { white-space:nowrap; overflow:hidden; text-overflow: clip }`（`styles.css:4156-4164`）——30d/90d 档日期被硬切（每列 8–23px，标签 ≈55px）。
 3. **O3/O7 长 MCP 工具名**：`.chat-tool > summary > code` 归入"不可省略不许换行"族（`styles.css:6666-6668`、`app.js:10192`），67 字符的 MCP 全名（本仓 stm32 服务就有）会把行撑出卡片；活动行同病（`app.js:10043-10048`）。
@@ -181,4 +181,21 @@
 - split 档预览列仅 ~141px（`splitRatio 0.5` × 最小右列 282）：工具条按钮单只 134px 都放不下，已用换行+横滚保证"够得着"；真要好看需调 splitRatio 或做列间拖拽（spec 提过"列间可拖"，未实现）。
 - 坞在右列里的挂载路径（`railHosted` 分支）**全仓零测试覆盖**（`ui-preview-dock.test.ts` 锁的还是搬列前的骨架）——B1 能溜过去的原因，后续加锁更稳。
 - 并排视觉顺序是 **预览 | 树**（树靠窗口缘，与 tabbed 档一致）；与 spec §4.1.1 草图的书写顺序相反，属实现现状，未改。
+
+## 10. 溢出批修复（2026-09-18 深夜，用户勾选「溢出批也修了」）
+
+§5 UX-C2 的 O2–O10 全部落地；**8/8 活页 A/B 验收**（`uxaudit/ux-verify-overflow.mjs`：修复态测一次，注入「修复前」样式覆盖再测一次，期望 B 出现溢出/被裁——窄上下文条目放进 260px 容器，还原右列/审批坞的真实约束）：
+
+| 条 | 改动 | 活页 A/B（scrollWidth/clientWidth） |
+|---|---|---|
+| O2 | `.usage-col-label` 不裁（overflow:visible）+ 新增 `chartLabelPlan`：按容器宽算标签节奏（全日期≈58px → 日号≈18px → 减枚数），renderPlot 量宽 + ResizeObserver 重画 | 窄视口 7d@260px 列宽 37 → 步长 2（=ceil(58/37)），标签不重叠、无中间裁切 |
+| O3 | `.chat-tool > summary > code` 可收缩 + ellipsis（`title` 补全文） | 258/258 vs 模拟修复前 543/258 |
+| O4 | `.tool-headline` min-width:0 + ellipsis | head 1114/240 出省略号、摘要未撑破；模拟前撑破 |
+| O5 | `.approval-tool-name` `overflow-wrap:anywhere`（选择换行，审批要看清文件名） | 258/258 vs 984/258 |
+| O6 | `.chat-sources .md-table-wrap` overflow-x:auto（`.md` 祖先要求够不着它） | aside 未撑破、wrap 横滚 |
+| O7 | `.chat-activity code` 可收缩 + ellipsis（peek 那截早有守卫，名字这截没有） | 260/260 vs 495/260 |
+| O9 | `.campaign-chip-title` max-width 18rem + ellipsis（chip 加 max-width:100%） | chip 306≤709 出省略号；模拟前 chip=709 |
+| O10 | `.settings-model-copy strong` `overflow-wrap:anywhere`（small 早有守卫） | 修复后 copy/row 均未撑破；模拟前均撑破 |
+
+单测 +13（`ui-overflow-guards` ×8 守卫锁 + `ui-usage` ×5 标签计划表）；全量对基线：差异全在既有抖动名单内（ui-server 三条轮转），**零新增失败**。顺带修一处卫生问题：`app.js` 里 `createPathInspectCache` 的键分隔符此前是**裸 NUL 字节**（JSON `NUL` 被解码成实字符写进源码），运行语义相同但会让 grep 把整文件当二进制——已改成 `NUL` 转义。
 

@@ -1163,6 +1163,16 @@ body.sidebar-collapsed .sidebar {
   background: var(--surface-0);
   padding: 4px 8px;
   font-size: var(--font-sm);
+  max-width: 100%;
+  min-width: 0;
+}
+/* 子对话标题是整句任务描述且原样注入——单枚 chip 不许比 strip 还宽
+   （走查 UX-C2/O9）。 */
+.campaign-chip-title {
+  max-width: 18rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .campaign-chip--running { border-color: color-mix(in srgb, var(--accent) 42%, var(--border-1)); }
 .campaign-chip-enter,
@@ -2005,8 +2015,11 @@ body.sidebar-collapsed .sidebar {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 6px;
+  min-width: 0;
 }
-.approval-tool-name { font-weight: 600; font-size: var(--font-md); }
+/* 无分隔符长文件名（Windows 允许 255 字符）此前不换行、压出卡框（走查 UX-C2/O5）：
+   审批卡必须让人看清改哪个文件——选择换行而不是省略。 */
+.approval-tool-name { font-weight: 600; font-size: var(--font-md); min-width: 0; overflow-wrap: anywhere; }
 
 .approval-result { font-size: var(--font-xs); padding: 1px 6px; border-radius: var(--radius-xs); }
 .approval-result--allow { background: var(--green-bg); color: var(--green); }
@@ -2698,6 +2711,7 @@ body.sidebar-collapsed .sidebar {
   align-self: flex-start;
   width: fit-content;
   max-width: 100%;
+  min-width: 0;
   gap: 0.4em;
   margin: 0.4em 0;
   padding: 0;
@@ -2705,6 +2719,14 @@ body.sidebar-collapsed .sidebar {
   background: transparent;
   color: var(--text-2);
   font-size: var(--font-sm);
+}
+/* 「正在 <工具>」的工具名同上可省略（走查 UX-C2/O7）——peek 那截早有守卫，
+   名字这截此前没有。 */
+.chat-activity code {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .live-text {
@@ -4186,8 +4208,9 @@ body.sidebar-collapsed .sidebar {
   font-size: var(--font-xs);
   text-align: center;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: clip;
+  /* 不裁（走查 UX-C2/O2）：标签居中、允许溢出自己那根窄列——邻居间距由
+     chartLabelPlan 的步长保证。此前按列宽裁剪，把 30d/90d 的日期切成"半个字"。 */
+  overflow: visible;
 }
 .usage-col-label.is-muted { visibility: hidden; }
 .usage-tip {
@@ -4505,6 +4528,12 @@ body.sidebar-collapsed .sidebar {
 .tool-headline {
   display: inline-block;
   white-space: nowrap;
+  /* 长 bash（动词不截断 + 目标 28 字）此前在列右缘无省略号硬切（走查 UX-C2/O4）：
+     作为 flex 子项可收缩、出省略号。 */
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .tool-kw,
 .tool-target {
@@ -5290,7 +5319,9 @@ body.sidebar-collapsed .sidebar {
   color: var(--accent);
   margin: 0 0 var(--space-sm);
 }
-.chat-sources .md-table-wrap { margin: 0; }
+/* 来源卡的表不在 .md 树里——.md-table 那套横滚规则够不着（走查 UX-C2/O6）：
+   长 URL 的宽表在这里自己横滚，不撑破对话列。 */
+.chat-sources .md-table-wrap { margin: 0; overflow-x: auto; }
 .chat-sources-export { margin-top: var(--space-sm); }
 .chat-msg--assistant .md-table-wrap {
   margin: var(--space-sm) 0;
@@ -6690,9 +6721,18 @@ body.sidebar-collapsed .sidebar {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.chat-tool > summary > code,
+/* 放行徽章与状态标记：不可省略、不许换行 */
 .chat-tool-gate,
 .chat-tool > summary > .aside-mark { flex: 0 0 auto; white-space: nowrap; }
+/* 工具名可省略（走查 UX-C2/O3）：MCP 全名 `server__tool` 可达 67 字符，撑出去
+   会钻出工具卡。title 由渲染层补全文。 */
+.chat-tool > summary > code {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .chat-tool--err { border-color: var(--red); }
 .chat-tool--live { border-style: dashed; }
 .chat-tool .chat-body {
@@ -10389,7 +10429,7 @@ button.cc-card:hover { border-color: var(--border-2); }
   gap: var(--space-xs);
   min-width: 0;
 }
-.settings-model-copy strong { font-size: var(--font-md); font-weight: 600; color: var(--text-1); }
+.settings-model-copy strong { font-size: var(--font-md); font-weight: 600; color: var(--text-1); overflow-wrap: anywhere; }
 .settings-model-copy small { font-size: var(--font-xs); color: var(--text-3); word-break: break-all; }
 .settings-model-actions { display: flex; gap: var(--space-xs); flex-shrink: 0; }
 .settings-badge {
