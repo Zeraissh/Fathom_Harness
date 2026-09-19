@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>各目录代码行数（.ts/.js/.css/.html）</title>
+<style>
+  :root { --bar: #3d6fb4; --bar2: #8aa8cf; --ink: #1d232b; --muted: #66707c; }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 28px 32px 40px; background: #f7f8fa; color: var(--ink);
+         font: 14px/1.5 -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  .sub { color: var(--muted); margin: 0 0 24px; font-size: 13px; }
+  section { background: #fff; border: 1px solid #e3e6ea; border-radius: 8px; padding: 18px 20px 8px; margin-bottom: 20px; }
+  h2 { font-size: 15px; margin: 0 0 14px; font-weight: 600; }
+  .row { display: grid; grid-template-columns: 190px 1fr 108px; align-items: center; gap: 10px; margin-bottom: 9px; }
+  .name { font-family: Consolas, "Courier New", monospace; font-size: 13px; text-align: right; color: #2b323b; }
+  .track { position: relative; height: 22px; background: #f0f2f5; border-radius: 3px; }
+  .fill { height: 100%; background: var(--bar); border-radius: 3px; }
+  .fill.alt { background: var(--bar2); }
+  .val { font-family: Consolas, monospace; font-size: 13px; color: #2b323b; white-space: nowrap; }
+  .val span { color: var(--muted); font-size: 12px; }
+  footer { color: var(--muted); font-size: 12px; }
+  code { font-family: Consolas, monospace; }
+</style>
+</head>
+<body>
+<h1>各目录代码行数（.ts / .js / .css / .html）</h1>
+<p class="sub">stats-sandbox · 317 个文件 · 169,143 行 · 未剥离注释与空行</p>
+
+<section>
+  <h2>按顶层模块（含全部子目录）</h2>
+  <div id="top"></div>
+</section>
+
+<section>
+  <h2>按目录自身（不含子目录）</h2>
+  <div id="dir"></div>
+</section>
+
+<section>
+  <h2>按扩展名</h2>
+  <div id="ext"></div>
+</section>
+
+<p class="footer-line"><footer>总行数以换行切分计数（末尾无换行的残行计 1 行）；非空行在本表中未单独绘制。统计已排除本图表自身（<code>loc-chart.html</code>，85 行）与 <code>loc-report.md</code>。</footer></p>
+
+<script>
+const topData = [
+  { name: "test", lines: 68478, files: 166 },
+  { name: "ui",   lines: 66052, files: 60 },
+  { name: "src",  lines: 34613, files: 91 }
+];
+const dirData = [
+  { name: "./test",               lines: 68435, files: 165 },
+  { name: "./src",                lines: 29785, files: 66 },
+  { name: "./ui/public",          lines: 29138, files: 3 },
+  { name: "./ui",                 lines: 19671, files: 23 },
+  { name: "./ui/public/features", lines: 15701, files: 26 },
+  { name: "./src/tools",          lines: 4828,  files: 25 },
+  { name: "./ui/public/core",     lines: 1340,  files: 7 },
+  { name: "./ui/public/dom",      lines: 202,   files: 1 },
+  { name: "./test/fixtures",      lines: 43,    files: 1 }
+];
+const extData = [
+  { name: ".ts",   lines: 122830, files: 283 },
+  { name: ".js",   lines: 29354,  files: 32 },
+  { name: ".css",  lines: 10925,  files: 1 },
+  { name: ".html", lines: 6034,   files: 1 }
+];
+
+function render(id, rows, alt) {
+  const max = Math.max(...rows.map(r => r.lines));
+  document.getElementById(id).innerHTML = rows.map(r => `
+    <div class="row">
+      <div class="name">${r.name}</div>
+      <div class="track"><div class="fill${alt ? " alt" : ""}" style="width:${(r.lines / max * 100).toFixed(1)}%"></div></div>
+      <div class="val">${r.lines.toLocaleString()} <span>/ ${r.files} 文件</span></div>
+    </div>`).join("");
+}
+render("top", topData, false);
+render("dir", dirData, true);
+render("ext", extData, false);
+</script>
+</body>
+</html>

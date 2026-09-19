@@ -197,10 +197,12 @@ export function createPreviewDock(opts = {}, env = {}) {
   root.appendChild(handle);
   root.appendChild(head);
   root.appendChild(body);
-  // 停靠位是 #center-row（对话主列的横向容器）；测试/降级环境一路回退到 body
+  // 停靠位：P1 起优先挂进 #right-rail 的预览槽（右列唯一 owner，与文件树共用宽度契约）。
+  // 回退链保留 #center-row → #main-panel → body，供未升级的宿主与测试环境用。
   const mount =
-    doc.getElementById("center-row") ?? doc.getElementById("main-panel") ?? doc.body;
-  mount?.appendChild(root);
+    doc.getElementById("right-rail") ?? doc.getElementById("center-row") ?? doc.getElementById("main-panel") ?? doc.body;
+  const slot = doc.getElementById("right-rail-preview");
+  (slot ?? mount)?.appendChild(root);
 
   const revealBtn = doc.createElement("button");
   revealBtn.type = "button";
@@ -215,7 +217,16 @@ export function createPreviewDock(opts = {}, env = {}) {
   (doc.body ?? mount)?.appendChild(revealBtn);
 
   // ---- 宽度 ----
+  // P1：右列成为唯一 owner 之后，坞不再自己写宽度、不再自己拖——宽度由
+  // #right-rail 的仲裁器（core/rail-policy.js）决定，拖拽柄在右列左缘。
+  // 坞自带的 handle、比例记忆与格式化函数保留给"未升级宿主"（回退链）用，
+  // 也供右列复用同一套拖拽数学（DRY）。
+  const railHosted = () => root.parentElement?.id === "right-rail-preview";
   function applyWidth() {
+    if (railHosted()) {
+      root.style.width = "";
+      return;
+    }
     root.style.width = formatDockWidth(fraction);
   }
   applyWidth();
@@ -254,7 +265,9 @@ export function createPreviewDock(opts = {}, env = {}) {
   // ---- 开 / 收起 / 关 ----
   function syncRevealChrome() {
     const shown = open && !collapsed;
-    revealBtn.hidden = !(open && collapsed);
+    // 走查 UX-B4/E14：进了右列之后，浮出钮（fixed 钉窗口右上角）与右列的收起键
+    // 像素级打架——让位给「预览」tab（它广播 preview:reveal，见下方监听）。
+    revealBtn.hidden = railHosted() ? true : !(open && collapsed);
     revealBtn.setAttribute("aria-expanded", String(shown));
     closeBtn.setAttribute("aria-expanded", String(shown));
   }
@@ -284,7 +297,24 @@ export function createPreviewDock(opts = {}, env = {}) {
     if (isNarrow()) root.classList.add("preview-dock--narrow");
     else root.classList.remove("preview-dock--narrow");
     syncRevealChrome();
+    // 挂在 #right-rail 里时，坞打开必须让右列切到「预览」面板——否则列还停在
+    // 「文件」上，CSS 会把坞整个 display:none，表现为"点了文件没反应"（P4 第一条）。
+    // 用事件而不是直接改 DOM：右列状态归它的所有者（index.html 的 railPref），
+    // 坞绕过它写 data-panel 会在下一次 paintRightRail 被覆盖。
+    if (railHosted() && typeof CustomEvent === "function") {
+      root.dispatchEvent(new CustomEvent("preview:open", { bubbles: true }));
+    }
   }
+
+  /**
+   * 走查 UX-B4/E14：右列「预览」tab 广播 preview:reveal——把收起的坞唤回。
+   * 浮出钮在 railHosted 下已让位（fixed 钉窗口右上角会和右列收起键打架），
+   * 这条就是它的替代入口；只在真有内容时响应（没加载过文件不该拉出空面板）。
+   */
+  doc.addEventListener("preview:reveal", () => {
+    if (!railHosted()) return;
+    if (open && collapsed) openDock();
+  });
 
   function finishHide({ clear } = { clear: false }) {
     closeTimer = 0;
@@ -332,6 +362,8 @@ export function createPreviewDock(opts = {}, env = {}) {
 
   // ---- 拖拽调宽 ----
   handle.addEventListener("mousedown", (event) => {
+    // 挂在 #right-rail 里时宽度归右列管，坞自己的柄让位（否则两个 owner 打架）
+    if (railHosted()) return;
     if (!open || collapsed || expanded || isNarrow()) return;
     event.preventDefault();
     const container = root.parentElement;

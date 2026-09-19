@@ -3,7 +3,8 @@
  *
  * `contextTokenLimit`（env `AGENT_CONTEXT_LIMIT`，包 `guardrails.contextTokenLimit`）
  * 一直同时充当"模型能装多少"与"我们在多少处压缩"。真机实测 deepseek-v4-flash 的窗口是
- * 1,048,576；旧默认把水位钉在 150k，等于在窗口 11% 处就压。成熟 agent 的做法是
+ * 1,048,576（该名 2026-09-16 起正名为 deepseek-flash，旧名仍收，同一个窗口）；
+ * 旧默认把水位钉在 150k，等于在窗口 11% 处就压。成熟 agent 的做法是
  * **窗口已知就跟可用窗口走**（窗口 − 输出上限 − 边际），不是另设一笔"token 预算"。
  * 日消耗 / 总消耗封顶（`AGENT_TOTAL_TOKEN_BUDGET`、UI 日账本）是成本闸门，跟这里无关。
  *

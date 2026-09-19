@@ -14,6 +14,14 @@ import { resolve } from "node:path";
 
 export function coverageInclude(file) {
   const n = file.replace(/\\/g, "/").replace(/^\.\//, "");
+  /**
+   * `src/cli.ts` 排除（2026-09-19 实测 0/2053 行）：CLI 的测试全是 spawn 子进程
+   * 跑的（test/cli-*.ts），子进程里的 V8 插桩不进父进程的 lcov——**没有任何测试
+   * 在本进程里加载它**。于是凡改动它的 PR 这门必红，红灯却说不出一句有用的话。
+   * 它的行为由那批 spawn 用例守（退出码 / --json / 收尾 durable / 计划门都各有锁）；
+   * 与 vitest 配置里 `ui/serve.ts` 的排除同性质：入口文件的覆盖记在它调用的模块上。
+   */
+  if (n === "src/cli.ts") return false;
   if (n.startsWith("src/") && n.endsWith(".ts") && !n.endsWith(".d.ts")) return true;
   if (/^ui\/[^/]+\.ts$/.test(n) && !n.endsWith(".d.ts")) return true;
   return false;
@@ -128,9 +136,18 @@ export function gitDiff(base, cwd = process.cwd()) {
     cwd,
     encoding: "utf8",
     shell: false,
+    /**
+     * 默认 maxBuffer 是 1MB。分支 diff 一旦越过它，spawnSync 交回的是
+     * `status=null + error=ENOBUFS + 空 stderr`——旧实现只报 stderr 与 status，
+     * 于是错误变成一句 `git diff failed (null)`，看日志的人只会去查覆盖率。
+     * 这条 PR 就长期红在这里（分支 diff 1.2MB），而不是红在任何未覆盖行上。
+     */
+    maxBuffer: 256 * 1024 * 1024,
   });
   if (result.status !== 0) {
-    throw new Error(result.stderr || `git diff failed (${result.status})`);
+    // 真因优先于 status：ENOBUFS / ENOENT 这类错误的 status 是 null，报出来等于没报
+    const why = result.error ? String(result.error.message ?? result.error) : result.stderr;
+    throw new Error(why || `git diff failed (${result.status})`);
   }
   return result.stdout ?? "";
 }

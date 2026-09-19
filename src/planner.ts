@@ -611,6 +611,8 @@ export async function runStructuredPlanner(
     // 同 verifier：§5.2 决定 3，拆解者也不许把"该问谁"变成"问委托方"
     // planner 只读拆解：与核查者同一条不变量，edit_file 不进它的工具面
     tools: [...withoutEditFile(withoutAskUser(roleBase.tools)), createShardsTool()],
+    // 同 verifier：执行者的「圈内只读 bash 免卡」不得漏进拆解者的只读面。
+    readOnlyShellAutoAllow: false,
     terminalTool: SHARDS_TOOL_NAME,
     runBudget: createRunBudget({
       ...(cfg.maxTotalTurns !== undefined ? { maxTurns: cfg.maxTotalTurns } : {}),
@@ -920,6 +922,8 @@ export async function runPlanner(
     ...roleBase,
     // 同 verifier：§5.2 决定 3，拆解者也不许把"该问谁"变成"问委托方"
     tools: [...withoutEditFile(withoutAskUser(roleBase.tools)), createPlanTool()],
+    // 同 verifier：执行者的「圈内只读 bash 免卡」不得漏进拆解者的只读面。
+    readOnlyShellAutoAllow: false,
     terminalTool: PLAN_TOOL_NAME,
     runBudget: createRunBudget({
       ...(cfg.maxTotalTurns !== undefined ? { maxTurns: cfg.maxTotalTurns } : {}),

@@ -22,6 +22,21 @@
   未登记模型 `usd: null`（绝不按 0 计）；Web `run_end.cost` + 用量脚注 + 台账字段 +
   `agent_harness_cost_usd_total` / `_unpriced_tokens_total` 指标。**仍开**：持久日预算账、
   p50/p95/p99 仪表盘、SLO 告警。
+- **DeepSeek 价表更新：改名 + 按官方峰值调价**。正名 `deepseek-flash`（V4.1-Flash，自带 Vision），
+  旧名 `deepseek-v4-flash` / `deepseek-v4-flash-vision-exp` 官方已把对应模型退役、请求由 V4.1-Flash
+  承接，本表按同价登记所以旧配置继续算得对；`deepseek-v4-pro` 不认图，与代码里的
+  `nameSuggestsVision()` 一致。四档单价按**峰值**登记（官方注：谷价 = 峰价/2，峰时段为工作日
+  01:00–04:00 与 06:00–10:00 UTC）——宁可高估也不在峰段把花费画低，所以夜间与周末的账会显示成
+  实际的两倍；要谷价用 `AGENT_PRICE_TABLE` 覆盖。缓存窗口登记表同步加 `deepseek-flash`
+  （1,048,576 仍取自真机 400 报文，比官方那个 1M 精确），LiteLLM 刷新别名同步加
+  `deepseek/deepseek-flash`。
+  **同时补了一条漂移锁**（`test/pricing.test.ts`）：`pricing.ts` 的 `BUILTIN_CORE` 与
+  `vendor-catalog.ts` 的 `VENDOR_PRESETS` 重复登记同一批模型，运行时前者胜出、后者被静默过滤——
+  也就是说只改一处不会报错也不会生效。测试逐条比对重叠模型的四档单价与 `asOf`，漏改一处即红。
+- **`.env.cloud` 与本机重新对齐**：云端此前不钉 `AGENT_MODEL`，理由写的是「本机也没钉、两边同走
+  代码默认」——本机 `.env` 已显式钉 `deepseek-flash`，于是云端实际跑 `claude-opus-4-8`、本机跑
+  Flash，正是该注释声称要避免的两个档。现改为两边都显式钉同一个，并撤掉指着退役模型名的
+  `AGENT_VISION_MODEL` 钉。
 
 
 - **领域包可声明恢复策略**：`DomainPack.recovery`，逐字段三级解析 env > 包 > 默认（8 / 3 / 1），

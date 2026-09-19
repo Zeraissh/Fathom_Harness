@@ -4,7 +4,7 @@
  *
  * 阶段二新增:
  *   R-03: deriveOverview — 概览模型（finalStatus, resultSummary, verdict三值, 待介入事项, usage）
- *   R-04: deriveLogEntries / toggleEntryCollapsed — 日志分层与折叠
+ *   R-04: 日志分层（随「运行详情」抽屉于 2026-09-18 下线）
  *   R-05: 无障碍语义静态断言（tabindex/role/aria-selected/label/aria-live/:focus-visible）
  *   R-06: WCAG 对比度测试（从 styles.css 解析色对，实算相对亮度）
  *   R-07: 视觉收敛 — CSS 无大面积洋红背景
@@ -34,9 +34,9 @@ import {
   markApprovalResolved,
   expirePendingApprovals,
   deriveOverview,
-  deriveLogEntries,
-  toggleEntryCollapsed,
-  isEntryCollapsedByDefault,
+  writeAnnouncement,
+  artifactWriteState,
+  editHunksFromTimeline,
   deriveRunListItems,
   filterRunsByStatus,
   mergeForkedFollowUp,
@@ -137,12 +137,11 @@ describe("reduceEvent", () => {
       reset: ["审批放行规则"],
       kind: "fork",
     });
-    const [entry] = deriveLogEntries(state);
-    expect(entry.type).toBe("run_forked");
-    expect(entry.collapsed).toBe(false);
+    const entry = state.timeline.at(-1);
+    expect(entry?.type).toBe("run_forked");
   });
 
-  it("同 run 热恢复事件写 lineage.kind=same-run 并默认展开", () => {
+  it("同 run 热恢复事件写 lineage.kind=same-run", () => {
     let state = createInitialState("r1", "热恢复", false);
     state = reduceEvent(state, {
       seq: 0,
@@ -161,15 +160,14 @@ describe("reduceEvent", () => {
     });
     expect(state.lineage?.kind).toBe("same-run");
     expect(state.status).toBe("running");
-    const [entry] = deriveLogEntries(state);
-    expect(entry.type).toBe("run_resumed");
-    expect(entry.collapsed).toBe(false);
+    const entry = state.timeline.at(-1);
+    expect(entry?.type).toBe("run_resumed");
     expect(
       deriveAssemblyBar(state, null).some((i) => i.key === "durable" && i.chip?.includes("同 run")),
     ).toBe(true);
   });
 
-  it("plan_resume 投影 kept/remaining 并默认展开", () => {
+  it("plan_resume 投影 kept/remaining", () => {
     let state = createInitialState("r1", "半截计划", false);
     state = reduceEvent(state, {
       seq: 0,
@@ -177,11 +175,10 @@ describe("reduceEvent", () => {
       event: { type: "plan_resume", kept: ["s1"], remaining: ["s2"], reason: "接着跑" },
     });
     expect(state.planResume).toEqual({ kept: ["s1"], remaining: ["s2"], reason: "接着跑" });
-    const [entry] = deriveLogEntries(state);
-    expect(entry.type).toBe("plan_resume");
-    expect(entry.collapsed).toBe(false);
-    expect(entry.kept).toEqual(["s1"]);
-    expect(entry.remaining).toEqual(["s2"]);
+    const entry = state.timeline.at(-1);
+    expect(entry?.type).toBe("plan_resume");
+    expect(entry?.kept).toEqual(["s1"]);
+    expect(entry?.remaining).toEqual(["s2"]);
   });
 
   it("SAFE-06：tool_prepared/committed 投影保留 idempotencyKey（host-lags 白名单锁）", () => {
@@ -204,7 +201,7 @@ describe("reduceEvent", () => {
         skipped: true,
       }),
     );
-    const logs = deriveLogEntries(state);
+    const logs = state.timeline;
     const prep = logs.find((e) => e.type === "tool_prepared");
     const commit = logs.find((e) => e.type === "tool_committed");
     expect(prep?.idempotencyKey).toBe("r1:tu_w");
@@ -260,31 +257,6 @@ describe("reduceEvent", () => {
     state = reduceEvent(state, sse("main", "thinking_delta", { text: "先想一步" }));
     expect(state).toBe(before);
     expect(state.timeline.map((e) => e.type)).not.toContain("thinking_delta");
-  });
-
-  it("2c. 运行中 live 思考贴到已有 assistant_thinking；重放/正文到了不贴", () => {
-    let state = createInitialState("r2c", "task", false);
-    state = reduceEvent(state, { seq: 0, source: "main", event: { type: "turn_start", turn: 1 } });
-    state = reduceEvent(state, {
-      seq: 1,
-      source: "main",
-      event: { type: "assistant_thinking", turn: 1, text: "先读", redacted: false },
-    });
-    const live = deriveLogEntries(state, { thinking: "先读再写" }).find((e) => e.type === "assistant_thinking");
-    expect(live?.text).toBe("先读再写");
-    expect(live?.live).toBe(true);
-    expect(state.timeline.find((e) => e.type === "assistant_thinking")?.text).toBe("先读");
-
-    const yielded = deriveLogEntries(state, { thinking: "先读再写", text: "结论" })
-      .find((e) => e.type === "assistant_thinking");
-    expect(yielded?.text).toBe("先读");
-    expect(yielded?.live).toBeFalsy();
-
-    const done = { ...state, status: "done" };
-    const replay = deriveLogEntries(done, { thinking: "重放不该出现" })
-      .find((e) => e.type === "assistant_thinking");
-    expect(replay?.text).toBe("先读");
-    expect(replay?.live).toBeFalsy();
   });
 
   // ---- AC3-3: verifier 事件归入核查面板 ----
@@ -570,7 +542,6 @@ describe("reduceEvent", () => {
       status: "error",
       durationMs: 42,
     });
-    expect(isEntryCollapsedByDefault(state.timeline[1])).toBe(false);
   });
 
   // ---- 10. R-01: done 事件将 pending 审批转为 expired ----
@@ -676,16 +647,17 @@ describe("reduceEvent", () => {
   });
 
   // ---- 14. 空态文案 ----
-  it("14. 空态文案: 欢迎面去说明书，模板进 starter gallery", () => {
+  it("14. 空态文案: 欢迎面只留标识与输入框（二轮走查：说明书式文案全撤）", () => {
     const appPath = join(__dirname, "..", "ui", "public", "app.js");
     const appSrc = readFileSync(appPath, "utf-8");
 
     expect(appSrc).toContain("empty-brand");
     expect(appSrc).toContain('class="empty-brand">FATHOM');
-    expect(appSrc).toContain("说要做什么，回车就发。");
-    expect(appSrc).toContain("稿件、纪要、问答都可以从这里开始。");
-    expect(appSrc).toContain("现在只能在这个窗口下指令。");
-    expect(appSrc).toContain("输入 @ 可按文件名找这个文件夹里的文件。");
+    // 2026-09-18 夜委托方点名：红框内容（四行说明 + 下一步 chip 排）全去
+    expect(appSrc).not.toContain("说要做什么，回车就发。");
+    expect(appSrc).not.toContain("稿件、纪要、问答都可以从这里开始。");
+    expect(appSrc).not.toContain("现在只能在这个窗口下指令。");
+    expect(appSrc).not.toContain("输入 @ 可按文件名找这个文件夹里的文件。");
     expect(appSrc).not.toContain("see every run to the bottom.");
     expect(appSrc).not.toContain("每一层都看得见。");
     expect(appSrc).not.toContain("尚无运行。提交一个任务开始。");
@@ -693,6 +665,11 @@ describe("reduceEvent", () => {
     expect(appSrc).not.toContain("设计模板 · 开会话时选");
     expect(appSrc).toContain("DESIGN_STARTER_TEMPLATES");
     expect(appSrc).toContain("renderStarterGallery");
+    // 欢迎面不再渲染下一步 chip（函数仍在，服务对话后场景）
+    expect(appSrc).toMatch(/export function renderEmptyState[\s\S]{0,1400}?\n\}/);
+    const welcomeBody = appSrc.slice(appSrc.indexOf("export function renderEmptyState"));
+    const bodyEnd = welcomeBody.indexOf("\n}");
+    expect(welcomeBody.slice(0, bodyEnd)).not.toContain("renderNextActionChips");
   });
 
   it("14b. FATHOM 眉标：去连字符后取前 6 位大写", () => {
@@ -1566,7 +1543,7 @@ describe("AC7 第 12 节文案", () => {
     expect(combined).toContain("发送");
     expect(app).toMatch(/main:\s*"助手"/);
     expect(app).toContain("${ROLE_PERSONA.main} · 执行");
-    expect(combined).toContain("核查 Agent");
+    // 「核查 Agent」随四因子卡/核查 tab 于 2026-09-18 下线，断言移除
     expect(combined).toContain(">允许<");
     expect(combined).toContain(">拒绝<");
     expect(combined).toContain("只能改这些文件夹");
@@ -1806,87 +1783,6 @@ describe("AC3 概览模型 deriveOverview (R-03)", () => {
 });
 
 // ---- AC4: 日志分层 deriveLogEntries / toggleEntryCollapsed (R-04) ----
-describe("AC4 日志分层 (R-04)", () => {
-  it("恢复路由保留 action/detail 并默认展开", () => {
-    let state = createInitialState("recover", "task", false);
-    state = reduceEvent(state, sse("main", "recovery_decision", {
-      reason: "stagnation",
-      action: "change_strategy",
-      detail: "停止重复调用并换路径",
-    }));
-    const [entry] = deriveLogEntries(state);
-    expect(entry.action).toBe("change_strategy");
-    expect(entry.detail).toContain("换路径");
-    expect(entry.collapsed).toBe(false);
-  });
-
-  it("20. 成功 tool_call / tool_result → collapsed=true", () => {
-    const state = makeState({
-      timeline: [
-        { seq: 0, source: "main", type: "turn_start", turn: 1 },
-        { seq: 1, source: "main", type: "tool_call", toolUseId: "t1", name: "read", input: {} },
-        { seq: 2, source: "main", type: "tool_result", toolUseId: "t1", resultContent: "ok", resultIsError: false, durationMs: 10 },
-        { seq: 3, source: "main", type: "assistant_text", text: "done" },
-      ],
-    });
-
-    const entries = deriveLogEntries(state);
-    expect(entries).toHaveLength(4);
-    // 全部成功 → 默认折叠
-    expect(entries[0].collapsed).toBe(true);  // turn_start
-    expect(entries[1].collapsed).toBe(true);  // tool_call
-    expect(entries[2].collapsed).toBe(true);  // tool_result (success)
-    expect(entries[3].collapsed).toBe(true);  // assistant_text
-  });
-
-  it("21. 失败 tool_result / approval_request / api_retry / compaction → collapsed=false", () => {
-    const state = makeState({
-      timeline: [
-        { seq: 0, source: "main", type: "tool_result", toolUseId: "t1", resultContent: "err", resultIsError: true, durationMs: 5 },
-        { seq: 1, source: "main", type: "approval_request", toolUseId: "a1", name: "bash", input: {} },
-        { seq: 2, source: "main", type: "api_retry", turn: 1, attempt: 1, reason: "timeout" },
-        { seq: 3, source: "main", type: "compaction", droppedBlocks: 10 },
-      ],
-    });
-
-    const entries = deriveLogEntries(state);
-    expect(entries).toHaveLength(4);
-    expect(entries[0].collapsed).toBe(false); // error tool_result
-    expect(entries[1].collapsed).toBe(false); // approval_request
-    expect(entries[2].collapsed).toBe(false); // api_retry
-    expect(entries[3].collapsed).toBe(false); // compaction
-  });
-
-  it("22. toggleEntryCollapsed 翻转目标 seq 的折叠状态", () => {
-    const entries = [
-      { seq: 0, source: "main", type: "turn_start", turn: 1, collapsed: true },
-      { seq: 1, source: "main", type: "tool_result", toolUseId: "t1", resultIsError: true, collapsed: false },
-    ];
-
-    const toggled = toggleEntryCollapsed(entries, 0);
-    expect(toggled[0].collapsed).toBe(false);
-    expect(toggled[1].collapsed).toBe(false);
-
-    const toggled2 = toggleEntryCollapsed(toggled, 0);
-    expect(toggled2[0].collapsed).toBe(true);
-
-    const toggled3 = toggleEntryCollapsed(entries, 1);
-    expect(toggled3[1].collapsed).toBe(true);
-  });
-
-  it("23. isEntryCollapsedByDefault 对各类条目的规则", () => {
-    expect(isEntryCollapsedByDefault({ seq: 0, source: "main", type: "turn_start", turn: 1 })).toBe(true);
-    expect(isEntryCollapsedByDefault({ seq: 0, source: "main", type: "tool_call", toolUseId: "t", name: "x", input: {} })).toBe(true);
-    expect(isEntryCollapsedByDefault({ seq: 0, source: "main", type: "tool_result", toolUseId: "t", resultIsError: false })).toBe(true);
-    expect(isEntryCollapsedByDefault({ seq: 0, source: "main", type: "assistant_text", text: "hi" })).toBe(true);
-    expect(isEntryCollapsedByDefault({ seq: 0, source: "main", type: "tool_result", toolUseId: "t", resultIsError: true })).toBe(false);
-    expect(isEntryCollapsedByDefault({ seq: 0, source: "main", type: "approval_request", toolUseId: "t", name: "x", input: {} })).toBe(false);
-    expect(isEntryCollapsedByDefault({ seq: 0, source: "main", type: "api_retry", attempt: 1, reason: "x" })).toBe(false);
-    expect(isEntryCollapsedByDefault({ seq: 0, source: "main", type: "compaction", droppedBlocks: 5 })).toBe(false);
-  });
-});
-
-// ---- AC5: WCAG 对比度测试 (R-06) ----
 describe("AC5 WCAG 对比度 (R-06)", () => {
   /**
    * WCAG 2.2 相对亮度公式：
@@ -2336,9 +2232,11 @@ describe("AC6 无障碍语义 (R-05)", () => {
     // 空态分支摘掉 role/aria-label——空壳 listbox 违反 aria-required-children（critical）
     expect(appSrc).toMatch(/removeAttribute\("role"\)/);
     expect(appSrc).toMatch(/removeAttribute\("aria-label"\)/);
-    // 有 option 子项时才挂上 listbox 身份
-    expect(appSrc).toMatch(/setAttribute\("role", "listbox"\)/);
-    expect(appSrc).toMatch(/setAttribute\("aria-label", "项目与对话"\)/);
+    // 走查 UX-B4/E15：listbox 身份下移到**条目容器**——分组头要放可聚焦的展开钮，
+    // 而 listbox 的子项只允许 option/group（axe aria-required-children critical）；
+    // 分组壳自身保留 role=group
+    expect(appSrc).toMatch(/class="run-group-items" role="listbox"/);
+    expect(appSrc).toMatch(/setAttribute\("role", "group"\)/);
     // 静态 HTML 不得预挂 role，否则加载态即违规
     const html = readFileSync(join(__dirname, "..", "ui", "public", "index.html"), "utf-8");
     expect(html).not.toMatch(/id="run-list"[^>]*role="listbox"/);
@@ -2579,8 +2477,9 @@ describe("V-20 图标：单色排印符，不用 emoji", () => {
 
   it("CLI 的记号在 Web 侧同样在场（终端与网页看到同一套符号）", () => {
     const app = readFileSync(join(__dirname, "..", "ui", "public", "app.js"), "utf-8");
-    // 对齐 src/cli.ts:512-591 的符号表
-    for (const mark of ["──", "→", "✓", "✗", "⚠", "⟳", "■", "✔", "✘", "⋯", "◈", "↺"]) {
+    // 对齐 src/cli.ts 的符号表。日志视图专属的记号（── ⟳ ⬡ ✽）随「运行详情」
+    // 抽屉于 2026-09-18 下线，不再要求 Web 侧在场。
+    for (const mark of ["→", "✓", "✗", "⚠", "■", "✔", "✘", "⋯", "◈", "↺"]) {
       expect(app, `缺少记号 ${mark}`).toContain(mark);
     }
   });
@@ -2878,52 +2777,6 @@ describe("AC2-11 长日志的单帧预算靠 content-visibility 守住", () => {
  * 完全正常的结构化交付画成"核查者收口不稳"，即 V-04（界面对委托方说谎）。
  * 所以按 B1 的办法抠源码逐值比对，而不是靠人记得改两处。
  */
-describe("§2.1 · 裁决获得路径口径一致锁", () => {
-  const appSrc = readFileSync(join(__dirname, "..", "ui", "public", "app.js"), "utf-8");
-  /** 事实源：src/verifier.ts 的 VerdictRecovery */
-  const RECOVERIES = ["tool", "direct", "wrapup", "reformat", "failed"];
-
-  it("label 表覆盖每一个 recovery 取值——漏一个就会渲染成裸值", () => {
-    // 文件里有不止一个 `const label = {`，锚到本块特有的首个取值上
-    const start = appSrc.indexOf('tool: "首轮直接交付');
-    expect(start, "找不到裁决获得路径的 label 表").toBeGreaterThan(0);
-    const block = appSrc.slice(start, appSrc.indexOf("}", start));
-    for (const r of RECOVERIES) {
-      expect(block, `label 表缺 ${r}`).toContain(`${r}:`);
-    }
-  });
-
-  it("健康路径恰好是 tool 与 direct——多一个少一个都会让界面说谎", () => {
-    const m = appSrc.match(/HEALTHY_RECOVERY\s*=\s*new Set\(\[([^\]]*)\]\)/);
-    expect(m, "找不到 HEALTHY_RECOVERY 集合").toBeTruthy();
-    const values = m[1].match(/"([a-z]+)"/g).map((s) => s.replace(/"/g, "")).sort();
-    expect(values).toEqual(["direct", "tool"]);
-  });
-
-  it("兜底路径不得被算作健康——它们正是这块面板要报的事", () => {
-    const m = appSrc.match(/HEALTHY_RECOVERY\s*=\s*new Set\(\[([^\]]*)\]\)/);
-    for (const bad of ["wrapup", "reformat", "failed"]) {
-      expect(m[1], `${bad} 不该在健康集合里`).not.toContain(`"${bad}"`);
-    }
-  });
-
-  it("提示语不再写死「非首轮直接给出」——tool 也是首轮，那句话已经不成立了", () => {
-    expect(appSrc).not.toContain("非「首轮直接给出」说明核查者收口不稳");
-    expect(appSrc).toContain("有轮次靠兜底才拿到裁决");
-  });
-});
-
-
-/**
- * 直播条冻结（2026-08-15 实测）的**壳侧**回归锁。
- *
- * 纯函数那半边（revealedWindow）在 ui-patch 里锁着了，但真正把屏幕冻住的
- * 是 index.html 里 `arrived` 的取法——原来取自**缓冲长度**，而缓冲有上限，
- * 于是撞上限那刻 arrived 停止增长 → revealed 不变 → changed 恒 false → 不再重绘。
- *
- * 这一段没有 DOM 可断言（它是控制器接线），所以照 B1 那条口径抠源码。
- * 不加这条，改回 `.length` 的那天全套测试照样全绿。
- */
 describe("直播条：arrived 必须取自累计计数，不是缓冲长度", () => {
   const htmlSrc = readFileSync(join(__dirname, "..", "ui", "public", "index.html"), "utf-8");
 
@@ -3182,14 +3035,6 @@ describe("MODEL-01a 端点降级", () => {
     });
   });
 
-  it("默认展开：这一行是后面所有轮次的前提，折起来等于藏了变量", () => {
-    const state = makeState({
-      timeline: [{ seq: 0, source: "model", type: "model_fallback", from: "a", to: "b", reason: "503", turn: 1 }],
-    });
-    expect(deriveLogEntries(state)[0].collapsed).toBe(false);
-    expect(isEntryCollapsedByDefault({ seq: 0, source: "model", type: "model_fallback", from: "a", to: "b" })).toBe(false);
-  });
-
   /**
    * 降级不是重试。两者都表示"这一轮不顺利"，但一个是同一家再来一次、
    * 另一个是换了一家——混进同一个计数，事后就答不出"这次运行到底是谁应答的"。
@@ -3341,23 +3186,6 @@ describe("MODEL-01a 端点降级", () => {
       .toBe("main * · acme/app");
     expect(deriveAssemblyBar(state, null).find((i) => i.key === "git")?.chip)
       .toBe("main * · acme/app");
-  });
-});
-
-describe("formatMcpServersLine", () => {
-  it("跳过缺 token 的 server 照实写原因，不说成未连接", () => {
-    expect(formatMcpServersLine({
-      configured: true,
-      servers: [{ name: "github", status: "skipped", reason: "missing GITHUB_PERSONAL_ACCESS_TOKEN" }],
-    })).toBe("github（skipped：missing GITHUB_PERSONAL_ACCESS_TOKEN）");
-  });
-
-  it("已连接带工具数；空列表才说未连接", () => {
-    expect(formatMcpServersLine({
-      configured: true,
-      servers: [{ name: "stm32", status: "connected", toolCount: 12 }],
-    })).toBe("stm32（connected，12 工具）");
-    expect(formatMcpServersLine({ configured: true, servers: [] })).toBe("已配置但未连接");
   });
 });
 
@@ -3541,5 +3369,106 @@ describe("pickWelcomeWorkdir", () => {
       hostWorkdirIsHarness: false,
       hasPref: false,
     })).toBe(repo);
+  });
+});
+
+// ---- P3: 写盘成功的播报文案 ----
+describe("P3 已写出播报", () => {
+  it("单条：已写出 <basename>", () => {
+    expect(writeAnnouncement(["out/hello-b1.txt"])).toBe("已写出 hello-b1.txt");
+  });
+  it("多条：只念第一条 + 计数（整句念完太吵）", () => {
+    expect(writeAnnouncement(["a/x.html", "a/y.css", "a/z.js"]))
+      .toBe("已写出 x.html 等 3 个文件");
+  });
+  it("空/非数组 → 空串（调用方据此不播）", () => {
+    expect(writeAnnouncement([])).toBe("");
+    expect(writeAnnouncement(null)).toBe("");
+    expect(writeAnnouncement([""])).toBe("");
+  });
+  it("不说「产物画布已打开」这类视图事件", () => {
+    expect(writeAnnouncement(["a.html"])).not.toMatch(/画布|已打开/);
+  });
+});
+
+// ---- P3: 路径相对本 run 的写盘状态（三态）----
+describe("P3 artifactWriteState 三态", () => {
+  const call = (toolUseId, path) => ({ seq: 1, source: "main", type: "tool_call", name: "write_file", toolUseId, input: { path } });
+  const res = (toolUseId, isError) => ({ seq: 2, source: "main", type: "tool_result", toolUseId, resultContent: isError ? "boom" : "ok", resultIsError: isError });
+
+  it("有成功的写结果 → written", () => {
+    const st = makeState({ timeline: [call("t1", "out/a.txt"), res("t1", false)] });
+    expect(artifactWriteState(st, "out/a.txt")).toBe("written");
+  });
+
+  it("只有调用、没有成功结果（在等批准/失败）→ intended", () => {
+    expect(artifactWriteState(makeState({ timeline: [call("t1", "out/a.txt")] }), "out/a.txt")).toBe("intended");
+    expect(artifactWriteState(makeState({ timeline: [call("t1", "out/a.txt"), res("t1", true)] }), "out/a.txt")).toBe("intended");
+  });
+
+  it("本 run 没提过这个路径 → unknown（工作区既有文件走这条，不许说成没写盘）", () => {
+    const st = makeState({ timeline: [call("t1", "out/a.txt"), res("t1", false)] });
+    expect(artifactWriteState(st, "out/other.txt")).toBe("unknown");
+    expect(artifactWriteState(st, "src/main.rs")).toBe("unknown");
+    expect(artifactWriteState(null, "x")).toBe("unknown");
+  });
+
+  it("反斜杠与正斜杠视为同一路径", () => {
+    // 用 fromCharCode 而不是字面反斜杠：这条测试本身要断言转义，写法上别再依赖转义
+    const winPath = `out${String.fromCharCode(92)}a.txt`;
+    const st = makeState({ timeline: [call("t1", winPath), res("t1", false)] });
+    expect(artifactWriteState(st, "out/a.txt")).toBe("written");
+  });
+});
+
+// ---- P4: 编辑的具体改动（不需要 before 内容）----
+describe("P4 editHunksFromTimeline", () => {
+  const editCall = (toolUseId, path, oldS, newS) => ({
+    seq: 1, source: "main", type: "tool_call", name: "edit_file", toolUseId,
+    input: { path, old_string: oldS, new_string: newS },
+  });
+  const res = (toolUseId, isError = false) => ({
+    seq: 2, source: "main", type: "tool_result", toolUseId,
+    resultContent: isError ? "boom" : "ok", resultIsError: isError,
+  });
+
+  it("成功的 edit_file → 按路径收到 old/new", () => {
+    const st = makeState({ timeline: [editCall("t1", "a/b.ts", "let x = 1", "let x = 2"), res("t1")] });
+    const m = editHunksFromTimeline(st);
+    expect(m.get("a/b.ts")).toEqual([{ oldText: "let x = 1", newText: "let x = 2" }]);
+  });
+
+  it("失败的编辑不算改动", () => {
+    const st = makeState({ timeline: [editCall("t1", "a/b.ts", "x", "y"), res("t1", true)] });
+    expect(editHunksFromTimeline(st).size).toBe(0);
+  });
+
+  it("同一文件多次编辑按发生顺序累积", () => {
+    const st = makeState({
+      timeline: [
+        editCall("t1", "a.ts", "1", "2"), res("t1"),
+        editCall("t2", "a.ts", "2", "3"), res("t2"),
+      ],
+    });
+    expect(editHunksFromTimeline(st).get("a.ts")).toEqual([
+      { oldText: "1", newText: "2" },
+      { oldText: "2", newText: "3" },
+    ]);
+  });
+
+  it("write_file / 纯新增没有 old→new，不算改动（诚实说没有）", () => {
+    const st = makeState({
+      timeline: [
+        { seq: 1, source: "main", type: "tool_call", name: "write_file", toolUseId: "w1", input: { path: "n.txt", content: "hi" } },
+        res("w1"),
+      ],
+    });
+    expect(editHunksFromTimeline(st).size).toBe(0);
+  });
+
+  it("反斜杠与正斜杠视为同一路径", () => {
+    const win = `a${String.fromCharCode(92)}b.ts`;
+    const st = makeState({ timeline: [editCall("t1", win, "x", "y"), res("t1")] });
+    expect(editHunksFromTimeline(st).has("a/b.ts")).toBe(true);
   });
 });

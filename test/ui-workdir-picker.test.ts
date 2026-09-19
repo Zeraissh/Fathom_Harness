@@ -248,6 +248,31 @@ describe("renderWorkdirMenu + initWorkdirCombobox", () => {
     document.body.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
     expect(api.isOpen()).toBe(false);
   });
+
+  /**
+   * U6（走查）：会话内触发器被宿主禁用并写好解释（本对话的工作目录…开新对话可另选），
+   * 但 picker 的每个 title 写入点都用裸路径把解释冲掉——活页实测 trigger.title 只剩路径。
+   * 修法：禁用时 title 归宿主，paint / 选项渲染 / 选择应用四处都不许再写。
+   */
+  it("U6：禁用的触发器 title 留给宿主解释——paint 不用路径冲掉", () => {
+    const { root, select, trigger } = mountCombobox();
+    initWorkdirCombobox(root, {});
+    // 宿主锁定：禁用 + 解释（app.js 的 lockedTitle 同时写 select 与 trigger）
+    select.disabled = true;
+    select.title = "本对话的工作目录：A（开新对话时可另选）";
+    trigger.disabled = true;
+    trigger.title = select.title;
+    // 幂等 init 会再跑一次 paint —— 旧实现在这里把 title 写回 "A"
+    initWorkdirCombobox(root, {});
+    expect(trigger.title).toContain("本对话的工作目录");
+    expect(select.title).toContain("本对话的工作目录");
+
+    // 解锁后恢复路径语义（原行为不动）
+    select.disabled = false;
+    trigger.disabled = false;
+    initWorkdirCombobox(root, {});
+    expect(trigger.title).toBe("A");
+  });
 });
 
 describe("wireWorkdirSelect", () => {

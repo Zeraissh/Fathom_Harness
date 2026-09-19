@@ -42,6 +42,7 @@ import {
   previewAddressValue,
   PREVIEW_HTML_SANDBOX,
   PREVIEW_IFRAME_ALLOW,
+  previewReadFailureMessage,
 } from "../ui/public/features/artifact-canvas.js";
 import { DECK_READY_MESSAGE_TYPE, DECK_GOTO_MESSAGE_TYPE, DECK_STATE_MESSAGE_TYPE, WEBGL_STATUS_MESSAGE_TYPE, INSPECT_SET_MESSAGE_TYPE } from "../ui/public/features/review-mode.js";
 import { deriveWrittenPaths } from "../ui/public/app.js";
@@ -905,12 +906,31 @@ describe("initArtifactCanvas — 打开与 chrome", () => {
     expect(document.querySelector(".ac-size")?.textContent).toBe("2.0 KB");
   });
 
-  it("取件失败：错误卡而不是白屏", async () => {
+  it("取件失败：错误卡而不是白屏（说清是「读不动」）", async () => {
     const fakeFetch = vi.fn(async () => ({ ok: false }));
     const api = initArtifactCanvas(setupHost(), { fetch: fakeFetch });
     api.open(2);
     await flush();
-    expect(document.querySelector(".ac-fallback")?.textContent).toContain("读取失败");
+    const card = document.querySelector(".ac-fallback")?.textContent ?? "";
+    expect(card).toContain("读不动");
+    expect(card).not.toMatch(/HTTP|\b5\d\d\b/); // HTTP 码不进脸上
+  });
+
+  // P3 的核心：读不到时先回答「它写过没有」。宿主说没写过，就不许说成"被删了"。
+  it("P3：宿主说这个路径从没写成功过 → 「还没写到磁盘。」", async () => {
+    const fakeFetch = vi.fn(async () => ({ ok: false, status: 404 }));
+    const api = initArtifactCanvas(setupHost({ hasWrittenPath: () => false }), { fetch: fakeFetch });
+    api.open(2);
+    await flush();
+    expect(document.querySelector(".ac-fallback")?.textContent).toContain("还没写到磁盘。");
+  });
+
+  it("P3：宿主说写过、现取 404 → 「文件不在了（可能被移动或删除）。」", async () => {
+    const fakeFetch = vi.fn(async () => ({ ok: false, status: 404 }));
+    const api = initArtifactCanvas(setupHost({ hasWrittenPath: () => true }), { fetch: fakeFetch });
+    api.open(2);
+    await flush();
+    expect(document.querySelector(".ac-fallback")?.textContent).toContain("文件不在了（可能被移动或删除）。");
   });
 
   it("无产物时 open 返回 false 且视图保持隐藏", () => {
@@ -1196,5 +1216,39 @@ describe("deriveWrittenPaths — 事件流里的写入路径", () => {
     expect(deriveWrittenPaths(null, [call("t3", "talk.pptx", "write_pptx"), okResult("t3")])).toEqual(["talk.pptx"]);
     const batch = [call("t1", "out/a.html"), call("t2", "out/a.html"), okResult("t1")];
     expect(deriveWrittenPaths(null, batch)).toEqual(["out/a.html"]);
+  });
+});
+
+// ---- P3: 预览读不到的三分类 ----
+describe("P3 预览读不到分三类", () => {
+  it("本 run 从未写成功过 → 「还没写到磁盘。」（不许说成被移动或删除）", () => {
+    expect(previewReadFailureMessage({ writtenInRun: false, status: 404 }))
+      .toBe("还没写到磁盘。");
+    expect(previewReadFailureMessage({ writtenInRun: false, status: null }))
+      .toBe("还没写到磁盘。");
+  });
+
+  it("写过、现已 404/410 → 「文件不在了（可能被移动或删除）。」", () => {
+    expect(previewReadFailureMessage({ writtenInRun: true, status: 404 }))
+      .toBe("文件不在了（可能被移动或删除）。");
+    expect(previewReadFailureMessage({ writtenInRun: true, status: 410 }))
+      .toBe("文件不在了（可能被移动或删除）。");
+  });
+
+  it("其它读失败 → 「读不动：<原因>」，原因取不到时也给一句人话", () => {
+    expect(previewReadFailureMessage({ writtenInRun: true, status: 500, reason: "预览服务没有返回内容。" }))
+      .toBe("读不动：预览服务没有返回内容。");
+    expect(previewReadFailureMessage({ writtenInRun: true, status: null }))
+      .toMatch(/^读不动：/);
+  });
+
+  it("三种文案互不相同，且都不含 HTTP 码", () => {
+    const all = [
+      previewReadFailureMessage({ writtenInRun: false }),
+      previewReadFailureMessage({ writtenInRun: true, status: 404 }),
+      previewReadFailureMessage({ writtenInRun: true, status: 500, reason: "坏了。" }),
+    ];
+    expect(new Set(all).size).toBe(3);
+    for (const m of all) expect(m).not.toMatch(/HTTP|\b4\d\d\b|\b5\d\d\b/);
   });
 });

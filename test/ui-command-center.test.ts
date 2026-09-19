@@ -581,7 +581,7 @@ describe("initCommandCenterView DOM 层", () => {
     api.open();
     const boardSpend = api.element.querySelector("[data-spend='board']");
     expect(boardSpend).toBeTruthy();
-    expect(boardSpend.querySelector("[data-spend-today-money]").textContent).toBe("今日 $0.71");
+    expect(boardSpend.querySelector("[data-spend-today-money]").textContent).toBe("本机今日 $0.71");
     expect(boardSpend.querySelector("[data-spend-today-used]").textContent).toBe("今日已用 110 次");
     expect(boardSpend.querySelector("[data-spend-this-run]").textContent).toBe("这次 $0.04");
     expect(boardSpend.querySelector("[data-spend-this-run]").hidden).toBe(false);
@@ -589,7 +589,7 @@ describe("initCommandCenterView DOM 层", () => {
     expect(boardSpend.hidden).toBe(false);
 
     const chip = document.getElementById("home-spend");
-    expect(chip.querySelector("[data-spend-text]").textContent).toBe("这次 $0.04 · 今日 $0.71");
+    expect(chip.querySelector("[data-spend-text]").textContent).toBe("这次 $0.04 · 本机今日 $0.71");
     expect(chip.getAttribute("aria-label")).toContain("本机今日 $0.71（全部工作目录）");
     expect(chip.getAttribute("aria-label")).toContain("今日已用 110 次");
 
@@ -607,7 +607,7 @@ describe("initCommandCenterView DOM 层", () => {
     expect(api.element.querySelector(".cc-empty").hidden).toBe(false);
     const boardSpend = api.element.querySelector("[data-spend='board']");
     expect(boardSpend.hidden).toBe(false);
-    expect(boardSpend.querySelector("[data-spend-today-money]").textContent).toBe("今日还没花费");
+    expect(boardSpend.querySelector("[data-spend-today-money]").textContent).toBe("本机今日还没花费");
     expect(boardSpend.querySelector("[data-spend-today-used]").textContent).toBe("今日已用 0 次");
     expect(boardSpend.querySelector("[data-spend-this-run]").hidden).toBe(true);
     expect(boardSpend.textContent).not.toContain("还剩");
@@ -621,7 +621,7 @@ describe("initCommandCenterView DOM 层", () => {
       usage: { byDay: [{ day: "2026-09-14", runs: 2, usd: 0.71, unpricedRuns: 0 }] },
     });
     paintHomeSpend(el, face);
-    expect(el.querySelector("[data-spend-text]").textContent).toBe("今日 $0.71");
+    expect(el.querySelector("[data-spend-text]").textContent).toBe("本机今日 $0.71");
     expect(el.getAttribute("aria-label")).toContain("本机今日 $0.71（全部工作目录）");
     expect(el.getAttribute("aria-label")).toContain("今日已用 2 次");
     expect(el.hidden).toBe(false);

@@ -1,0 +1,26 @@
+1. ✅ 免问
+   find . -type f \( -name '*.ts' -o -name '*.js' -o -name '*.css' -o -name '*.html' \) -not 
+2. ⚠ 含变量/命令替换/输入重定向，静态判不准
+   cd "D:/Work/scratch/fathom-personas-20260918/stats-sandbox" && for f in $(find . -type f \
+3. ✅ 免问
+   cd "D:/Work/scratch/fathom-personas-20260918/stats-sandbox" && find . -type f -name '*.js'
+4. ⚠ 「node」不在只读命令名单
+   cd "D:/Work/scratch/fathom-personas-20260918/stats-sandbox" && node --version; python --ve
+5. ⚠ 「node」不在只读命令名单
+   cd "D:/Work/scratch/fathom-personas-20260918/stats-sandbox" && node count.js
+6. ⚠ 「mkdir」不在只读命令名单
+   cd "D:/Work/scratch/fathom-personas-20260918/stats-sandbox" && mkdir -p _stats && mv count
+7. ⚠ 「node」不在只读命令名单
+   cd "D:/Work/scratch/fathom-personas-20260918/stats-sandbox" && node _stats/count.cjs
+8. ⚠ 含变量/命令替换/输入重定向，静态判不准
+   cd "D:/Work/scratch/fathom-personas-20260918/stats-sandbox" && echo "=== cross-check vs wc
+9. ⚠ 「node」不在只读命令名单
+   cd "D:/Work/scratch/fathom-personas-20260918/stats-sandbox" && node -e " const d=require('
+10. ⚠ 「node」不在只读命令名单
+   cd "D:/Work/scratch/fathom-personas-20260918/stats-sandbox" && node _stats/gen.cjs && ls -
+11. ⚠ 「node」不在只读命令名单
+   cd "D:/Work/scratch/fathom-personas-20260918/stats-sandbox" && echo "== root listing ==" &
+12. ⚠ 「node」不在只读命令名单
+   cd "D:/Work/scratch/fathom-personas-20260918/stats-sandbox" && node _stats/count.cjs | gre
+
+重放结果：2/12 条原审批现在免问

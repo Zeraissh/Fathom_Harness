@@ -340,8 +340,8 @@ export const MODEL_PROVIDER_CHOICES = [
 
 /** model 输入框的 datalist 建议——只是提示，不拦任何合法输入。 */
 export const MODEL_NAME_SUGGESTIONS = {
-  anthropic: ["claude-opus-4-8", "claude-sonnet-4-6", "claude-haiku-4-5", "kimi-k3", "deepseek-v4-flash"],
-  openai: ["gpt-4.1", "gpt-4.1-mini", "gpt-4o-mini", "deepseek-v4-flash", "deepseek-v4-pro"],
+  anthropic: ["claude-opus-4-8", "claude-sonnet-4-6", "claude-haiku-4-5", "kimi-k3", "deepseek-flash"],
+  openai: ["gpt-4.1", "gpt-4.1-mini", "gpt-4o-mini", "deepseek-flash", "deepseek-v4-pro"],
 };
 
 /**
@@ -2072,7 +2072,7 @@ export function initSettingsView(host = {}, env = {}) {
     return input;
   };
   const verifyInput = buildToggle("settings-verify", "独立核查", "新对话默认关闭独立核查。需要时在运行设置里打开；计划编排的子任务默认仍会核查，此勾改不了编排。");
-  const autoApproveInput = buildToggle("settings-auto-approve", "自动放行工具", "新对话默认先问再放行。需要时再打开自动放行；写入仍只能改这些文件夹。");
+  const autoApproveInput = buildToggle("settings-auto-approve", "自动放行工具", "新对话默认先问再放行（工作目录内的只读命令本就免问）。需要时再打开自动放行；写入仍只能改这些文件夹。");
   const writeCircle = doc.createElement("p");
   writeCircle.className = "settings-field-hint";
   writeCircle.id = "settings-write-circle";

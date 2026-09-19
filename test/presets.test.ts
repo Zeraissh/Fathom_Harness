@@ -42,6 +42,22 @@ describe("domain packs", () => {
     expect(DEFAULT_HOST_DISCIPLINES).toMatch(/view_image/);
   });
 
+  /**
+   * G1 · 视觉优先（2026-09-18 走查纲领，委托方原话）：
+   * 「能图形化来解释的事情绝不用语言文字生硬描述——统计图、函数图像、演示，
+   * 可以用 Canvas 画布生成来作」。纪律给到模型，产物由既有画布呈现。
+   */
+  it("G1 视觉优先纪律：可图形化的解释默认产出可视化产物（自包含 HTML）", () => {
+    expect(DEFAULT_HOST_DISCIPLINES).toMatch(/Visual-first/);
+    expect(DEFAULT_HOST_DISCIPLINES).toMatch(/chart|diagram|plot/i);
+    expect(DEFAULT_HOST_DISCIPLINES).toMatch(/self-contained/i);
+    // 退化条件也要写清：纯终端/无法成图时才用文字
+    expect(DEFAULT_HOST_DISCIPLINES).toMatch(/terminal|text-only|no way to render/i);
+    // 复跑实测：JS 渲染的图在画布里是空白（CSP default-src 'none' 拦脚本）——
+    // 纪律必须写明静态绘制
+    expect(DEFAULT_HOST_DISCIPLINES).toMatch(/no JavaScript|without JavaScript|static (SVG|markup)|CSP/i);
+  });
+
   it("consult 包：有据咨询 + fetch_url/web_search + rubric 核查 + 禁装饰 emoji", () => {
     const p = getPack("consult");
     expect(p).toBeDefined();

@@ -1,0 +1,322 @@
+/**
+ * 圈内只读 bash 免审批卡（2026-09-18 走查第一刀）。
+ *
+ * 分两层：
+ * - 分类器单测（纯函数表）：allow 名单 + 圈禁 + 凭据形状 + 动态构造 + 逐命令守卫；
+ * - loop 接线行为锁：免问路径不产 approval_request 而产 approval_auto；非只读/圈外
+ *   照常弹卡；显式关闭（verifier/planner 的关法）回到审批门。
+ */
+import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import path from "node:path";
+import { afterEach, describe, expect, it } from "vitest";
+import { AgentLoop } from "../src/loop.js";
+import { classifyReadOnlyShellCommand } from "../src/tools/read-only-shell.js";
+import type { TurnEvent } from "../src/types.js";
+import { FakeModelClient, fakeMessage, makeTool, textBlock, toolUseBlock } from "./helpers.js";
+
+describe("classifyReadOnlyShellCommand", () => {
+  let workdir: string;
+
+  afterEach(async () => {
+    if (workdir) await rm(workdir, { recursive: true, force: true });
+  });
+
+  async function freshWorkdir(): Promise<string> {
+    workdir = await mkdtemp(path.join(tmpdir(), "read-only-shell-"));
+    return workdir;
+  }
+
+  describe("allow：无写能力的命令（含走查原文的三张卡）", () => {
+    const allowed = [
+      "ls -la",
+      "cat -A hello-code.txt",
+      "od -c hello-code.txt",
+      // 走查基线 §2.1 卡 1 原文（含 2>/dev/null + 管道 + 分号链）
+      'ls -la; echo "---"; cat -A hello-code.txt 2>/dev/null | head -20',
+      // 卡 2 原文
+      'ls -la; echo "---"; cat -A hello-code.txt; echo "---"; od -c hello-code.txt',
+      // 卡 3 原文
+      'cat -A hello-seed.txt; echo "==="; cat preview-seed.html',
+      "od -c hello-code.txt 2>&1",
+      "du -sh . 2>/dev/null",
+      'grep -rn "readOnly" src | head -20',
+      "wc -l src/loop.ts | sort -n",
+      'find . -name "*.ts" -type f',
+      "git status --short",
+      "git diff --stat",
+      "git log --oneline -5",
+      "md5sum hello-code.txt",
+      "cat .env.example",
+      "ls -la > /dev/null",
+      // 2026-09-18 真机新摩擦：模型习惯 `cd <圈内目录> && …` 链式读。
+      // cd 的目标由通用圈禁兜住（`..`/`~`/绝对越界都在参数检查里弹卡）。
+      "cd sub && cat f",
+      'cd "sub dir" && wc -l a.txt',
+      'cd web-a && echo "===" && wc -l hello-code.txt',
+      // 其它无写能力的常见读工具
+      "jq . package.json",
+      "jq -r .name package.json",
+      "test -f a.txt && echo yes",
+    ];
+    for (const cmd of allowed) {
+      it(`allow: ${cmd}`, async () => {
+        const root = await freshWorkdir();
+        const v = classifyReadOnlyShellCommand(cmd, root);
+        expect(v.allow, v.reason).toBe(true);
+      });
+    }
+
+    it.skipIf(process.platform !== "win32")("allow: ls -la > NUL（Windows 空设备）", async () => {
+      const root = await freshWorkdir();
+      expect(classifyReadOnlyShellCommand("ls -la > NUL", root).allow).toBe(true);
+    });
+  });
+
+  describe("ask：非只读命令", () => {
+    const asked = [
+      "rm -rf hello-code.txt",
+      "echo hi > out.txt",
+      "ls > out.txt",
+      'python -c "print(1)"',
+      "sed -i s/a/b/ hello-code.txt",
+      "xargs rm",
+      "env",
+      'bash -c "ls"',
+      "tee out.txt",
+      "chmod +x f",
+      "touch new.txt",
+      "./script.sh",
+      "ls -la 2> err.log",
+    ];
+    for (const cmd of asked) {
+      it(`ask: ${cmd}`, async () => {
+        const root = await freshWorkdir();
+        // 写重定向在进段校验前就被拦，所以这里只断言"不自动放行"
+        expect(classifyReadOnlyShellCommand(cmd, root).allow).toBe(false);
+      });
+    }
+  });
+
+  describe("ask：圈禁与凭据形状", () => {
+    const asked = [
+      "cat ../outside.txt",
+      "cat /etc/hosts",
+      "cat ~/.ssh/id_rsa",
+      "find / -name CONFIG",
+      "cat .env",
+      "cat id_rsa",
+      "cat server.pem",
+      "test -f /etc/passwd",
+      "jq . /etc/x.json",
+    ];
+    for (const cmd of asked) {
+      it(`ask: ${cmd}`, async () => {
+        const root = await freshWorkdir();
+        expect(classifyReadOnlyShellCommand(cmd, root).allow).toBe(false);
+      });
+    }
+  });
+
+  describe("ask：动态构造（静态判不准）", () => {
+    const asked = [
+      "cat $(echo hello-code.txt)",
+      "ls `pwd`",
+      "cat $HOME/.bashrc",
+      'cat "unclosed',
+      "ls -la < input.txt",
+      "echo hi && rm -rf x",
+      "ls & rm -rf x",
+      "(ls -la)",
+    ];
+    for (const cmd of asked) {
+      it(`ask: ${cmd}`, async () => {
+        const root = await freshWorkdir();
+        expect(classifyReadOnlyShellCommand(cmd, root).allow).toBe(false);
+      });
+    }
+  });
+
+  describe("ask：cd 的四个洞（无参跳 HOME / `-` 跳 OLDPWD / 多参 / 空串）", () => {
+    const asked = [
+      "cd",
+      "cd -",
+      "cd a b",
+      'cd ""',
+      "cd ..",
+      "cd ../outside",
+      "cd /etc",
+      "cd ~",
+    ];
+    for (const cmd of asked) {
+      it(`ask: ${cmd}`, async () => {
+        const root = await freshWorkdir();
+        expect(classifyReadOnlyShellCommand(cmd, root).allow).toBe(false);
+      });
+    }
+  });
+
+  describe("ask：逐命令守卫（名字在名单里，参数能写）", () => {
+    const asked = [
+      "find . -delete",
+      "find . -name x -exec rm {} \\;",
+      "sort -o out in",
+      "sort --output=out in",
+      "uniq in out",
+      "git diff --output=f",
+      "git checkout main",
+    ];
+    for (const cmd of asked) {
+      it(`ask: ${cmd}`, async () => {
+        const root = await freshWorkdir();
+        expect(classifyReadOnlyShellCommand(cmd, root).allow).toBe(false);
+      });
+    }
+  });
+
+  it("readRoots 里的绝对路径可放行（只读根语义与 read_file 一致）", async () => {
+    const root = await freshWorkdir();
+    const extra = await freshWorkdir();
+    const target = path.join(extra, "lib.kicad_sym").replace(/\\/g, "/");
+    const v = classifyReadOnlyShellCommand(`cat "${target}"`, root, [extra]);
+    expect(v.allow, v.reason).toBe(true);
+    expect(classifyReadOnlyShellCommand(`cat "${target}"`, root).allow).toBe(false);
+  });
+});
+
+describe("圈内只读 bash 免审批卡（loop 接线）", () => {
+  async function runWith(
+    command: string,
+    opts?: { readOnlyShellAutoAllow?: boolean },
+  ): Promise<TurnEvent[]> {
+    const workdir = await mkdtemp(path.join(tmpdir(), "ro-shell-loop-"));
+    try {
+      const model = new FakeModelClient([
+        fakeMessage([toolUseBlock("tu_1", "bash", { command })], "tool_use"),
+        fakeMessage([textBlock("done")], "end_turn"),
+      ]);
+      const loop = new AgentLoop(
+        {
+          systemPrompt: "test system",
+          workdir,
+          ...(opts?.readOnlyShellAutoAllow !== undefined
+            ? { readOnlyShellAutoAllow: opts.readOnlyShellAutoAllow }
+            : {}),
+          tools: [
+            makeTool({
+              name: "bash",
+              permission: "ask",
+              parallelSafe: false,
+              inputSchema: {
+                type: "object",
+                properties: { command: { type: "string" } },
+                required: ["command"],
+              },
+            }),
+          ],
+        },
+        model,
+      );
+      const events: TurnEvent[] = [];
+      for await (const e of loop.run("go")) {
+        events.push(e);
+        if (e.type === "approval_request") e.respond("allow");
+      }
+      return events;
+    } finally {
+      await rm(workdir, { recursive: true, force: true });
+    }
+  }
+
+  it("只读命令：不产 approval_request，产 approval_auto，工具照跑", async () => {
+    const events = await runWith('ls -la; echo "---"; cat -A hello-code.txt 2>/dev/null | head -20');
+    expect(events.some((e) => e.type === "approval_request")).toBe(false);
+    const auto = events.find((e) => e.type === "approval_auto");
+    expect(auto).toBeTruthy();
+    if (auto?.type === "approval_auto") {
+      expect(auto.rule).toBe("read-only-shell");
+      expect(auto.name).toBe("bash");
+    }
+    expect(events.some((e) => e.type === "tool_result" && !e.result.isError)).toBe(true);
+  });
+
+  it("非只读命令照常弹卡", async () => {
+    const events = await runWith("rm -rf hello-code.txt");
+    expect(events.some((e) => e.type === "approval_request")).toBe(true);
+    expect(events.some((e) => e.type === "approval_auto")).toBe(false);
+  });
+
+  it("圈外读照常弹卡", async () => {
+    const events = await runWith("cat ../outside.txt");
+    expect(events.some((e) => e.type === "approval_request")).toBe(true);
+  });
+
+  it("显式关闭（verifier/planner 的关法）：只读命令也回到审批门", async () => {
+    const events = await runWith("ls -la", { readOnlyShellAutoAllow: false });
+    expect(events.some((e) => e.type === "approval_request")).toBe(true);
+    expect(events.some((e) => e.type === "approval_auto")).toBe(false);
+  });
+});
+
+describe("只读 role 装配锁", () => {
+  it("verifier / planner（两处装配）都显式关闭免问", async () => {
+    const verifier = await readFile(path.join(process.cwd(), "src/verifier.ts"), "utf8");
+    const planner = await readFile(path.join(process.cwd(), "src/planner.ts"), "utf8");
+    expect(verifier).toMatch(/readOnlyShellAutoAllow:\s*false/);
+    expect((planner.match(/readOnlyShellAutoAllow:\s*false/g) ?? []).length).toBe(2);
+  });
+});
+
+/**
+ * 统计样本复跑刀（2026-09-18 深夜）：把统计跑（8466165e）的 16 次审批原文
+ * 回喂分类器——12 条 bash 里 node×7 / 变量×2 / mkdir×1 是判对的（agent 自选
+ * 脚本路线、任意执行必须问）；可收紧的只有两处，且开场第一条就是它们：
+ * ① find 的转义括号 \( -o \) 被判成「参数可能在工作目录外」；
+ * ② 管道中段无 -i 的 sed 被按命令名一刀切。
+ */
+describe("统计链收紧：find \( \) 组合 / 无 -i 的 sed", () => {
+  it("开场计数命令原文（find \( -name -o … \) | wc -l）免问", () => {
+    const wd = process.cwd();
+    const cmd =
+      "find . -type f \\( -name '*.ts' -o -name '*.js' -o -name '*.css' -o -name '*.html' \\) -not -path '*/node_modules/*' -not -path '*/.git/*' | wc -l; echo";
+    expect(classifyReadOnlyShellCommand(cmd, wd).allow).toBe(true);
+  });
+
+  it("管道中段无 -i 的 sed（s 命令纯读）免问", () => {
+    const wd = process.cwd();
+    const cmd =
+      "find . -type f -name '*.js' -not -path '*/node_modules/*' | sed 's|/[^/]*$||' | sort | uniq -c | head -20";
+    expect(classifyReadOnlyShellCommand(cmd, wd).allow).toBe(true);
+  });
+
+  it("守卫不松：sed -i / sed 的 w·W 写命令 / find -exec / 转义括号之外仍照旧", () => {
+    const wd = process.cwd();
+    for (const cmd of [
+      "sed -i 's/a/b/' f.txt",
+      "sed --in-place 's/a/b/' f.txt",
+      "sed 's/a/b/w out.txt' f.txt",
+      "sed '2w out.txt' f.txt",
+      "sed -e 'w pwn.txt' f.txt",
+      "find . -name '*.js' -exec rm {} \\;",
+      "node count.js",
+      "echo $(date)",
+    ]) {
+      expect(classifyReadOnlyShellCommand(cmd, wd).allow, cmd).toBe(false);
+    }
+  });
+
+  it("旗标的 =value 照样按路径圈禁（`--include=../x` 不是免死金牌）", async () => {
+    // 参数圈禁的取值只有两条支路：裸词，和旗标的 `=value`。统计样本里
+    // `--include=…` 这类形态真实出现过——只判裸词等于给它留了一条绕道。
+    const wd = await mkdtemp(path.join(tmpdir(), "read-only-eq-"));
+    try {
+      const outside = classifyReadOnlyShellCommand("grep --include=../outside.txt x .", wd);
+      expect(outside.allow, outside.reason).toBe(false);
+      expect(outside.reason).toContain("工作目录外");
+      // 圈内的值（通配 / 相对路径）不许误伤
+      expect(classifyReadOnlyShellCommand("grep --include=*.ts todo .", wd).allow).toBe(true);
+    } finally {
+      await rm(wd, { recursive: true, force: true });
+    }
+  });
+});

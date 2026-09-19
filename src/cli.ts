@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 /**
  * CLI 宿主：事件流的一个消费者示例。
  * 用法：npx tsx src/cli.ts "任务描述" [--yes] [--verify] [--plan [--parallel[=N]]] [--auto] [--ask]
@@ -116,11 +117,14 @@ import {
   CLI_VERSION,
   CliArgumentError,
   cliCanPrompt,
+  cliExitCodeForRun,
   cliHelpText,
   formatCliNeedsConfirmMessage,
+  formatSignalNotice,
   formatStaticDoctor,
   isReadlineClosedError,
   parseCliArgs,
+  resolveColorEnabled,
 } from "./cli-args.js";
 import { AgentLoop, createRunBudget, DEFAULT_MAX_TOKENS, DEFAULT_MAX_TURNS } from "./loop.js";
 import {
@@ -176,8 +180,8 @@ import {
 } from "./cli-plan-gate.js";
 import { readArchivedState, readArchivedTranscript } from "../ui/history.js";
 import { seedDurableBudget, snapshotDurableBudget } from "./run-state.js";
-import { resolveVerifierReadOnlyCommands, type VerifyOutcome } from "./verifier.js";
-import { allPacks, getPack, DEFAULT_HOST_DISCIPLINES, selectPackTools, ALWAYS_ON_BUILTIN_TOOLS, type DomainPack } from "./presets.js";
+import { resolveVerifierReadOnlyCommands, verifierCanExecute, type VerifyOutcome, type VerifierMeans } from "./verifier.js";
+import { allPacks, getPack, DEFAULT_HOST_DISCIPLINES, selectPackTools, verifierMeansFor, ALWAYS_ON_BUILTIN_TOOLS, type DomainPack } from "./presets.js";
 import { loadInstalledFilePacksSync, packsRootFromEnv } from "./pack-files.js";
 import {
   DESIGN_CATALOG,
@@ -253,6 +257,7 @@ import {
   cliDurableEnabled,
   createCliDurable,
   ensureCliHistoryRoot,
+  reconcileCliHistoryRoot,
   formatCliResumeStop,
   lastExecutorTranscriptMessages,
   prepareCliPlanResume,
@@ -266,6 +271,8 @@ import {
   hostPlanResultEvent,
   hostPlanResumeEvent,
   hostPlanSubtaskViews,
+  isEphemeralTurnEvent,
+  serializeTurnEventForArchive,
 } from "./archive-event.js";
 import { cliRuntimePermissionSwitches, formatPermissionBanner, matchPermissionMode, resolvePermissionMode } from "./permission-mode.js";
 import {
@@ -286,13 +293,20 @@ let activeCliExecutionBroker: ExecutionBroker | undefined;
 let activeCliDurable: CliDurableHandle | undefined;
 let activeCliLineageBudget: SharedRunBudget | undefined;
 
+/**
+ * 颜色（H2 · 走查）：管道/重定向自动关（ANSI 不再原样落盘）、NO_COLOR 非空
+ * 强制关、FORCE_COLOR 显式优先。全文件 160+ 个 c.* 调用点不感知开关——
+ * 关色时按原文返回，一处收口。
+ */
+const colorOff = !resolveColorEnabled(process.env, Boolean(process.stdout.isTTY));
+const paint = (code: string) => (s: string) => (colorOff ? s : `\x1b[${code}m${s}\x1b[0m`);
 const c = {
-  dim: (s: string) => `\x1b[2m${s}\x1b[0m`,
-  cyan: (s: string) => `\x1b[36m${s}\x1b[0m`,
-  green: (s: string) => `\x1b[32m${s}\x1b[0m`,
-  yellow: (s: string) => `\x1b[33m${s}\x1b[0m`,
-  red: (s: string) => `\x1b[31m${s}\x1b[0m`,
-  magenta: (s: string) => `\x1b[35m${s}\x1b[0m`,
+  dim: paint("2"),
+  cyan: paint("36"),
+  green: paint("32"),
+  yellow: paint("33"),
+  red: paint("31"),
+  magenta: paint("35"),
 };
 
 /**
@@ -469,6 +483,21 @@ async function main(): Promise<void> {
     if (!report.ok) process.exitCode = 1;
     return;
   }
+
+  // H2 · 机器可读出口（走查）：--json/--quiet 的 stdout 契约在**入口一处收口**——
+  // 之后全部既有 console.log（启动配置/轮次/工具行/编排块…）自动改道 stderr，
+  // 不必逐个调用点去加判断（漏一个 stdout 就不干净了）。
+  const jsonMode = parsedArgs.command === "run" && parsedArgs.json;
+  const quietMode = parsedArgs.command === "run" && parsedArgs.quiet && !jsonMode;
+  if (jsonMode || quietMode) {
+    console.log = (...args: unknown[]) => {
+      console.error(...args);
+    };
+  }
+  /** 终局汇总行：默认/--quiet 落 stdout；--json 下不许污染 JSONL（终局走 run_result）。 */
+  const finalOut = (line: string): void => {
+    if (!jsonMode) process.stdout.write(`${line}\n`);
+  };
 
   // .env 被残留环境变量压掉时大声说出来（可能意味着凭据发往另一家端点）
   warnEnvConflicts();
@@ -765,15 +794,6 @@ async function main(): Promise<void> {
       "disable MCP or use a separately managed hardware/service gateway",
     );
   }
-  const mcp = mcpConfig ? await connectMcpServers(mcpConfig, (m) => console.warn(c.yellow(m))) : undefined;
-  if (mcp) {
-    for (const [server, count] of Object.entries(mcp.summary)) {
-      console.log(c.dim(`mcp: connected "${server}" (${count} tools)`));
-    }
-    for (const [server, reason] of Object.entries(mcp.skipped)) {
-      console.log(c.dim(`mcp: skipped "${server}" (${reason})`));
-    }
-  }
 
   /**
    * 识图：执行者自己能看图 → describe_image 走执行模型，不另引识图角色。
@@ -1052,7 +1072,7 @@ async function main(): Promise<void> {
     console.log(
       executionStatus.effectiveState === "partial"
         ? c.cyan(line)
-        : c.yellow(`${line} — shell commands are not run-isolated`),
+        : c.yellow(`${line} — commands run directly on the host (no sandbox)`),
     );
   }
 
@@ -1275,6 +1295,14 @@ async function main(): Promise<void> {
     | undefined;
   const historyRoot =
     resumeRun || cliDurableEnabled() ? await ensureCliHistoryRoot(process.cwd()) : undefined;
+  if (historyRoot) {
+    // F4-B 僵尸收殓：只看"可证已死"（同机+pid 不在）——并行 CLI 的活档案、
+    // 他机共享目录、无章老档案一律不碰。失败静默（收殓是顺手，不是启动门）。
+    const reaped = await reconcileCliHistoryRoot(historyRoot).catch(() => [] as string[]);
+    if (reaped.length > 0) {
+      console.log(c.dim(`已收殓 ${reaped.length} 个僵尸档案（进程已死）：${reaped.join(", ")}`));
+    }
+  }
   if (resumeRun) {
     if (!cliDurableEnabled()) {
       console.error(c.red("--resume-run 需要 durable state（不要设 AGENT_CLI_DURABLE=0）"));
@@ -1340,6 +1368,19 @@ async function main(): Promise<void> {
   }
   activeCliDurable = cliDurable;
   activeCliLineageBudget = lineageBudget;
+
+  // H6（走查）：MCP 连接**后移**到这里——args / 档案校验（尤其坏 --resume-run）
+  // 失败必须先于拉起 30+ 个 MCP 工具与服务器横幅出现。旧序：坏 resume 先打
+  // 10 行噪音（含 MCP 自家 stdio 横幅），真错误排到最后一行。
+  const mcp = mcpConfig ? await connectMcpServers(mcpConfig, (m) => console.warn(c.yellow(m))) : undefined;
+  if (mcp) {
+    for (const [server, count] of Object.entries(mcp.summary)) {
+      console.log(c.dim(`mcp: connected "${server}" (${count} tools)`));
+    }
+    for (const [server, reason] of Object.entries(mcp.skipped)) {
+      console.log(c.dim(`mcp: skipped "${server}" (${reason})`));
+    }
+  }
 
   try {
     resolvePermissionMode(process.env.AGENT_PERMISSION_MODE);
@@ -1473,7 +1514,7 @@ async function main(): Promise<void> {
   const writtenArtifactPaths = new Set<string>();
   const endStreamLine = () => {
     if (streamingText) {
-      process.stdout.write("\n");
+      if (!jsonMode) process.stdout.write("\n");
       streamingText = false;
     }
   };
@@ -1597,7 +1638,16 @@ async function main(): Promise<void> {
     verifications: VerifyOutcome[];
   } | null = null;
   const ledgerStartedAt = Date.now();
+  /** --json 的事件流：与档案同形（逐字增量滤掉），段号取 durable 游标（无 durable 时 0）。 */
+  const emitJsonEvent = (source: string, event: TurnEvent): void => {
+    if (isEphemeralTurnEvent(event)) return;
+    const segmentIndex = cliDurable?.getState().checkpoint?.segmentIndex ?? 0;
+    process.stdout.write(
+      `${JSON.stringify({ ts: Date.now(), source, event: serializeTurnEventForArchive(source, event, segmentIndex) })}\n`,
+    );
+  };
   const noteForLedger = (source: string, event: TurnEvent): void => {
+    if (jsonMode) emitJsonEvent(source, event);
     cliDurable?.noteTrace(source, event);
     cliDurable?.noteEvent(source, event);
     if (event.type === "tool_call") tallyToolCall(ledgerTally, source, event.name);
@@ -1664,6 +1714,9 @@ async function main(): Promise<void> {
           await settleCliApproval(event, tag);
           break;
         }
+        case "approval_auto":
+          console.log(c.dim(`${tag} ✓ 自动放行（只读命令） ${event.name} ${JSON.stringify(event.input).slice(0, 120)}`));
+          break;
         case "compaction":
           console.log(c.yellow(`${tag} ${describeCompaction(event)}`));
           break;
@@ -1746,6 +1799,9 @@ async function main(): Promise<void> {
       cliDurable?.apply({ type: "plan_begin" });
     }
     let outcome: Awaited<ReturnType<typeof runPlanned>> | undefined;
+    /** 子任务 → 该子任务核查者的动手面（包声明 + 实际挂上的 MCP 工具），见 verifierMeansFor。
+     *  声明在 try 之外：结果打印在 try/catch 之后的 else 分支里，也要读它。 */
+    const subtaskMeans = new Map<string, VerifierMeans>();
     try {
     outcome = await runPlanned(config, modelClient, plannedTask, {
       packs: allPacks(),
@@ -1895,18 +1951,21 @@ async function main(): Promise<void> {
               }),
             ]
           : [];
+        const subTools = [
+          ...selectPackTools(p, builtinPool, mcpPool),
+          ...memTools,
+          ...controlTools,
+          ...proposeForSub,
+        ].filter((tool, i, all) => all.findIndex((candidate) => candidate.name === tool.name) === i);
+        // H8 的判据②③：核查者的动手面按这个子任务**实际装配出来的工具**算
+        subtaskMeans.set(sub.id, verifierMeansFor(p, subTools));
         return {
           cfg: {
             ...config,
             systemPrompt: p?.systemPrompt
               ? withEnabledSkills(p.systemPrompt, catalogSkillRoot)
               : config.systemPrompt,
-            tools: [
-              ...selectPackTools(p, builtinPool, mcpPool),
-              ...memTools,
-              ...controlTools,
-              ...proposeForSub,
-            ].filter((tool, i, all) => all.findIndex((candidate) => candidate.name === tool.name) === i),
+            tools: subTools,
             ...(p?.guardrails?.maxTurns !== undefined ? { maxTurns: p.guardrails.maxTurns } : {}),
             ...(p?.guardrails?.maxTokens !== undefined && !process.env.AGENT_MAX_TOKENS
               ? { maxTokens: p.guardrails.maxTokens }
@@ -1978,7 +2037,7 @@ async function main(): Promise<void> {
     });
     } catch (err) {
       if (err instanceof CliPlanRejectedError) {
-        console.log(c.yellow(`\n${err.message}`));
+        finalOut(c.yellow(`\n${err.message}`));
         ledgerFacts = {
           stopReason: "plan_rejected",
           error: null,
@@ -1999,7 +2058,7 @@ async function main(): Promise<void> {
     const totalWallMs = finishedAt - startedAt;
     const wallMs = finishedAt - planReadyAt; // 子任务阶段墙钟（排除 planner）
     cliDurable?.noteHostEvent(hostPlanResultEvent(outcome, { startedAt, planReadyAt, finishedAt }));
-    console.log(c.cyan("\n═══ 三角编排结果 ═══"));
+    finalOut(c.cyan("\n═══ 三角编排结果 ═══"));
     // 记账不分分支：计划不可解析（fail-closed）也是一次要归档的失败，只在
     // plan 存在的分支赋值会让这类失败在台账里落 stopReason=null。
     // steps 为空时各聚合项自然得 0/[]，不必按分支各写一份。
@@ -2020,10 +2079,10 @@ async function main(): Promise<void> {
       verifications: outcome.steps.flatMap((st) => st.result.verifications),
     };
     if (!outcome.plan) {
-      console.log(c.red(`✘ planner 未能产出可解析计划：${outcome.planOutcome.raw.slice(0, 200)}`));
+      finalOut(c.red(`✘ planner 未能产出可解析计划：${outcome.planOutcome.raw.slice(0, 200)}`));
       // 9.2 的 planner 版：区分"胡言乱语"与"探索没来得及收口"，返工策略完全不同
       if (outcome.planOutcome.failureSummary) {
-        console.log(c.yellow(`  ${outcome.planOutcome.failureSummary}`));
+        finalOut(c.yellow(`  ${outcome.planOutcome.failureSummary}`));
       }
     } else {
       for (const sub of outcome.plan.subtasks) {
@@ -2034,21 +2093,30 @@ async function main(): Promise<void> {
             ? c.green("✔ 通过")
             : c.red("✘ 未通过");
         const dur = step ? c.dim(` ${(step.durationMs / 1000).toFixed(1)}s`) : "";
-        console.log(`${mark} ${sub.id} ${sub.title}${sub.pack ? c.dim(` [${sub.pack}]`) : ""}${dur}`);
+        finalOut(`${mark} ${sub.id} ${sub.title}${sub.pack ? c.dim(` [${sub.pack}]`) : ""}${dur}`);
         if (step) {
           printVerdictSignal("    ", step.result.finalPassed, step.result.verifications.at(-1)?.verdict);
+          // H8 边界另一半（走查 2026-09-18）：与单执行者路径同一条注，但口径
+          // 按**子任务自己的包**算——编排的全部意义就是逐子任务配置，按 run 级
+          // 包算等于把 s1 与 s2 混成一个（一个能跑、一个不能，终端上却是同一行）。
+          if (!verifierCanExecute(
+            readOnlyFor(sub.pack ? getPack(sub.pack) : undefined).commands,
+            subtaskMeans.get(sub.id),
+          )) {
+            finalOut(c.dim("    静态推导：核查侧只有只读文本手段——产物未经运行验证"));
+          }
         }
       }
       const serialMs = outcome.steps.reduce((acc, s) => acc + s.durationMs, 0);
       const wallNote = `全程 ${(totalWallMs / 1000).toFixed(1)}s，子任务阶段墙钟 ${(wallMs / 1000).toFixed(1)}s，子任务合计 ${(serialMs / 1000).toFixed(1)}s${effectiveConcurrency > 1 ? `，并行节省 ${Math.max(0, (serialMs - wallMs) / 1000).toFixed(1)}s` : ""}`;
-      console.log(
+      finalOut(
         outcome.completed
           ? c.green(`\n✔ 全部子任务执行并核查通过`) + c.dim(`（${wallNote}）`)
           : c.red("\n✘ 编排未完成（快速失败）") + c.dim(`（${wallNote}）`),
       );
     }
-    if (outcome.completed) cliDurable?.markCompleted();
-    else cliDurable?.markFailed();
+    // 终态口径（走查 U1/H3）：编排聚合不能再把 partial/aborted 一律压成 error
+    cliDurable?.markEnded(plannedStopReason(outcome));
     }
   } else if (cliSingleResume) {
     const loop = new AgentLoop(config, modelClient);
@@ -2073,11 +2141,8 @@ async function main(): Promise<void> {
             finalPassed: null,
             verifications: [],
           };
-          if (event.result.stopReason === "error" || event.result.stopReason === "aborted") {
-            cliDurable?.markInterrupted();
-          } else {
-            cliDurable?.markCompleted();
-          }
+          // 终态口径（走查 U1/H3）：错误不再冒充 aborted，max_turns 等不再冒充 completed
+          cliDurable?.markEnded(event.result.stopReason);
         }
         await renderEvent(event);
       }
@@ -2120,8 +2185,16 @@ async function main(): Promise<void> {
       verifications: outcome.verifications,
     };
     const tag = outcome.finalPassed ? c.green("✔ 核查通过") : c.red("✘ 核查未通过");
-    console.log(`\n${tag}${outcome.reworks ? c.dim(`（返工 ${outcome.reworks} 轮）`) : ""}`);
+    finalOut(`\n${tag}${outcome.reworks ? c.dim(`（返工 ${outcome.reworks} 轮）`) : ""}`);
     printVerdictSignal("  ", outcome.finalPassed, outcome.verifications.at(-1)?.verdict);
+    // H8（走查 2026-09-18）：核查侧没有执行手段时，裁决是静态推导——真机实录
+    // 里"未能亲自运行"只写在细则里，标题却直书「核查通过」。口径上标题。
+    if (!verifierCanExecute(readOnlyFor(pack).commands, verifierMeansFor(pack, config.tools))) {
+      finalOut(c.dim("  静态推导：核查侧只有只读文本手段——产物未经运行验证"));
+    }
+    // 终态口径（走查 H3）：--verify 路径此前从不收尾 durable——档案永远停在
+    // "running"（僵尸工厂）。核查未通过不改执行段 stopReason，裁决由 outcome 另记。
+    cliDurable?.markEnded(outcome.main.stopReason);
   } else {
     const loop = new AgentLoop(config, modelClient);
     try {
@@ -2142,11 +2215,8 @@ async function main(): Promise<void> {
             finalPassed: null,
             verifications: [],
           };
-          if (event.result.stopReason === "error" || event.result.stopReason === "aborted") {
-            cliDurable?.markInterrupted();
-          } else {
-            cliDurable?.markCompleted();
-          }
+          // 终态口径（走查 U1/H3）：错误不再冒充 aborted，max_turns 等不再冒充 completed
+          cliDurable?.markEnded(event.result.stopReason);
         }
         await renderEvent(event);
       }
@@ -2206,6 +2276,29 @@ async function main(): Promise<void> {
     }),
   );
 
+  // 终态口径（走查 F1/H1）：run 终态映射进程退出码——终态失败不许静默退 0，
+  // CI 的 $? 是最常被读的那处口径。plan_rejected 不表态（抛错路径已定 2，别覆盖）。
+  const runExitCode = cliExitCodeForRun(ledgerFacts);
+  if (runExitCode !== undefined) process.exitCode = runExitCode;
+
+  // H2 · --json 的终局对象：与 ■ 行同一份事实（ledgerFacts），机器消费的收尾口径；
+  // exitCode 报的是此刻真实会退出的值（含 plan_rejected 由抛错路径定的 2）。
+  if (jsonMode) {
+    process.stdout.write(
+      `${JSON.stringify({
+        type: "run_result",
+        runId: cliRunId,
+        stopReason: ledgerFacts?.stopReason ?? null,
+        turns: ledgerFacts?.turns ?? null,
+        finalPassed: ledgerFacts?.finalPassed ?? null,
+        reworks: ledgerFacts?.reworks ?? null,
+        error: ledgerFacts?.error ?? null,
+        verifications: ledgerFacts?.verifications?.length ?? 0,
+        exitCode: typeof process.exitCode === "number" ? process.exitCode : 0,
+      })}\n`,
+    );
+  }
+
   rl?.close();
   await executionBroker?.dispose?.();
   activeCliExecutionBroker = undefined;
@@ -2221,7 +2314,9 @@ async function main(): Promise<void> {
         break;
       case "text_delta":
         streamingText = true;
-        process.stdout.write(event.text);
+        // --json/--quiet：live 文本是"人话"，改走 stderr；完整文本以 assistant_text
+        // 事件进 JSONL（逐字增量被 isEphemeralTurnEvent 滤掉，与档案同纪律）
+        (jsonMode || quietMode ? process.stderr : process.stdout).write(event.text);
         break;
       case "assistant_text":
         endStreamLine(); // 完整文本已通过 delta 流式输出过，这里只收行
@@ -2279,6 +2374,13 @@ async function main(): Promise<void> {
       case "approval_request": {
         endStreamLine();
         await settleCliApproval(event);
+        break;
+      }
+      case "approval_auto": {
+        // 圈内只读命令免卡（2026-09-18）：没有请求只有放行，但仍要看得见、要记账
+        endStreamLine();
+        console.log(c.dim(`✓ 自动放行（只读命令） ${event.name} ${JSON.stringify(event.input)}`));
+        tallyApprovalOutcome(ledgerApprovals, event);
         break;
       }
       case "usage": {
@@ -2391,26 +2493,28 @@ async function main(): Promise<void> {
             : reason === "partial" || reason === "max_tokens" || reason === "aborted"
               ? c.yellow
               : c.red;
-        console.log(color(`\n■ ${reason}`) + c.dim(` (${u.turns} turns)`));
-        console.log(
+        // 终局汇总：走 finalOut（stdout）。--quiet 时它仍是 stdout 上仅剩的东西；
+        // --json 时让位给 run_result。
+        finalOut(color(`\n■ ${reason}`) + c.dim(` (${u.turns} turns)`));
+        finalOut(
           c.dim(
             `  total: in=${u.inputTokens} cacheW=${u.cacheCreationTokens} cacheR=${u.cacheReadTokens} out=${u.outputTokens} | cacheHit=${(u.cacheHitRatio * 100).toFixed(1)}%`,
           ),
         );
         if (reason === "max_tokens") {
-          console.log(
+          finalOut(
             c.yellow(
               `  末轮输出撞 max_tokens 被截断，已生成内容保留在结果中。若任务需要更长回复，提高 AGENT_MAX_TOKENS`,
             ),
           );
         }
         if (reason === "incomplete" && writtenArtifactPaths.size > 0) {
-          console.log(c.yellow(`  已写 ${writtenArtifactPaths.size} 个文件，未签字`));
+          finalOut(c.yellow(`  已写 ${writtenArtifactPaths.size} 个文件，未签字`));
         }
         if (event.result.completion) {
           const completion = event.result.completion;
-          console.log(c.dim(`  ${completion.status}: ${completion.summary}`));
-          for (const blocker of completion.blockers) console.log(c.yellow(`  blocker: ${blocker}`));
+          finalOut(c.dim(`  ${completion.status}: ${completion.summary}`));
+          for (const blocker of completion.blockers) finalOut(c.yellow(`  blocker: ${blocker}`));
         }
         if (event.result.error) console.error(c.red(`  error: ${event.result.error.message}`));
         break;
@@ -2421,6 +2525,15 @@ async function main(): Promise<void> {
 
 for (const signal of ["SIGINT", "SIGTERM"] as const) {
   process.once(signal, () => {
+    // H4（走查）：中断不再静默消失——说出它是什么、检查点在不在、能不能续跑
+    console.error(
+      c.yellow(
+        formatSignalNotice(signal, {
+          runId: activeCliDurable?.runId ?? null,
+          hasCheckpoint: Boolean(activeCliDurable?.getState().checkpoint),
+        }),
+      ),
+    );
     if (activeCliLineageBudget) {
       activeCliDurable?.apply({
         type: "budget_snapshot",

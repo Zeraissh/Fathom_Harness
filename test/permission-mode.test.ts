@@ -60,11 +60,20 @@ describe("D3 permission modes", () => {
   });
 
   it("describePermissionStance 一次说清档位与会不会自动放行", () => {
+    // 2026-09-18 起「工作目录内的只读命令自动放行」是任何档位都成立的豁免，
+    // 措辞必须带上它——不写就是少说一句真话。
     expect(describePermissionStance("manual", PERMISSION_MODE_TABLE.manual)).toMatch(
-      /手动.*不会自动放行/,
+      /手动.*危险动作会先问你.*只读命令自动放行/,
     );
     expect(describePermissionStance("plan", PERMISSION_MODE_TABLE.plan)).toMatch(
-      /计划.*先出计划.*不会自动放行/,
+      /计划.*先出计划.*危险动作会先问你.*只读命令自动放行/,
+    );
+    // manual / plan 都不得声称「ask 级会自动放行」（那是 auto 档的话）
+    expect(describePermissionStance("manual", PERMISSION_MODE_TABLE.manual)).not.toMatch(
+      /ask 级会自动放行/,
+    );
+    expect(describePermissionStance("plan", PERMISSION_MODE_TABLE.plan)).not.toMatch(
+      /ask 级会自动放行/,
     );
     expect(describePermissionStance("auto", PERMISSION_MODE_TABLE.auto)).toMatch(
       /自动.*ask 级会自动放行/,
@@ -91,7 +100,10 @@ describe("D3 permission modes", () => {
     const no = cliRuntimePermissionSwitches({ autoYes: false });
     const noLine = formatPermissionBanner(matchPermissionMode(no), no);
     expect(noLine).toMatch(/yes=false/);
-    expect(noLine).toMatch(/不会自动放行/);
+    expect(noLine).toMatch(/危险动作会先问你/);
+    // 不勾 --yes 时不得声称 ask 级会自动放行；只读豁免是另一回事，照实写
+    expect(noLine).not.toMatch(/ask 级会自动放行/);
+    expect(noLine).toMatch(/只读命令自动放行/);
     expect(matchPermissionMode(no)).toBe("manual");
 
     const planned = cliRuntimePermissionSwitches({ autoYes: false, planMode: true });

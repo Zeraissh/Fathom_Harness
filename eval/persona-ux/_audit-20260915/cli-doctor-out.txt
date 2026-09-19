@@ -1,0 +1,8 @@
+
+> agent-harness@1.3.0 doctor
+> tsx --env-file-if-exists=.env src/cli.ts --doctor
+
+provider: anthropic (source: .env-or-environment-same-value)
+model: deepseek-v4-flash (source: .env-or-environment-same-value)
+base_url_origin: https://api.deepseek.com (source: .env-or-environment-same-value)
+credential_present: yes (source: .env-or-environment-same-value)

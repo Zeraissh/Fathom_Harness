@@ -15,7 +15,7 @@ export type ShellConfineResult =
   | { ok: false; reason: string };
 
 /** 去掉包裹引号（仅当首尾成对时），供路径解析。 */
-function unquote(token: string): string {
+export function unquote(token: string): string {
   if (token.length >= 2) {
     const a = token[0];
     const b = token[token.length - 1];
@@ -115,7 +115,7 @@ export function extractWriteRedirectTargets(command: string): string[] {
   return targets;
 }
 
-function readShellToken(
+export function readShellToken(
   command: string,
   start: number,
 ): { value: string; end: number } | null {
@@ -179,7 +179,7 @@ export function extractCdTargets(command: string): Array<string | null> {
   return targets;
 }
 
-function splitShellSegments(command: string): string[] {
+export function splitShellSegments(command: string): string[] {
   const segments: string[] = [];
   let buf = "";
   let quote: '"' | "'" | null = null;
@@ -228,7 +228,20 @@ function splitShellSegments(command: string): string[] {
   return segments;
 }
 
-function pathOutsideWorkdir(workdir: string, p: string, extraRoots?: string[]): boolean {
+/**
+ * null sink：把输出丢掉的设备，写它没有副作用。
+ * 走查（2026-09-18）：`cmd 2>/dev/null | head` 在 Windows Git Bash 下被判
+ * 「redirect target escapes the working directory」**整个拒绝**，模型只能改命令重试，
+ * 白烧一轮 + 多一张批准卡。`/dev/null` 是标准丢弃目标，放行。
+ * `NUL` 只在 Windows 是设备——POSIX 上它是个普通文件名，写它 = 在圈内建文件。
+ */
+export function isNullSink(target: string): boolean {
+  const t = target.trim().toLowerCase();
+  if (t === "/dev/null") return true;
+  return process.platform === "win32" && t === "nul";
+}
+
+export function pathOutsideWorkdir(workdir: string, p: string, extraRoots?: string[]): boolean {
   try {
     resolveInWorkdir(workdir, p, extraRoots);
     return false;
@@ -271,6 +284,8 @@ export function confineShellCommand(
   }
 
   for (const target of extractWriteRedirectTargets(command)) {
+    // null sink 无副作用：`2>/dev/null` 只是丢输出，不是圈外写（见 isNullSink）。
+    if (isNullSink(target)) continue;
     // 动态目标（含 `$` / `` ` `` / 命令替换）无法静态解析——放过，避免误杀
     if (/[`$]/.test(target) || target.includes("$(")) continue;
     if (pathOutsideWorkdir(root, target, extraRoots)) {

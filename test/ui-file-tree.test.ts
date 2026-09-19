@@ -147,6 +147,25 @@ describe("initFileTree DOM", () => {
     expect(onCite).toHaveBeenCalledWith("hello.txt", "file");
   });
 
+  it("E15：目录行名按钮带 aria-expanded（折叠状态不只靠三角图标）", async () => {
+    const fetchFn = vi.fn(async (url) => {
+      if (String(url).includes("q=src%2F")) return mockResponse(200, { files: [] });
+      return mockResponse(200, { files: [{ name: "src", relative: "src", kind: "directory" }] });
+    });
+    const { root } = mountTree({ getWorkdir: () => "D:/proj" }, { fetch: fetchFn });
+    await root.__fileTreeApi.reload();
+    await flush();
+    expect(
+      root.querySelector('.ft-row[data-path="src"] .ft-name').getAttribute("aria-expanded"),
+    ).toBe("false");
+    root.querySelector('.ft-row[data-path="src"] .ft-twist').click();
+    await flush();
+    await flush();
+    expect(
+      root.querySelector('.ft-row[data-path="src"] .ft-name').getAttribute("aria-expanded"),
+    ).toBe("true");
+  });
+
   it("圈禁逃逸 notice 与 403 都是人话，没有 HTTP 码", async () => {
     const escaped = vi.fn(async () => mockResponse(200, {
       files: [{
@@ -182,6 +201,25 @@ describe("initFileTree DOM", () => {
     await api.reload();
     await flush();
     expect(root.querySelector(".ft-empty")?.textContent).toBe(FILE_TREE_COPY.emptyRoot);
+  });
+
+  it("上下文没落定时说「正在确认目录…」，不说「先选一个工作目录。」", async () => {
+    const pending = mountTree({ getWorkdir: () => "", isContextReady: () => false }, { fetch: vi.fn() });
+    await pending.api.reload();
+    expect(pending.root.querySelector(".ft-empty")?.textContent).toBe(FILE_TREE_COPY.confirming);
+    expect(pending.root.textContent).not.toContain(FILE_TREE_COPY.noWorkdir);
+  });
+
+  it("上下文落定且确实没目录，才说「先选一个工作目录。」", async () => {
+    const settled = mountTree({ getWorkdir: () => "", isContextReady: () => true }, { fetch: vi.fn() });
+    await settled.api.reload();
+    expect(settled.root.querySelector(".ft-empty")?.textContent).toBe(FILE_TREE_COPY.noWorkdir);
+  });
+
+  it("宿主不提供 isContextReady 时保持旧行为（向后兼容）", async () => {
+    const legacy = mountTree({ getWorkdir: () => "" }, { fetch: vi.fn() });
+    await legacy.api.reload();
+    expect(legacy.root.querySelector(".ft-empty")?.textContent).toBe(FILE_TREE_COPY.noWorkdir);
   });
 
   it("折叠栏：默认展开，点开关收起并记偏好", () => {
@@ -243,10 +281,10 @@ describe("挂载：右侧栏，不在左栏，不绑 Code 脸", () => {
 
   it("宿主按工作目录刷新，不按 Code 脸开关", () => {
     expect(htmlSrc).not.toMatch(/if\s*\(\s*(?:face|workspaceFace)\s*===\s*"code"\s*\)\s*void fileTreeApi/);
-    expect(htmlSrc).toMatch(/function syncFileTreeToComposer/);
-    expect(htmlSrc).toMatch(/function composerWorkdir\(\)[\s\S]*getWorkdirSelection/);
-    expect(htmlSrc).toMatch(/function paintWorkdirsForFace[\s\S]*syncFileTreeToComposer/);
-    expect(htmlSrc).toMatch(/function populateKnobs[\s\S]*syncFileTreeToComposer/);
+    expect(htmlSrc).toMatch(/function refreshWorkdirDependents/);
+    expect(htmlSrc).toMatch(/function currentWorkdir\(\)[\s\S]*getWorkdirSelection/);
+    expect(htmlSrc).toMatch(/function paintWorkdirsForFace[\s\S]*refreshWorkdirDependents/);
+    expect(htmlSrc).toMatch(/function populateKnobs[\s\S]*refreshWorkdirDependents/);
     expect(treeSrc).not.toMatch(/workspaceFace|workspace-face|face === ["']code["']/);
   });
 

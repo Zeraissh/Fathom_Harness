@@ -29,6 +29,7 @@
  */
 import { appendFile, mkdir, readFile, readdir, rename, rm, writeFile } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
+import { hostname } from "node:os";
 import { join, resolve, dirname } from "node:path";
 import {
   RUN_PHASES,
@@ -126,6 +127,12 @@ export interface ArchivedMeta {
   title?: string | null;
   /** "running" 只会出现在宿主没来得及正常收尾的档案里（崩溃/断电） */
   status: "running" | "done";
+  /**
+   * 僵尸收殓的凭据（2026-09-18 走查 F4-B）：running 档案由 writer 单点盖章
+   * {pid,host,startedAt}。收殓只看"可证已死"——同机 + pid 不在；并行进程
+   * （pid 活）、他机（共享目录）、老档案（无章）一律不碰。
+   */
+  owner?: { pid: number; host: string; startedAt: number };
   verify: boolean;
   createdAt: number;
   finishedAt: number | null;
@@ -221,6 +228,40 @@ export function historyKeepCount(env: NodeJS.ProcessEnv = process.env): number {
   return Number.isInteger(n) && n >= 1 ? n : DEFAULT_HISTORY_KEEP;
 }
 
+/** 本进程的 owner 章（writing 档案单点盖章用）。 */
+export function currentOwnerStamp(startedAt = Date.now()): { pid: number; host: string; startedAt: number } {
+  return { pid: process.pid, host: hostname(), startedAt };
+}
+
+/** pid 是否活着（本机）。EPERM 等非 ESRCH 错误视为"活着"——收殓方向必须保守。 */
+export function pidIsAlive(pid: number): boolean {
+  if (!Number.isInteger(pid) || pid <= 0) return false;
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (err) {
+    return (err as NodeJS.ErrnoException | null)?.code === "ESRCH" ? false : true;
+  }
+}
+
+export type ArchiveOwnerLiveness = "unknown" | "foreign" | "self-alive" | "self-dead";
+
+/**
+ * owner 章的存活判定（F4-B 收殓的唯一门）：
+ * - 无章（老档案）→ unknown：CLI 侧不收（无法证明）；Web 侧保持既有行为。
+ * - 他机 → foreign：共享目录里可能是别的机器在跑，一律不碰。
+ * - 同机 → 按 pid 死活分 self-alive / self-dead。**并行 CLI 靠这拦下误收。**
+ */
+export function archiveOwnerLiveness(
+  meta: { owner?: { pid: number; host: string; startedAt?: number } | null },
+  deps: { host: string; alive: (pid: number) => boolean },
+): ArchiveOwnerLiveness {
+  const owner = meta.owner;
+  if (!owner) return "unknown";
+  if (owner.host !== deps.host) return "foreign";
+  return deps.alive(owner.pid) ? "self-alive" : "self-dead";
+}
+
 /**
  * 每 run 一个写入器。单条 promise 链保序（events.jsonl 的行序 = seq 序，
  * 乱序落盘会让重放出来的界面与当时不同）；任何一步失败后整链熄火——
@@ -256,8 +297,14 @@ export class RunHistoryWriter {
 
   /** 整写 meta.json；rename 的源/目标同目录，因此不会跨卷退化成复制。 */
   writeMeta(meta: ArchivedMeta): void {
+    // 单点盖章（F4-B）：running 档案第一次写就带 owner{pid,host}——CLI 与 Web
+    // 两个写者、分叉与续写都走这里；已有章不覆盖（首写者才是真 owner）。
+    const stamped: ArchivedMeta =
+      meta.status === "running" && !meta.owner
+        ? { ...meta, owner: currentOwnerStamp(meta.createdAt) }
+        : meta;
     this.enqueue(async () => {
-      await writeJsonAtomic(join(this.dir, "meta.json"), meta, "meta");
+      await writeJsonAtomic(join(this.dir, "meta.json"), stamped, "meta");
     });
   }
 

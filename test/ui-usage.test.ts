@@ -13,6 +13,8 @@ import {
   formatUsd,
   formatChartDay,
   formatChartDayFull,
+  formatChartDayShort,
+  chartLabelPlan,
   formatCompactCount,
   niceAxisMax,
   periodStartDay,
@@ -28,6 +30,42 @@ import {
   formatThisRunSpend,
   todayUsageOf,
 } from "../ui/public/features/usage.js";
+
+/**
+ * 走查 UX-C2 / O2：日期标签此前 `overflow:hidden; text-overflow:clip` 被列宽硬切
+ * （30d/90d 必现"半个字"）。修法不是继续裁，而是**按容器宽度算标签节奏**：
+ * 间距放得下全日期就用全日期，放不下退日号，再放不下才减枚数——标签允许
+ * 溢出自己的窄列（邻居间距由步长保证），不再在列内被裁。
+ */
+describe("chartLabelPlan（UX-C2 / O2）", () => {
+  it("窄容器：步长按全日期宽度（≈58px）算，铺不开才退日号", () => {
+    // 240px / 7 天 = 34px 列：全日期放不下 1 枚/列 → 每 2 列一枚
+    expect(chartLabelPlan({ plotWidth: 240, days: 7 })).toEqual({ step: 2, form: "full" });
+    // 240px / 30 天 = 8px 列：全日期每 8 列一枚（保住可读性）
+    expect(chartLabelPlan({ plotWidth: 240, days: 30 })).toEqual({ step: 8, form: "full" });
+    // 240px / 90 天 = 2.7px 列
+    expect(chartLabelPlan({ plotWidth: 240, days: 90 })).toEqual({ step: 22, form: "full" });
+  });
+
+  it("极窄且窗口短：全日期两枚都铺不下才退日号", () => {
+    // 100px / 30 天 = 3.3px 列：全日期要 18 列 > 15 列上限 → 日号每 6 列
+    expect(chartLabelPlan({ plotWidth: 100, days: 30 })).toEqual({ step: 6, form: "day" });
+  });
+
+  it("宽容器：贴住固定节奏不加密", () => {
+    expect(chartLabelPlan({ plotWidth: 1200, days: 7 })).toEqual({ step: 1, form: "full" });
+    expect(chartLabelPlan({ plotWidth: 1200, days: 30 })).toEqual({ step: 4, form: "full" });
+  });
+
+  it("量不到宽度（隐藏面板）时不乱算：退固定步长", () => {
+    expect(chartLabelPlan({ plotWidth: 0, days: 30 })).toEqual({ step: 4, form: "full" });
+    expect(chartLabelPlan({ days: 90 })).toEqual({ step: 10, form: "full" });
+  });
+
+  it("formatChartDayShort：只给日号（工具提示里仍是全日期）", () => {
+    expect(formatChartDayShort("2026-09-18")).toBe("18");
+  });
+});
 
 const NOW = Date.parse("2026-09-09T12:00:00");
 
@@ -233,10 +271,10 @@ describe("deriveSpendFace 今日 / 本次花费", () => {
       },
     });
     expect(todayUsageOf({ byDay: [{ day: "2026-09-14", runs: 110, usd: 0.71, unpricedRuns: 26 }] }, noon).usd).toBe(0.71);
-    expect(face.todayMoney).toBe("今日 $0.71");
+    expect(face.todayMoney).toBe("本机今日 $0.71");
     expect(face.todayUsed).toBe("今日已用 110 次");
     expect(face.todayLine).toContain("26 未计价");
-    expect(face.chipText).toBe("今日 $0.71");
+    expect(face.chipText).toBe("本机今日 $0.71");
     expect(face.chipTitle).not.toMatch(/还剩|套餐|token/i);
     expect(face.chipTitle).toContain("本机全部工作目录");
     expect(face.chipAria).toBe("本机今日 $0.71（全部工作目录） · 今日已用 110 次 · 26 未计价");
@@ -253,7 +291,7 @@ describe("deriveSpendFace 今日 / 本次花费", () => {
     const empty = deriveSpendFace({ now: noon, usage: { byDay: [] } });
     expect(empty.usageReady).toBe(true);
     expect(empty.todayUsd).toBeNull();
-    expect(empty.todayMoney).toBe("今日还没花费");
+    expect(empty.todayMoney).toBe("本机今日还没花费");
     expect(empty.todayUsed).toBe("今日已用 0 次");
     expect(empty.thisRunText).toBeNull();
     expect(empty.chipAria).toBe("本机今日 还没花费（全部工作目录） · 今日已用 0 次");
@@ -262,7 +300,7 @@ describe("deriveSpendFace 今日 / 本次花费", () => {
       now: noon,
       usage: { byDay: [{ day: "2026-09-14", runs: 3, usd: null, unpricedRuns: 3 }] },
     });
-    expect(unpricedDay.todayMoney).toBe("今日未计价");
+    expect(unpricedDay.todayMoney).toBe("本机今日未计价");
     expect(unpricedDay.todayMoney).not.toBe("$0.00");
 
     expect(formatThisRunSpend({ usd: 0.04 })).toBe("这次 $0.04");
@@ -275,7 +313,7 @@ describe("deriveSpendFace 今日 / 本次花费", () => {
       usage: { byDay: [{ day: "2026-09-14", runs: 1, usd: 0.71, unpricedRuns: 0 }] },
       runCost: { usd: 0.04 },
     });
-    expect(withRun.chipText).toBe("这次 $0.04 · 今日 $0.71");
+    expect(withRun.chipText).toBe("这次 $0.04 · 本机今日 $0.71");
   });
 
   it("宿主断线刷新不把已有台账抹成空", () => {
@@ -283,5 +321,53 @@ describe("deriveSpendFace 今日 / 本次花费", () => {
     expect(html).toContain("断线时保留上次读数");
     expect(html).toContain('data-spend-text>本机花费');
     expect(html).toContain("本机今日花费（全部工作目录）还在加载");
+  });
+});
+
+/**
+ * G3 · 消耗图形化（2026-09-18 走查纲领）：图表加「轮次 | 成本」视角——
+ * 数据里的 usd/unpricedRuns 一直在，只是没画；未计价绝不画成 $0（既有脚注口径）。
+ */
+describe("G3 · 消耗图表：轮次/成本 视角", () => {
+  let host;
+  beforeEach(() => {
+    document.body.innerHTML = "";
+    host = document.createElement("div");
+    document.body.appendChild(host);
+  });
+  const boot = () => {
+    const api = initUsageView(host, {
+      fetchUsage: async () => SAMPLE,
+      onClose: vi.fn(),
+      now: () => NOW,
+    });
+    api.open();
+    return api;
+  };
+
+  it("切换钮在；默认轮次口径不动（副标题保持原文案）", async () => {
+    const api = boot();
+    await Promise.resolve();
+    const btns = [...api.el.querySelectorAll("[data-metric]")];
+    expect(btns.map((b) => b.getAttribute("data-metric"))).toEqual(["turns", "usd"]);
+    expect(api.el.querySelector("#usage-chart-sub")?.textContent).toBe("按模型堆叠，近 7 天");
+  });
+
+  it("切到成本：副标题改口、轴换金额；纯未计价的一天不画成 $0、aria 直说未计价", async () => {
+    const api = boot();
+    await Promise.resolve();
+    // NOW=09-09：09-02 只在 30d 窗口里（既有口径），先切区间再切视角
+    api.el.querySelector('[data-days="30"]').click();
+    api.el.querySelector('[data-metric="usd"]').click();
+    await Promise.resolve();
+    expect(api.el.querySelector("#usage-chart-sub")?.textContent).toContain("成本");
+    expect(api.el.querySelector(".usage-y")?.textContent).toContain("$");
+    expect(api.el.querySelectorAll(".usage-col"), "切到成本后柱子不该消失").toHaveLength(30);
+    // 2026-09-02 当天只有未计价运行（usd=null）：成本视角不冒充金额
+    const unpriced = api.el.querySelector('.usage-col[data-day="2026-09-02"]');
+    expect(unpriced?.getAttribute("aria-label") ?? "").toContain("未计价");
+    // 有价的那天给出金额口径
+    const priced = api.el.querySelector('.usage-col[data-day="2026-09-07"]');
+    expect(priced?.getAttribute("aria-label") ?? "").toMatch(/成本 \$/);
   });
 });

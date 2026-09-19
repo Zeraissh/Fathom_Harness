@@ -1,0 +1,5 @@
+渲染出的 .row 行数：0（0 = 空白）
+
+控制台原文：
+[error] Refused to execute inline script because it violates the following Content Security Policy directive: "default-src 'none'". Either the 'unsafe-inline' keyword, a hash ('sha256-Gfg4sf4EWFUICai6WG4SH9FqmuexmPZwirbyZq4/Kro='), or a nonce ('nonce-...') is required to enable inline execution. Note also that 'script-src' was not explicitly set, so 'default-src' is used as a fallback.
+

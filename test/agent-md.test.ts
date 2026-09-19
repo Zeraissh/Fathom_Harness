@@ -152,7 +152,9 @@ describe("注入位置与包纪律优先级", () => {
     const bundle = loadAgentMd({ workdir: dir });
     const asked: string[] = [];
     const model = new FakeModelClient([
-      fakeMessage([toolUseBlock("u1", "bash", { command: "echo hi" })], "tool_use"),
+      // 探针必须是**非只读**命令：圈内只读 bash 免问是 2026-09-18 的独立策略
+      // （见 test/read-only-shell.test.ts），与「AGENT.md 能否松动审批门」无关。
+      fakeMessage([toolUseBlock("u1", "bash", { command: "echo hi > out.txt" })], "tool_use"),
       fakeMessage([textBlock("done")], "end_turn"),
     ]);
     const loop = new AgentLoop(

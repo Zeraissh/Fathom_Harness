@@ -193,19 +193,44 @@
           </svg>
         </span>
         <p class="empty-brand">FATHOM<span class="fw-dot">.</span></p>
-        <p class="empty-tagline">说要做什么，回车就发。</p>
-        <p class="empty-tagline-cn">稿件、纪要、问答都可以从这里开始。</p>
         <span class="empty-depthline" aria-hidden="true"></span>
       </div>
     </div>
-    <!-- 右侧工作区文件：Work/Code 都有。展开走 /api/workspace/files?q=dir/。
-         不用 role=tree——空态没有 treeitem 会撞 aria-required-children（与 run-list 同族）。 -->
-    <aside id="workspace-file-tree" class="files-rail workspace-file-tree" aria-label="工作区文件"></aside>
+    <!-- 右列：**唯一 owner**（P1 空间契约）。
+         此前文件树与预览坞是 #center-row 的两个平行 flex 子项，各写各的宽度契约
+         （树 clamp(200,22vw,280) 且零 @media；坞 38% 自带 900 断点），
+         谁都不负责「对话至少得多宽」。现在两者都是 #right-rail 的面板，
+         宽度/折叠/选哪个面板只有一份记忆，边界由 core/rail-policy.js 按预算算。 -->
+    <div id="right-rail" class="right-rail" data-mode="side" data-layout="tabbed" data-panel="tree" data-collapsed="false">
+      <div class="right-rail-tabs" role="group" aria-label="右列面板">
+        <button type="button" class="right-rail-tab" data-rail-panel="tree"
+          id="rail-tab-tree" aria-pressed="true" aria-controls="workspace-file-tree">文件</button>
+        <button type="button" class="right-rail-tab" data-rail-panel="preview"
+          id="rail-tab-preview" aria-pressed="false" aria-controls="right-rail-preview">预览</button>
+      </div>
+      <!-- 收起/展开键是右列的**直接子节点**，不在 tab 行里：split 档 tab 行整排
+           隐藏（两栏都开着，切换没有语义），键若随行消失，宽档收不起也回不来
+           （2026-09-18 走查 UX-B2/B1）。绝对定位浮在右上角，三种形态都在。 -->
+      <button type="button" class="right-rail-collapse" id="right-rail-collapse"
+        aria-label="收起右列" title="收起右列" aria-expanded="true"><i class="ph ph-caret-right" aria-hidden="true"></i></button>
+      <div class="right-rail-drag" id="right-rail-drag" role="separator" aria-orientation="vertical"
+        aria-label="拖动调整右列宽度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="25" tabindex="0"></div>
+      <!-- 右侧工作区文件：Work/Code 都有。展开走 /api/workspace/files?q=dir/。
+           不用 role=tree——空态没有 treeitem 会撞 aria-required-children（与 run-list 同族）。 -->
+      <aside id="workspace-file-tree" class="files-rail workspace-file-tree" aria-label="工作区文件"></aside>
+      <!-- 预览坞占位：preview-dock.js 把自己挂进来（原先是 #center-row，见其 host 解析） -->
+      <div id="right-rail-preview" class="right-rail-preview"></div>
+    </div>
+    <!-- 窄档把手：收起=0 宽时全站唯一的重开入口（二轮走查实锤：此前收起即断头路）。
+         角标 = 有新内容没看（railVisibility 的 badge）。 -->
+    <button type="button" id="right-rail-handle" class="right-rail-handle" hidden
+      aria-label="打开右列" title="打开右列"><i class="ph ph-caret-left" aria-hidden="true"></i></button>
+    <!-- 窄档 sheet 的遮罩：只有 overlay 且打开时可见；点它 = 关闭 -->
+    <div id="right-rail-scrim" class="right-rail-scrim" hidden></div>
   </div>
   <!-- 跳转箭头：**在滚动容器之外**，所以它自己不会被滚走。
-       ↓ 回到底部（流式时往上翻过之后用），↑ 回到四决定因素（读进下钻面之后用）。 -->
+       ↓ 回到底部（流式时往上翻过之后用）。 -->
   <div id="scroll-nav" class="scroll-nav">
-    <button type="button" class="scroll-nav-btn" data-nav="top" hidden aria-label="回到四决定因素"><i class="ph ph-arrow-up" aria-hidden="true"></i></button>
     <button type="button" class="scroll-nav-btn" data-nav="bottom" hidden aria-label="回到最新"><i class="ph ph-arrow-down" aria-hidden="true"></i></button>
   </div>
 
@@ -223,12 +248,17 @@
        新建对话时 #main-panel.is-welcome 把同一份表单抬到中央，不搬 DOM。
        胶囊铬（chip / 图标发送 / 紧凑输入）对话态与欢迎态共用；欢迎只多居中和起步卡。 -->
   <form id="submit-form" class="submit-bar" autocomplete="off">
-    <div class="composer-scopebar" id="composer-scopebar">
+    <!-- 上排控件（项目 / 工作目录 / 模型 / 运行设置）收成一行摘要（2026-09-18 回走
+         §2.4）：默认收起，点开才是控件本体。摘要写「当前装的是什么」，由
+         deriveScopeSummary 从控件文字派生（观察器跟进，别处更新文字不必记得这里）。 -->
+    <details class="composer-scope" id="composer-scope">
+      <summary class="composer-scope-summary" id="composer-scope-summary" title="项目 / 工作目录 / 模型"><span class="composer-scope-text">选项目、目录与模型</span></summary>
+      <div class="composer-scopebar" id="composer-scopebar">
       <div class="scope-field scope-field--project" id="project-field">
         <i class="ph ph-briefcase" aria-hidden="true"></i>
         <label class="sr-only" for="project-select">项目</label>
         <select id="project-select" class="wd-trigger" aria-label="项目">
-          <option value="">未入项（按目录）</option>
+          <option value="">创建项目</option>
         </select>
       </div>
       <div class="scope-field scope-field--workdir" id="workdir-combobox">
@@ -309,7 +339,8 @@
         <span class="knobs-label sr-only">运行设置</span>
         <i class="ph ph-caret-down knobs-caret" aria-hidden="true"></i>
       </button>
-    </div>
+      </div>
+    </details>
     <!-- 信息队列：运行中收到的排队消息以 chips 呈现在输入行上方；
          内容全部由 message_queued / message_queue_updated 事件重放长出（renderQueueChips）。
          不能放进 .composer-input-row——它是 flex 行，chips 会被挤成内联一员 -->
@@ -420,7 +451,7 @@
       <div class="knob-row" title="只改审批节奏。圈禁、硬拒与密钥门不受档位影响。">
         <span class="knob-row-copy">
           <span class="knob-row-name" id="permission-row-label">权限</span>
-          <span class="knob-row-desc" id="permission-stance">手动 · 危险动作会先问你，不会自动放行</span>
+          <span class="knob-row-desc" id="permission-stance">手动 · 危险动作会先问你（工作目录内的只读命令自动放行）</span>
         </span>
         <select id="permission-mode-select" aria-labelledby="permission-row-label">
           <option value="">自定义</option>
@@ -443,7 +474,7 @@
         </span>
         <input type="checkbox" id="multi-agent-toggle" />
       </label>
-      <label class="knob-row" title="打开后 ask 级工具不再逐次问。默认先问。写入只能改这些文件夹。">
+      <label class="knob-row" title="打开后 ask 级工具不再逐次问。默认先问；工作目录内的只读命令本来就免问。写入只能改这些文件夹。">
         <span class="knob-row-copy">
           <span class="knob-row-name">自动放行</span>
           <span class="knob-row-desc">默认先问；勾上才自动放行</span>
@@ -483,6 +514,15 @@
  * 阶段二新增：标签页切换、日志折叠、筛选器、无障碍语义。
  */
 import {
+  railPolicy,
+  railVisibility,
+  clampRailFraction,
+  readRailPref,
+  writeRailPref,
+  CENTER_MIN_PX,
+  shouldYieldSidebar,
+} from "/core/rail-policy.js";
+import {
   createBatcher,
   normalizeTab,
   createInitialState,
@@ -490,9 +530,6 @@ import {
   reduceEvents,
   markApprovalResolved,
   expirePendingApprovals,
-  deriveLogEntries,
-  applyCollapseOverrides,
-  nextCollapseOverride,
   deriveRunListItems,
   deriveThreadFiles,
   deriveThreadDeclaredArtifacts,
@@ -503,6 +540,9 @@ import {
   readSidebarCollapsed,
   writeSidebarCollapsed,
   deriveWrittenPaths,
+  artifactWriteState,
+  editHunksFromTimeline,
+  writeAnnouncement,
   deriveArtifacts,
   deliveryFace,
   conversationChainIds,
@@ -539,6 +579,7 @@ import {
   harnessVisionConfigured,
   readNextActionChip,
   deriveComposerMode,
+  deriveScopeSummary,
   composerSubmitPlan,
   suggestPlainModeInsteadOfPlan,
   buildNewRunRequest,
@@ -576,6 +617,7 @@ import {
   packOptionLabel,
   applyDocumentTabTitle,
   filterWorkspaceFileEntries,
+  createPathInspectCache,
 } from "/app.js";
 import {
   loadSettings,
@@ -603,6 +645,7 @@ import {
   isBrowserPreviewPath,
   wrapIndex,
   indexAfterCloseTab,
+  artifactBasename,
 } from "/features/artifact-canvas.js";
 import {
   initFilePreview,
@@ -643,6 +686,8 @@ import { initFileTree } from "/features/file-tree.js";
 /** @type {Map<string, import('/app.js').RunState>} */
 const runStates = new Map();
 let selectedRunId = /** @type {string|null} */ (null);
+/** 命令面板句柄（动态 import 之后才有）。`/` 打在第一格时用它开面板。 */
+let commandPaletteApi = /** @type {{open?:()=>void}|null} */ (null);
 /** @type {Map<string, string>} 当前打开的子代理详情，按 run 记 */
 const selectedAgentByRun = new Map();
 let runs = /** @type {{runId:string, task:string, status:string, verify:boolean, createdAt:number, finishedAt:number|null}[]} */ ([]);
@@ -906,10 +951,6 @@ let uiSettings = (() => {
 /** @type {Map<string, string>} */
 const activeTabs = new Map();
 
-// R-04 日志折叠状态（每个 run 独立的展开/折叠覆盖）
-/** @type {Map<string, Map<number, boolean>>} */
-const logCollapseOverrides = new Map();
-
 // R-08 筛选器状态
 let currentFilter = "all";
 let currentQuery = "";
@@ -945,17 +986,11 @@ function syncScrollNav() {
   const scroller = document.getElementById("main-area");
   const nav = document.getElementById("scroll-nav");
   if (!scroller || !nav) return;
-  const drawer = document.getElementById("detail-drawer");
-  const grid = document.querySelector(".factor-grid");
   const nvis = deriveScrollNav({
     scrollTop: scroller.scrollTop,
     scrollHeight: scroller.scrollHeight,
     clientHeight: scroller.clientHeight,
-    // 四张卡相对滚动容器的位置：<0 就是已经滚出上边界
-    anchorTop: grid ? grid.getBoundingClientRect().top - scroller.getBoundingClientRect().top : null,
-    drawerOpen: Boolean(drawer && drawer.open),
   });
-  nav.querySelector('[data-nav="top"]').hidden = !nvis.showTop;
   nav.querySelector('[data-nav="bottom"]').hidden = !nvis.showBottom;
 }
 
@@ -1108,13 +1143,13 @@ function applyNextActionChip(btn) {
   } else if (spec.action === "preview" && spec.path) {
     if (selectedRunId) openArtifactByPath(selectedRunId, spec.path);
     else {
-      const wd = composerWorkdir();
+      const wd = currentWorkdir();
       if (wd) filePreviewApi?.open({ path: spec.path, url: buildFilePreviewUrl({ path: spec.path, workdir: wd }) });
     }
   } else if (spec.action === "review" && spec.path) {
     if (selectedRunId) openArtifactByPath(selectedRunId, spec.path);
     else {
-      const wd = composerWorkdir();
+      const wd = currentWorkdir();
       if (wd) filePreviewApi?.open({ path: spec.path, url: buildFilePreviewUrl({ path: spec.path, workdir: wd }) });
     }
     requestAnimationFrame(() => {
@@ -1137,8 +1172,6 @@ document.addEventListener("click", (e) => {
   const nav = document.getElementById("scroll-nav");
   if (!scroller || !nav) return;
   scroller.addEventListener("scroll", syncScrollNav, { passive: true });
-  // 抽屉开合会改变可滚高度与四张卡的位置，也得重算
-  document.addEventListener("toggle", syncScrollNav, true);
   nav.addEventListener("click", (e) => {
     const btn = e.target.closest("[data-nav]");
     if (!btn) return;
@@ -1157,12 +1190,6 @@ document.addEventListener("click", (e) => {
      */
     if (btn.getAttribute("data-nav") === "bottom") {
       scroller.scrollTop = scroller.scrollHeight;
-    } else {
-      const grid = document.querySelector(".factor-grid");
-      if (grid) {
-        scroller.scrollTop +=
-          grid.getBoundingClientRect().top - scroller.getBoundingClientRect().top;
-      }
     }
     syncScrollNav();
   });
@@ -1171,6 +1198,44 @@ document.addEventListener("click", (e) => {
 // ---- 统一 composer 的三个事实（派生逻辑在 app.js，这里只存输入）----
 /** @type {ReturnType<typeof deriveComposerMode>|null} */
 let composerMode = null;
+
+// ---- 上排控件收成一行摘要（2026-09-18 回走 §2.4）----
+// 摘要文字从控件本体派生（`deriveScopeSummary`），用观察器跟进：项目/目录/模型
+// 的文字各有各的更新路径，逐个挂钩子迟早漏一个；观察的是**结果**，不是路径。
+(function bindComposerScopeSummary() {
+  const details = document.getElementById("composer-scope");
+  const summary = document.getElementById("composer-scope-summary");
+  const bar = document.getElementById("composer-scopebar");
+  if (!details || !summary || !bar) return;
+  const textEl = summary.querySelector(".composer-scope-text") ?? summary;
+  const readText = (sel) => document.querySelector(sel)?.textContent ?? "";
+  const sync = () => {
+    textEl.textContent = deriveScopeSummary({
+      project: document.querySelector("#project-select")?.selectedOptions?.[0]?.textContent ?? "",
+      workdir: readText("#workdir-trigger-text"),
+      model: readText("#executor-model-trigger-text"),
+    });
+  };
+  new MutationObserver(sync).observe(bar, {
+    childList: true,
+    subtree: true,
+    characterData: true,
+    attributes: true,
+    attributeFilter: ["hidden"],
+  });
+  sync();
+  const SCOPE_KEY = "agent.ui.pref.composerScope";
+  try {
+    // 记住的是**展开**：默认收起（回走的密度反馈），展开过一次的用户不必每轮再点
+    details.open = localStorage.getItem(SCOPE_KEY) === "1";
+  } catch { /* 偏好读不到就用默认收起 */ }
+  details.addEventListener("toggle", () => {
+    try {
+      if (details.open) localStorage.setItem(SCOPE_KEY, "1");
+      else localStorage.removeItem(SCOPE_KEY);
+    } catch { /* 写不进去不影响展开本身 */ }
+  });
+})();
 /** 提交在飞。**必须进模式**，不能命令式改 btn.disabled——服务端在返回响应
     之前就广播了 run_created，列表刷新会立刻把按钮重算成"可点" */
 let submitting = false;
@@ -1180,7 +1245,19 @@ let selectedDesignTemplate = /** @type {string|null} */ (null);
 let designModeActive = false;
 let workspaceFace = "office";
 let officeCatalogOpen = false;
-let codeVerifyPref = true;
+/**
+ * Code 脸的核查偏好（切脸时记忆/还原用）。出发状态必须与设置中心同源——
+ * 旧硬编码 `true` 会在启动「默认 office → 应用记忆的 Code 脸」这段迁移里
+ * 把设置默认值和「默认关；需要时再开」的文案一起悄悄盖掉（走查 U2）。
+ */
+let codeVerifyPref = composerDefaults(uiSettings).verify;
+/**
+ * 本次会话手动打开过右列？——内容驱动让位判据之一（二轮走查）。
+ * 不落盘：把"打开"持久化会让窄档 sheet 下次进来自动弹出来抢屏。
+ */
+let railOpenedThisSession = false;
+/** 文件树根层条目数：null=未知（未加载/未落定），由 file-tree 的 onEntriesChanged 维护 */
+let railTreeEntryCount = null;
 let selectedDesignTab = /** @type {string|null} */ (null);
 let selectedDesignId = /** @type {string|null} */ (null);
 let selectedDesignSample = /** @type {string|null} */ (null);
@@ -1251,6 +1328,8 @@ function sidebarIsHidden() {
 
 function syncSidebarChrome() {
   const hidden = sidebarIsHidden();
+  // 左栏宽度是右列预算的一项：收起/展开后右列必须重算（否则边界停在旧值）
+  paintRightRail();
   if (sidebarExpandBtn) {
     sidebarExpandBtn.hidden = !hidden;
     sidebarExpandBtn.setAttribute("aria-expanded", String(!hidden));
@@ -1281,7 +1360,40 @@ function toggleSidebar() {
   setSidebarCollapsed(!document.body.classList.contains("sidebar-collapsed"));
 }
 
+/**
+ * 窄窗左栏让位（2026-09-18 回走 §2.3，判据在 `shouldYieldSidebar`）：
+ * 视口窄于让位边界（=右列同一份预算）且有会话在开时，左栏默认收起。
+ * - **不写用户偏好**（persist:false）：偏好是另一个键，窗口回到边界之上时按它恢复；
+ * - 收起前要求左栏可见（`!sidebarIsHidden()`）：视口逼出来的那次收起只做一次，
+ *   用户随后手动展开不与之打架；
+ * - 左栏 width 在收起态量不到（display:none），所以记最近一次实测值兜底。
+ */
+let lastSidebarWidth = 280; // styles.css 的声明宽；可见时随实测更新
+let sidebarYielded = false;
+
+function syncSidebarYield() {
+  const el = document.querySelector(".sidebar");
+  const measured = sidebarIsHidden() || !el ? 0 : Math.round(el.getBoundingClientRect?.().width ?? 0);
+  if (measured > 0) lastSidebarWidth = measured;
+  const should = shouldYieldSidebar({
+    viewportWidth: window.innerWidth,
+    sidebarWidth: lastSidebarWidth,
+    hasOpenConversation: Boolean(selectedRunId),
+  });
+  if (should && !sidebarYielded && !sidebarIsHidden()) {
+    sidebarYielded = true;
+    setSidebarCollapsed(true, { persist: false });
+    return;
+  }
+  if (!should && sidebarYielded) {
+    sidebarYielded = false;
+    // 只把「视口逼出来的收起」还回去；用户此刻手动展开着就随他
+    if (sidebarIsHidden()) setSidebarCollapsed(readSidebarCollapsed(localStorage), { persist: false });
+  }
+}
+
 setSidebarCollapsed(readSidebarCollapsed(localStorage), { persist: false });
+syncSidebarYield();
 sidebarCollapseBtn?.addEventListener("click", () => setSidebarCollapsed(true));
 sidebarExpandBtn?.addEventListener("click", () => setSidebarCollapsed(false));
 document.addEventListener("keydown", (e) => {
@@ -1318,6 +1430,7 @@ function exitDetailMode() {
   selectedRunId = null;
   refreshRunListView();
   paintEmptyState();
+  syncSidebarYield();
   changesApi?.setRun(null); // T8：离开会话，变更分区随之收起
   syncChangesCommand();
   artifactCanvasApi?.close(); // T10：离开会话，画布与挂账的深链一并收起
@@ -1407,11 +1520,13 @@ function applyWorkspaceFace(next, { persist = true, refresh = true } = {}) {
     refreshRunListView();
     syncComposer();
   }
-  syncFileTreeToComposer();
+  refreshWorkdirDependents();
 }
 
 function paintEmptyState() {
   mainPanel.classList.add("is-welcome");
+  // 欢迎页 = 右列内容驱动的一个上下文（二轮走查：欢迎页一律收起）
+  paintRightRail();
   const gallery = document.getElementById("starter-gallery");
   if (gallery) gallery.hidden = false;
   renderEmptyState(runs.length > 0, {
@@ -1419,7 +1534,7 @@ function paintEmptyState() {
     workspaceFace,
     // 只有点开「更多稿件」才进设计目录；日常 Work 空态要看得见「说要做什么」。
     designModeActive: officeCatalogOpen,
-    workdir: composerWorkdir(),
+    workdir: currentWorkdir(),
     harness: harnessSnapshot,
     im: imSnapshot,
     githubPr: githubPrReady,
@@ -1444,6 +1559,8 @@ function paintEmptyState() {
 
 function leaveWelcomeLayout() {
   mainPanel.classList.remove("is-welcome");
+  // 进对话：右列回到内容驱动（有内容按意图开，没内容收）
+  paintRightRail();
   const gallery = document.getElementById("starter-gallery");
   if (gallery) {
     gallery.hidden = true;
@@ -1704,6 +1821,7 @@ if (runSearch) {
 function selectRun(runId, opts = {}) {
   if (selectedRunId === runId) return;
   selectedRunId = runId;
+  syncSidebarYield();
   unreadRuns.delete(runId); // 看了就算读过
   refreshRunListView();
 
@@ -2071,40 +2189,12 @@ window.addEventListener("hashchange", () => {
   applyHash();
 });
 
-// ---- 日志折叠切换 (R-04) ----
-function handleToggleEntry(seq) {
-  if (!selectedRunId) return;
-  const state = runStates.get(selectedRunId);
-  if (!state) return;
-  let overrides = logCollapseOverrides.get(selectedRunId);
-  if (!overrides) {
-    overrides = new Map();
-    logCollapseOverrides.set(selectedRunId, overrides);
-  }
-  // 翻转交给纯函数：它会**先把默认折叠态算进来**。此前这里是直接对覆盖表
-  // 取反，而表里没有这一条时取反得到 true，多数条目默认本来就是 true——
-  // 于是第一次点一条默认折叠的条目等于把 true 写成 true，
-  // 一次完全没有反馈的死点击（AC2-18 复验抓到）
-  const next = nextCollapseOverride(deriveLogEntries(state, currentLiveBuffers(selectedRunId)), overrides, seq);
-  if (next === null) return;
-  overrides.set(seq, next);
-  renderDetailWithState(state);
-}
-
 // ---- 渲染详情（统一入口） ----
 function renderDetailWithState(state) {
   leaveWelcomeLayout();
   const runId = state.runId;
   const info = runs.find((r) => r.runId === runId);
-  const activeTab = normalizeTab(activeTabs.get(runId));
   const live = currentLiveBuffers(runId);
-
-  // 构建日志条目（应用折叠覆盖）
-  // 与 handleToggleEntry 共用同一个应用函数——两处各写一份就会漂
-  const logEntries = applyCollapseOverrides(
-    deriveLogEntries(state, live),
-    logCollapseOverrides.get(runId),
-  );
 
   renderRunDetail(state, {
     showBack: isNarrow(),
@@ -2113,9 +2203,6 @@ function renderDetailWithState(state) {
     onAllowAlways: (approvalId) => postApproval(runId, approvalId, "allow", undefined, "conversation"),
     onDenyReason: (approvalId, reason) =>
       postApproval(runId, approvalId, "deny", reason || ""),
-    activeTab,
-    logEntries,
-    onToggleEntry: handleToggleEntry,
     harness: harnessSnapshot,
     liveText: live.text,
     liveThinking: live.thinking,
@@ -2165,7 +2252,7 @@ function renderDetailWithState(state) {
     threadFiles: conversationArtifactFiles(runId),
     runs,
     runStates,
-    workdir: info?.workdir || composerWorkdir(),
+    workdir: info?.workdir || currentWorkdir(),
     im: imSnapshot,
     githubPr: githubPrReady,
     canContinue: info?.canContinue === true,
@@ -2597,28 +2684,51 @@ async function revealArtifact(runId, path) {
 /**
  * 只读确认模型正文里的路径候选。不存在/越界时宿主回 exists=false，前端不报错、
  * 不造链接；这不是一次用户操作，只是把“看起来像路径”变成“确实存在”的链接。
+ *
+ * 缓存（走查 UX-D1）：每次重渲染两处 hydration 都会为新节点探测一次，流式下
+ * 每批事件 3 条 POST。同一 (runId, path) 在 TTL 内复用结果；TTL 过了重探。
  */
+const pathInspectCache = createPathInspectCache();
 async function inspectRunPaths(runId, paths) {
   const candidates = [...new Set((paths ?? []).map((p) => String(p ?? "").trim()).filter(Boolean))]
     .slice(0, 64);
   if (candidates.length === 0) return [];
-  try {
-    const res = await fetch(`/api/runs/${encodeURIComponent(runId)}/paths/inspect`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ paths: candidates }),
-    });
-    if (!res.ok) return [];
-    const body = await res.json();
-    return Array.isArray(body.paths) ? body.paths : [];
-  } catch {
-    return [];
+  const resolved = new Map();
+  const missing = [];
+  for (const p of candidates) {
+    const hit = pathInspectCache.get(runId, p);
+    if (hit) resolved.set(p, hit);
+    else missing.push(p);
   }
+  if (missing.length > 0) {
+    try {
+      const res = await fetch(`/api/runs/${encodeURIComponent(runId)}/paths/inspect`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ paths: missing }),
+      });
+      if (res.ok) {
+        const body = await res.json();
+        for (const item of Array.isArray(body.paths) ? body.paths : []) {
+          const input = String(item?.input ?? "");
+          if (!input) continue;
+          pathInspectCache.set(runId, input, item);
+          resolved.set(input, item);
+        }
+      }
+    } catch {
+      /* 路径链接是渐进增强：宿主不可达时正文仍完整可读 */
+    }
+  }
+  return candidates.map((p) => resolved.get(p)).filter(Boolean);
 }
 
 // ---- 宿主真相快照（Tools/Context/Loop 面的数据源）----
 // 拉一次即可：它描述的是本次进程的装配，run 与 run 之间不变
 let harnessSnapshot = null;
+/** /api/harness 是否已经落定（成功、非 2xx、抛错都算落定）。
+    未落定时树说「正在确认目录…」——不能把「还没问过」说成「确实没有」。 */
+let harnessSettled = false;
 /** GET /api/im 公开快照。只认 feishuInbound，不含密钥。 */
 let imSnapshot = /** @type {{feishuInbound?: boolean}|null} */ (null);
 /** GET /api/workspace/git/pr 的 ready。没令牌 / 不可开 → 不画「开成 PR」。 */
@@ -2738,6 +2848,10 @@ async function loadHarness() {
     void refreshCiteCandidates();
   } catch {
     // 拿不到就照实降级：Tools 面会显示"未获取到工具清单"
+  } finally {
+    // 无论成功失败都算落定；落定后才允许树说「先选一个工作目录。」
+    harnessSettled = true;
+    refreshWorkdirDependents();
   }
 }
 
@@ -2936,6 +3050,10 @@ function applySseBatch(runId, queue) {
     if (selectedRunId === runId) {
       const written = deriveWrittenPaths(state, queue);
       if (written.length > 0) {
+        // P3：播的是**事实**——写盘成功。以前那半句是「产物画布已打开」，
+        // 那是"你换了个视图"，而且曾在未写盘时先响。
+        const line = writeAnnouncement(written, artifactBasename);
+        if (line) announceStatus(line);
         if (artifactCanvasApi?.isOpen()) artifactCanvasApi.noteWrites(written);
         else openArtifactByPath(runId, written.find((p) => /\.html?$/i.test(p)) ?? written[written.length - 1]);
       }
@@ -3382,6 +3500,14 @@ submitBtn.addEventListener("click", (e) => {
  * 选词上屏，绝不许触发发送。
  */
 taskInput.addEventListener("keydown", (e) => {
+  // `/` 打在第一格（输入框还空着）时打开命令面板。这是 REPL 惯例，也是 09-15 审计
+  // 的建议：「`/` 要么弹出命令面板，要么不当命令」——此前它什么都不做，纯空响。
+  // 有内容时照常插入斜杠：路径、除法、日期都要用它，不能占着。
+  if (e.key === "/" && taskInput.value === "" && commandPaletteApi) {
+    e.preventDefault();
+    commandPaletteApi.open?.();
+    return;
+  }
   if (e.key === "Escape") {
     const picker = document.getElementById("cite-picker");
     if (picker && !picker.hidden) {
@@ -3520,7 +3646,7 @@ function applyDraftsWorkdirSelection(draftsPath, list) {
   void refreshGateChip();
   void refreshCiteCandidates();
   syncComposer();
-  syncFileTreeToComposer();
+  refreshWorkdirDependents();
   announceStatus("设计稿写到独立目录");
   hideDesignDraftsHint();
 }
@@ -3554,7 +3680,7 @@ async function ensureDesignDraftsWorkdir() {
       renderWorkdirOptions(workdirSelect, list, { selected: keep });
       applyWorkdirSelection(workdirSelect, list, { primary: keep, extras });
       workdirComboboxApi?.paint();
-      syncFileTreeToComposer();
+      refreshWorkdirDependents();
     }
     if (body.reason === "host-repo") {
       showDesignDraftsHint(body.workdir);
@@ -3562,7 +3688,9 @@ async function ensureDesignDraftsWorkdir() {
   } catch { /* 失败不挡设计模式 */ }
 }
 
-function composerWorkdir() {
+/** 「当前目录」的**唯一**派生入口。树、预览坞、@、引用、发送都只准从这里读，
+    不准各自再判一次 —— 判两次就会像 09-15 那样，发送栏有目录而树说没有。 */
+function currentWorkdir() {
   if (workdirSelect && workdirSelect.value && workdirSelect.value !== WORKDIR_ADD_VALUE) {
     return getWorkdirSelection(workdirSelect).primary || workdirSelect.value;
   }
@@ -3579,7 +3707,9 @@ function composerWorkdir() {
   }) || "";
 }
 
-function syncFileTreeToComposer() {
+/** 工作目录变了的统一出口：重载树、刷 git 芯片、欢迎态重绘。
+    所有"目录可能变了"的地方都调它一次，别各自分支。 */
+function refreshWorkdirDependents() {
   void fileTreeApi?.reload?.();
   void workspaceGitChipApi?.refresh()?.then(() => refreshGithubPrReady().then(() => {
     if (mainPanel.classList.contains("is-welcome")) paintEmptyState();
@@ -3589,7 +3719,7 @@ function syncFileTreeToComposer() {
 async function refreshGateChip() {
   const chip = document.getElementById("gate-chip");
   if (!chip) return;
-  const wd = composerWorkdir();
+  const wd = currentWorkdir();
   if (!wd) {
     paintGateChip(chip, null);
     return;
@@ -3612,7 +3742,7 @@ function paintCiteChips() {
   if (!host) return;
   host.replaceChildren();
   const selected = selectedCiteIds
-    .map((id) => citeCandidates.find((c) => c.runId === id) || sameWorkdirCiteRuns(runs, composerWorkdir()).find((r) => r.runId === id))
+    .map((id) => citeCandidates.find((c) => c.runId === id) || sameWorkdirCiteRuns(runs, currentWorkdir()).find((r) => r.runId === id))
     .filter(Boolean);
   host.hidden = selected.length === 0;
   for (const ref of selected) {
@@ -3673,7 +3803,7 @@ function bindWorkspacePickerFilter(picker, files, initial) {
 
 async function refetchWorkspaceFiles(query) {
   const picker = document.getElementById("cite-picker");
-  const wd = composerWorkdir();
+  const wd = currentWorkdir();
   if (!picker || picker.hidden || !wd) return;
   const token = ++filePickerToken;
   try {
@@ -3738,7 +3868,7 @@ function insertWorkspaceFileMention(relative, kind) {
 
 async function paintWorkspaceFilePicker(query) {
   const picker = document.getElementById("cite-picker");
-  const wd = composerWorkdir();
+  const wd = currentWorkdir();
   if (!picker) return;
   if (!wd) {
     hideCitePicker();
@@ -3775,7 +3905,7 @@ function paintCitePicker(query) {
   const picker = document.getElementById("cite-picker");
   if (!picker) return;
   picker.setAttribute("aria-label", "引用会话");
-  const local = sameWorkdirCiteRuns(runs, composerWorkdir()).map((r) => ({
+  const local = sameWorkdirCiteRuns(runs, currentWorkdir()).map((r) => ({
     runId: r.runId,
     title: r.title || r.task,
     task: r.task,
@@ -3830,7 +3960,7 @@ function addCite(runId) {
 }
 
 async function refreshCiteCandidates() {
-  const wd = composerWorkdir();
+  const wd = currentWorkdir();
   if (!wd) {
     citeCandidates = [];
     return;
@@ -3968,6 +4098,7 @@ async function submitNewRun({ text: task }) {
     });
     selectedRunId = runId;
     activeTabs.set(runId, "loop");
+    syncSidebarYield();
     renderDetailWithState(state);
     enterDetailMode();
     writeHash(runId, "loop");
@@ -4131,6 +4262,7 @@ function subscribeLifecycle() {
         if (selectedRunId === payload.runId) {
           selectedRunId = null;
           writeHash(null, null);
+          syncSidebarYield();
         }
       } else if (payload.run) {
         const idx = runs.findIndex((r) => r.runId === payload.run.runId);
@@ -4255,7 +4387,7 @@ function populateKnobs(snap) {
     workdirSelect.dataset.fixed = "false";
     workdirComboboxApi?.paint();
     void workspaceGitChipApi?.refresh();
-    syncFileTreeToComposer();
+    refreshWorkdirDependents();
   }
 
   if (Array.isArray(snap.availableProjects)) {
@@ -4446,7 +4578,7 @@ function paintWorkdirsForFace(all) {
     extras,
   });
   workdirComboboxApi?.paint();
-  syncFileTreeToComposer();
+  refreshWorkdirDependents();
 }
 
 function restoreWorkdirForFace(face) {
@@ -4463,7 +4595,7 @@ function restoreWorkdirForFace(face) {
   applyWorkdirSelection(workdirSelect, visible, { primary: next, extras });
   writePrefString(PREF_WORKDIR, next);
   workdirComboboxApi?.paint();
-  syncFileTreeToComposer();
+  refreshWorkdirDependents();
 }
 
 function selectedComposerProject() {
@@ -4502,7 +4634,7 @@ function applyProjectMembership(project, opts = {}) {
   writePrefJson(PREF_WORKDIR_EXTRAS, extras);
   workdirComboboxApi?.paint();
   void workspaceGitChipApi?.refresh();
-  syncFileTreeToComposer();
+  refreshWorkdirDependents();
 }
 
 function renderProjectOptions(selected) {
@@ -4511,7 +4643,9 @@ function renderProjectOptions(selected) {
   projectSelect.replaceChildren();
   const leftover = document.createElement("option");
   leftover.value = "";
-  leftover.textContent = "未入项（按目录）";
+  // 委托方点名（2026-09-18 夜）："未入项（按目录）"是内部行话——Cowork 式入口
+  // 显示「创建项目」；点开菜单里 ＋ 新建项目… 才是动作。
+  leftover.textContent = "创建项目";
   projectSelect.appendChild(leftover);
   for (const project of availableProjects) {
     const opt = document.createElement("option");
@@ -4698,6 +4832,7 @@ if (newChatBtn) {
     selectedDesignTemplate = null;
     selectedDesignSample = null;
     officeCatalogOpen = false;
+    syncSidebarYield();
     designModeActive = workspaceFace === "office";
     writeHash(null, null);
     refreshRunListView();
@@ -4984,7 +5119,7 @@ if (workdirSelect) {
           void workspaceGitChipApi?.refresh();
           void refreshGateChip();
           void refreshCiteCandidates();
-          syncFileTreeToComposer();
+          refreshWorkdirDependents();
           selectedCiteIds = [];
           paintCiteChips();
           hideCitePicker();
@@ -5015,9 +5150,15 @@ try {
   if (fileTreeMount) {
     fileTreeApi = initFileTree({
       mount: fileTreeMount,
-      getWorkdir: () => composerWorkdir(),
+      getWorkdir: () => currentWorkdir(),
+      isContextReady: () => harnessSettled,
+      // 内容驱动（二轮走查）：根层条目数上报——null=未知；≥1 才让右列按意图自动开
+      onEntriesChanged: (count) => {
+        railTreeEntryCount = count;
+        paintRightRail();
+      },
       onPreview: (path) => {
-        const wd = composerWorkdir();
+        const wd = currentWorkdir();
         if (!path || !wd) return;
         if (selectedRunId) {
           openArtifactByPath(selectedRunId, path);
@@ -5031,9 +5172,279 @@ try {
       onCite: (path, kind) => insertWorkspaceFileMention(path, kind),
       onAnnounce: (msg) => announceStatus(msg),
     });
-    syncFileTreeToComposer();
+    refreshWorkdirDependents();
   }
 } catch { /* 文件树是增强项，初始化失败静默降级 */ }
+
+// ---- P1 右列空间契约 ----
+/**
+ * 右列是唯一 owner：文件树与预览坞都是它的面板。
+ *
+ * 这里只做三件事：读一份记忆 → 把 railPolicy 算出来的结果落在 data-* 与 CSS 变量上
+ * → 在用户动作（切面板/收起/拖宽）后写回记忆。**没有断点常量**：边界由
+ * railPolicy 按预算算（见 core/rail-policy.js 与 spec §4.1.3）。
+ *
+ * 顺带解掉两个老问题：文件树此前零 @media（永远不响应），预览坞另有一套 900 断点。
+ *
+ * 写成自包含（不闭包任何后声明的模块变量）：侧栏初始化在本文件很靠前的位置就会
+ * 调用它，若闭包了后面声明的 const 会撞 TDZ。
+ */
+function railElement() {
+  return document.getElementById("right-rail");
+}
+
+/** 左栏占用：收起了就是 0，否则量真宽度（不硬编码 280，主题/缩放下会变） */
+function railSidebarWidth() {
+  const el = document.querySelector(".sidebar");
+  if (sidebarIsHidden() || !el) return 0;
+  return Math.round(el.getBoundingClientRect?.().width ?? 0);
+}
+
+/** 手动关：收偏好 + 清会话标记（窄档 sheet 三路关闭共用）。 */
+function railClose() {
+  railOpenedThisSession = false;
+  saveRailPref({ collapsed: true });
+}
+
+/** 手动开：清收起偏好 + 记会话标记（把手/细条展开键/切面板共用）。 */
+function railOpen() {
+  railOpenedThisSession = true;
+  saveRailPref({ collapsed: false });
+}
+
+/** 右列有没有可看的内容：树非空 ∪ 预览坞里有可见内容。 */
+function railHasContent() {
+  if (railTreeEntryCount !== null && railTreeEntryCount > 0) return true;
+  const host = document.getElementById("right-rail-preview");
+  if (!host) return false;
+  return [...host.children].some((el) => !el.hidden);
+}
+
+/** 当前该不该显示：纯函数 railVisibility 的宿主适配层（上下文/内容/档位在这拼）。 */
+function railVisibilityNow() {
+  const pref = readRailPref(window.localStorage);
+  const mode = railPolicy({
+    viewportWidth: window.innerWidth,
+    sidebarWidth: railSidebarWidth(),
+    preferredFraction: pref.fraction,
+    splitRatio: pref.splitRatio,
+    panel: pref.panel,
+    collapsed: false,
+  }).mode;
+  const context = document.getElementById("main-panel")?.classList.contains("is-welcome")
+    ? "welcome"
+    : "conversation";
+  return {
+    pref,
+    mode,
+    context,
+    vis: railVisibility({
+      context,
+      hasContent: railHasContent(),
+      mode,
+      userCollapsed: pref.collapsed,
+      userOpenNow: railOpenedThisSession,
+    }),
+  };
+}
+
+/** 把算出来的契约落在 DOM 上。纯应用，不含判断。 */
+function paintRightRail() {
+  const rail = railElement();
+  if (!rail) return;
+  const { pref, context, vis } = railVisibilityNow();
+  const p = railPolicy({
+    viewportWidth: window.innerWidth,
+    sidebarWidth: railSidebarWidth(),
+    preferredFraction: pref.fraction,
+    splitRatio: pref.splitRatio,
+    panel: pref.panel,
+    collapsed: vis.collapsed, // 显示层收起态由内容驱动；pref.collapsed 仍是用户意图
+  });
+  rail.dataset.mode = p.mode;
+  rail.dataset.layout = p.layout;
+  rail.dataset.panel = pref.panel;
+  rail.dataset.collapsed = String(p.collapsed);
+  // 窄档 sheet 的遮罩：只有 overlay 且打开时可见（点它 = railClose，见 bindRightRail）
+  const railScrim = document.getElementById("right-rail-scrim");
+  if (railScrim) railScrim.hidden = !(p.mode === "overlay" && !p.collapsed);
+  // 窄档把手：0 宽收起时全站唯一的重开入口（此前收起即断头路，走查实锤）。
+  // 欢迎页的收起也收成 0 宽（styles.css：细条不占位才不会把中栏推离输入框的轴）——
+  // 所以它同样要靠这把手上车。
+  const railHandle = document.getElementById("right-rail-handle");
+  if (railHandle) {
+    railHandle.hidden = !(p.collapsed && (p.mode === "overlay" || context === "welcome"));
+    railHandle.classList.toggle("right-rail-handle--badge", vis.badge);
+  }
+  rail.style.setProperty("--rail-width", `${p.railWidth}px`);
+  rail.style.setProperty("--rail-tree-w", `${p.tree}px`);
+  rail.style.setProperty("--rail-preview-w", `${p.preview}px`);
+  /**
+   * 「放大」的左伸量（走查 UX-B3）：坞挂在右列里，`position:absolute; inset:0`
+   * 的最近定位祖先是右列——于是"放大"只填满右列自己（实测 239px，对话纹丝不动），
+   * 而 CSS 注释与产品语义都写着"盖满整个主区"。要盖主区就得向左伸过对话列：
+   * 两种档位右列都贴主区右缘，左伸量 = -(主区宽 - 右列宽)。
+   */
+  const availableWidth = Math.max(0, window.innerWidth - railSidebarWidth());
+  rail.style.setProperty(
+    "--rail-expand-inset",
+    `${-Math.max(0, availableWidth - p.railWidth)}px`,
+  );
+  // 对话地板设在 #center-row 上——**不能设在 rail 上**：rail 与 #main-area 是兄弟，
+  // CSS 变量只向下继承，横向传不过去（第一版就错在这里，活页量出 computed=0px）。
+  // 值取 CENTER_MIN_PX（地板本身，不是对话的实际宽）：side 档才需要地板，
+  // 覆盖档右列不占位，地板撤掉。
+  document.getElementById("center-row")?.style.setProperty(
+    "--center-min",
+    p.mode === "side" ? `${CENTER_MIN_PX}px` : "0px",
+  );
+  for (const tab of rail.querySelectorAll("[data-rail-panel]")) {
+    tab.setAttribute("aria-pressed", String(tab.dataset.railPanel === pref.panel));
+  }
+  const btn = rail.querySelector("#right-rail-collapse");
+  if (btn) {
+    btn.setAttribute("aria-expanded", String(!p.collapsed));
+    const label = p.collapsed ? "展开右列" : "收起右列";
+    btn.setAttribute("aria-label", label);
+    btn.setAttribute("title", label);
+    // 细条上的角标：宽档手动收起后有新内容，提示"里面有东西"
+    btn.classList.toggle("right-rail-badge", vis.badge);
+  }
+  // 可聚焦的 separator 是 window splitter：必须报当前值，否则 axe 判 critical。
+  // 顺带让读屏用户听得到宽度（键盘 ±2% 改的就是它）。
+  const dragEl = rail.querySelector("#right-rail-drag");
+  if (dragEl) {
+    dragEl.setAttribute("aria-valuenow", String(Math.round(pref.fraction * 100)));
+    dragEl.setAttribute("aria-valuetext", `右列占主区 ${Math.round(pref.fraction * 100)}%`);
+  }
+}
+
+/** 合并一份补丁进记忆并重绘。 */
+function saveRailPref(patch) {
+  const pref = readRailPref(window.localStorage);
+  writeRailPref(window.localStorage, { ...pref, ...patch });
+  paintRightRail();
+}
+
+/** 切到某个面板。覆盖档下切面板等于把抽屉拉出来（也算用户手动打开）。 */
+function showRailPanel(panel) {
+  railOpenedThisSession = true;
+  saveRailPref({ panel, collapsed: false });
+}
+
+(function bindRightRail() {
+  const rail = railElement();
+  if (!rail) return;
+  const pref0 = readRailPref(window.localStorage);
+  rail.dataset.panel = pref0.panel;
+
+  rail.addEventListener("click", (event) => {
+    // 收起/展开（走查 UX-B2：此前这个键没有任何处理器，点了字节级零变化）。
+    // 两档里语义不同（side 收成细条 / overlay 抽屉关着），由 railPolicy 解释。
+    const collapseBtn = event.target.closest?.("#right-rail-collapse");
+    if (collapseBtn) {
+      // 开没开由内容驱动判（不是 pref.collapsed）：欢迎页/无内容时 pref 与显示层是两回事
+      if (railVisibilityNow().vis.collapsed) railOpen();
+      else railClose();
+      return;
+    }
+    const tab = event.target.closest?.("[data-rail-panel]");
+    if (tab) {
+      showRailPanel(tab.dataset.railPanel);
+      // 走查 UX-B4/E14：坞收起后浮出钮不再占窗口右上角（与收起键打架），
+      // 由「预览」tab 广播唤回——坞只在真有内容时响应。
+      if (tab.dataset.railPanel === "preview") {
+        document.dispatchEvent(new CustomEvent("preview:reveal"));
+      }
+    }
+  });
+
+  // 坞（产物画布 / 文件预览）打开时把自己"抬"到前台：右列切到预览面板。
+  // 宽档按用户意图自动开；窄档永不自动展开（只更新角标）——不再强写偏好（R3）。
+  rail.addEventListener("preview:open", () => {
+    if (!railVisibilityNow().vis.collapsed) saveRailPref({ panel: "preview" });
+    else paintRightRail();
+  });
+
+  // 窄档 sheet 的另外两条关闭路径（遮罩点外 / Esc）。把手是 0 宽收起态唯一的重开入口。
+  document.getElementById("right-rail-scrim")?.addEventListener("click", () => railClose());
+  document.getElementById("right-rail-handle")?.addEventListener("click", () => railOpen());
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") return;
+    const current = railElement();
+    if (!current || current.dataset.mode !== "overlay" || current.dataset.collapsed === "true") return;
+    railClose();
+  });
+
+  const drag = rail.querySelector("#right-rail-drag");
+  // 拖宽：宽度归右列管（坞自己那套在同宿主下已让位，见 preview-dock.js 的 railHosted）
+  drag?.addEventListener("mousedown", (event) => {
+    if (readRailPref(window.localStorage).collapsed) return;
+    event.preventDefault();
+    const available = Math.max(0, window.innerWidth - railSidebarWidth());
+    if (available <= 0) return;
+    const startX = event.clientX;
+    const startWidth = Math.round(rail.getBoundingClientRect().width);
+    let fraction = readRailPref(window.localStorage).fraction;
+    rail.classList.add("right-rail--dragging");
+    const onMove = (ev) => {
+      fraction = clampRailFraction((startWidth + (startX - ev.clientX)) / available);
+      rail.style.setProperty("--rail-width", `${Math.round(available * fraction)}px`);
+    };
+    const onUp = () => {
+      rail.classList.remove("right-rail--dragging");
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseup", onUp);
+      saveRailPref({ fraction });
+    };
+    document.addEventListener("mousemove", onMove);
+    document.addEventListener("mouseup", onUp);
+  });
+  // 键盘也能调：聚焦柄之后左右箭头各 ±2%
+  drag?.addEventListener("keydown", (event) => {
+    const step = event.key === "ArrowLeft" ? 0.02 : event.key === "ArrowRight" ? -0.02 : 0;
+    if (!step) return;
+    event.preventDefault();
+    saveRailPref({ fraction: clampRailFraction(readRailPref(window.localStorage).fraction + step), collapsed: false });
+  });
+
+  paintRightRail();
+  /**
+   * 一帧一次的重绘（拖窗口时每帧都会触发 resize）。
+   *
+   * **不能只用 `if (raf) return` 防抖**：rAF 在隐藏标签页 / 被遮挡时不触发
+   * （本项目踩过同族一次：后台标签页里 rAF 停摆、界面永不更新），那次排队的
+   * 回调永不落地，`raf` 就永远是"忙"——此后所有 resize 都被静默吞掉。
+   * 2026-09-18 活页实测：面板被遮挡一次后，连派发合成 resize 都唤不醒重绘。
+   * 兜底：排队超过 200ms 就重排（正常情况下一帧 ≈16ms，不会走到这条）。
+   */
+  let raf = 0;
+  let rafAt = 0;
+  const repaintNow = () => {
+    syncSidebarYield();
+    paintRightRail();
+  };
+  window.addEventListener("resize", () => {
+    // 隐藏页（窗格被遮挡/标签页切走）rAF 不落地：别把活排进一个排不空的队列，
+    // 直接算。2026-09-18 活页实测：面板一被遮挡，旧写法此后吞掉所有 resize。
+    if (document.hidden) {
+      repaintNow();
+      return;
+    }
+    const now = performance.now();
+    if (raf && now - rafAt < 200) return;
+    rafAt = now;
+    if (raf) cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(() => {
+      raf = 0;
+      repaintNow();
+    });
+  });
+  // 从隐藏回到可见：把隐藏期间错过的重绘补上（同一族：rAF 停摆期间的 resize 全积压）
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) repaintNow();
+  });
+})();
 
 if (projectSelect) {
   projectSelect.addEventListener("change", () => {
@@ -5176,11 +5587,40 @@ loadHarness();
 loadRuns().then(applyHash);
 subscribeLifecycle();
 
+/**
+ * 浮层互斥（走查 UX-B4/E13）：命令面板/通知/记忆/全局搜索四块 z-60 浮层此前
+ * 互不相斥——开着记忆点铃铛，通知开在它底下（看着像"点了没反应"）；各自还都
+ * 挂了文档级 Esc，一次 Esc 连关两层。谁 open 之前先关其余。
+ *
+ * 做成"包装 open"而不是改四个模块：互斥是宿主的编排职责，模块保持互不知情；
+ * 迟到的模块（搜索等是动态 import）注册一个挂一个。
+ */
+const floatingPanelApis = [];
+function registerFloatingPanel(api) {
+  if (api && typeof api.open === "function" && typeof api.close === "function") {
+    const rawOpen = api.open.bind(api);
+    api.open = function (...args) {
+      for (const other of floatingPanelApis) {
+        if (other !== api && other.isOpen?.()) other.close();
+      }
+      return rawOpen(...args);
+    };
+    floatingPanelApis.push(api);
+  }
+  return api;
+}
+/** 面板内部开面板前调它（走查 UX-B4/E13）：触发器由各模块自己绑，外部包 open 拦不到。 */
+function closeOtherFloatingPanels(keep) {
+  for (const api of floatingPanelApis) {
+    if (api && api !== keep && api.isOpen?.()) api.close();
+  }
+}
+
 // ---- 命令面板（T3）----
 // 动态加载，失败不影响主流程。回调全部委托给本控制器已有函数，
 // 模块不反向 import 这里，保持单向依赖。
 import("./features/command-palette.js").then((palette) => {
-  palette.initCommandPalette({
+  commandPaletteApi = registerFloatingPanel(palette.initCommandPalette({
     getConversations: () => runs.map((r) => ({
       runId: r.runId,
       title: r.task,
@@ -5200,14 +5640,14 @@ import("./features/command-palette.js").then((palette) => {
     onFocusSearch: () => { runSearch?.focus(); },
     onSelectTheme: (theme) => applyTheme(theme),
     onAnnounce: (msg) => announceStatus(msg),
-  });
+  }));
 }).catch(() => { /* 面板是增强项，加载失败静默降级 */ });
 
 // ---- 通知中心（T4）----
 // 动态加载，失败不影响主流程。事件经 batcher 节拍里的 notificationsApi.ingest
 // 逐条喂入；run 列表刷新（loadRuns / 生命周期流）后调 syncRuns 对账。
 import("./features/notifications.js").then((notifications) => {
-  notificationsApi = notifications.initNotifications({
+  notificationsApi = registerFloatingPanel(notifications.initNotifications({
     getRuns: () => runs,
     getRunTitle: (runId) =>
       runs.find((r) => r.runId === runId)?.task ?? runStates.get(runId)?.task ?? null,
@@ -5219,7 +5659,9 @@ import("./features/notifications.js").then((notifications) => {
     // 待决定类直达 action-dock：选中会话后让决定坞闪一下，视线落在该落的地方
     onRevealDock: (runId) => revealDecisionDock(runId),
     onAnnounce: (msg) => announceStatus(msg),
-  });
+    // 浮层互斥（E13）：铃铛的触发器是模块自己绑的，开前先关其余三块
+    onOpen: () => closeOtherFloatingPanels(notificationsApi),
+  }));
   // 初始化时 run 列表多半已经就位：立刻播种基线（不生成历史条目）
   notificationsApi.syncRuns();
 }).catch(() => { /* 通知中心是增强项，加载失败静默降级 */ });
@@ -5228,11 +5670,13 @@ import("./features/notifications.js").then((notifications) => {
 // 动态加载，失败不影响主流程。同时把「查看记忆」注册进命令面板——
 // 两个 import 命中同一个模块缓存，registerPaletteCommand 是模块级注册表。
 import("./features/memory-panel.js").then((memory) => {
-  memoryPanelApi = memory.initMemoryPanel({
+  memoryPanelApi = registerFloatingPanel(memory.initMemoryPanel({
     onAnnounce: (msg) => announceStatus(msg),
     getWorkdir: () => workdirSelect?.value ?? "",
     onClose: () => { void refreshGateChip(); },
-  });
+    // 浮层互斥（E13）：记忆钮的触发器是模块自己绑的，开前先关其余三块
+    onOpen: () => closeOtherFloatingPanels(memoryPanelApi),
+  }));
   import("./features/command-palette.js").then((palette) => {
     palette.registerPaletteCommand({
       id: "view-memory",
@@ -5249,10 +5693,12 @@ import("./features/memory-panel.js").then((memory) => {
 // （上方既有逻辑），回车/按钮触发正文级全局搜索。同时把「全局搜索」注册进
 // 命令面板——两个 import 命中同一个模块缓存，registerPaletteCommand 是模块级注册表。
 import("./features/global-search.js").then((search) => {
-  const searchApi = search.initGlobalSearch({
+  const searchApi = registerFloatingPanel(search.initGlobalSearch({
     onOpenConversation: (runId) => selectRun(runId),
     onAnnounce: (msg) => announceStatus(msg),
-  });
+    // 浮层互斥（E13）：搜索的触发器也是模块自己绑的（回车/按钮），开前先关其余
+    onOpen: () => closeOtherFloatingPanels(searchApi),
+  }));
   import("./features/command-palette.js").then((palette) => {
     palette.registerPaletteCommand({
       id: "global-search",
@@ -5274,6 +5720,9 @@ try {
     getHarnessSnapshot: () => harnessSnapshot,
     // 设置页改动实时同步 composer 当次控件；只动 patch 里出现的键
     onApplyComposerDefaults: (patch) => {
+      // Code 脸的核查记忆同步跟着默认值走：设置页改了默认而切脸记忆还是旧值，
+      // 切到 Code 时又会把旧值还原回来（走查 U2 的同族缺口）
+      if (typeof patch?.verify === "boolean") codeVerifyPref = Boolean(patch.verify);
       applyComposerDefaults(
         { verifyToggle, autoApproveToggle, effortSelect },
         patch,
@@ -5471,6 +5920,17 @@ try {
 import("./features/changes-panel.js").then((changes) => {
   changesApi = changes.initChangesPanel({
     onAnnounce: (msg) => announceStatus(msg),
+    // P4：展开一行时显示"改了哪几行"。数据来自 edit_file 的入参（字节精确的
+    // old_string / new_string），所以**不需要磁盘上的旧版本**——那正是覆盖写场景
+    // 拿不到的东西，拿不到时不显示，不编。
+    getEditHunks: (path) => {
+      if (!selectedRunId) return null;
+      const st = runStates.get(selectedRunId);
+      if (!st) return null;
+      const want = String(path ?? "").split("\\").join("/");
+      for (const [k, v] of editHunksFromTimeline(st)) if (k === want) return v;
+      return null;
+    },
   });
   // 模块就绪时可能已有选中会话（深链直达）：立刻补上挂载与命令注册
   if (selectedRunId) {
@@ -5509,6 +5969,15 @@ try {
   artifactCanvasApi = initArtifactCanvas({
     getRunId: () => selectedRunId,
     getArtifacts: () => (selectedRunId ? openedPreviewArtifacts(selectedRunId) : []),
+    // P3：预览读不到时先回答「它写过没有」。三态——工作区既有文件会落回 unknown，
+    // 不许把它们说成「还没写到磁盘」（它们本来就不该由本 run 写）。
+    hasWrittenPath: (path) => {
+      if (!selectedRunId) return undefined;
+      const st = runStates.get(selectedRunId);
+      if (!st) return undefined;
+      const s = artifactWriteState(st, path);
+      return s === "unknown" ? undefined : s === "written";
+    },
     onClose: () => closeArtifactRoute(),
     onSwitch: (index) => {
       if (selectedRunId) {

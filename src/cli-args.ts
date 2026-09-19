@@ -19,6 +19,10 @@ export interface ParsedCliArgs {
   parallelSpecified: boolean;
   /** 同 run 续跑：--plan 续半截 DAG，否则续单执行者检查点 */
   resumeRun: string | null;
+  /** --json：stdout 只出 JSONL（事件 + run_result），人话改道 stderr */
+  json: boolean;
+  /** --quiet：stdout 只留终局汇总，过程人话改道 stderr（与 --json 同给时 json 优先） */
+  quiet: boolean;
 }
 
 export class CliArgumentError extends Error {
@@ -30,7 +34,7 @@ export class CliArgumentError extends Error {
   }
 }
 
-const RUN_FLAGS = new Set(["--yes", "--verify", "--plan", "--auto", "--ask"]);
+const RUN_FLAGS = new Set(["--yes", "--verify", "--plan", "--auto", "--ask", "--json", "--quiet"]);
 const RUN_ID_RE = /^[\w.-]+$/;
 const COMMAND_FLAGS = new Map<string, CliCommand>([
   ["--help", "help"], ["-h", "help"],
@@ -41,8 +45,40 @@ const COMMAND_FLAGS = new Map<string, CliCommand>([
 /** 非 TTY / readline 已关且需要确认：人话退出，不摔栈。 */
 export const CLI_NEEDS_CONFIRM_EXIT = 2;
 
+/**
+ * 终态口径（走查 F1/H1）：run 终态 → CLI 进程退出码。undefined = 不表态。
+ *
+ * 只有 completed 是 0；--verify 下 completed 但核查未通过也是 1。plan_rejected
+ * 不表态——抛错路径已定 2，这里再赋值会把"需要确认"盖成"跑失败了"。
+ * 依据是 run 的 stopReason（台账/档案里同一份事实），不是 stdout 文案。
+ */
+export function cliExitCodeForRun(
+  facts: { stopReason?: string | null; finalPassed?: boolean | null } | null | undefined,
+): number | undefined {
+  const reason = facts?.stopReason;
+  if (!reason || reason === "plan_rejected") return undefined;
+  if (reason === "completed") return facts?.finalPassed === false ? 1 : 0;
+  return 1;
+}
+
 export function formatCliNeedsConfirmMessage(): string {
   return "需要确认，请加 --yes";
+}
+
+/**
+ * 中断提示（H4 · 走查 2026-09-18）：优雅中断此前静默消失——退出 130、什么也不说。
+ * 有热续检查点就给续跑命令（检查点事实来自活 durable）；没有就说清不能热续，
+ * 不含糊其辞。
+ */
+export function formatSignalNotice(
+  signal: string,
+  facts: { runId?: string | null; hasCheckpoint?: boolean },
+): string {
+  const tail = facts.runId ? `（run ${facts.runId}）` : "";
+  if (facts.hasCheckpoint && facts.runId) {
+    return `已中断（${signal}）${tail}：已提交的检查点保留——继续：--resume-run ${facts.runId}`;
+  }
+  return `已中断（${signal}）${tail}：没有已提交的检查点，这次运行不能热续`;
 }
 
 export function cliCanPrompt(
@@ -68,6 +104,8 @@ function emptyRunFields(): Omit<ParsedCliArgs, "command"> {
     concurrency: "auto",
     parallelSpecified: false,
     resumeRun: null,
+    json: false,
+    quiet: false,
   };
 }
 
@@ -201,7 +239,25 @@ export function parseCliArgs(argv: readonly string[]): ParsedCliArgs {
     concurrency,
     parallelSpecified,
     resumeRun,
+    json: seen.has("--json"),
+    quiet: seen.has("--quiet"),
   };
+}
+
+/**
+ * 颜色决策（H2 · 走查）。优先级：FORCE_COLOR 显式 > NO_COLOR 非空 > isTTY。
+ * NO_COLOR 规范（no-color.org）：存在**且非空**才算数，空串不生效。
+ * 消费场景：管道/重定向自动关色，ANSI 不再原样落盘。
+ */
+export function resolveColorEnabled(
+  env: { NO_COLOR?: string | undefined; FORCE_COLOR?: string | undefined },
+  isTTY: boolean,
+): boolean {
+  const force = env.FORCE_COLOR;
+  if (force === "0" || force === "false") return false;
+  if (force) return true;
+  if (env.NO_COLOR) return false;
+  return isTTY;
 }
 
 export function cliHelpText(): string {
@@ -234,6 +290,25 @@ export function cliHelpText(): string {
     "",
     "Confirm:",
     "  没有交互终端时请加 --yes，否则会停在确认（退出码 2），不会摔 readline 栈。",
+    "",
+    "Exit codes:",
+    "  退出码：0=completed（--verify 时还须核查通过）；1=（核查未通过/其它一切终态：中断、预算耗尽、撞轮次、异常等）；2=需要确认（非 TTY 计划门）；130/143=信号中断。",
+    "  CI 请以退出码判定成败；stopReason 原文在各 run 的台账与 .agent-run-history 档案里。",
+    "",
+    "Interrupt:",
+    "  中断：控制台 Ctrl+C = 优雅中断（落检查点、退出 130/143，并打印能不能 --resume-run 续跑）；",
+    "  Windows 上 kill / 任务管理器属硬杀——不落检查点、不能热续（这是 OS 行为，宿主拗不过）。",
+    "",
+    "Run from another project:",
+    "  命令行暂不能 --workdir，工作目录 = 当前 cwd。在别的项目里跑：",
+    "  cd 你的项目 && node <仓库>/node_modules/tsx/dist/cli.mjs --env-file <仓库>/.env <仓库>/src/cli.ts run \"任务\"",
+    "  或构建后走 bin：npx agent-harness run \"任务\"（bin → dist/src/cli.js，需先在仓库里 npm run build）",
+    "",
+    "Machine-readable output:",
+    "  --json         stdout 只输出 JSONL：每个执行事件一行 {\"ts\",\"source\",\"event\"}（逐字增量不落流），终局一行 {type:\"run_result\", stopReason, turns, finalPassed, exitCode, …}；人话装饰一律改走 stderr（含 FORCE_COLOR 强制开色时，JSONL 依旧纯净）",
+    "  --quiet        过程人话（启动配置/轮次标记/工具行/重试）改走 stderr；stdout 只留终局汇总；错误仍在 stderr",
+    "  颜色：管道/重定向自动关；NO_COLOR 非空强制关（no-color.org 口径：空串不算）；FORCE_COLOR=1 强制开",
+    "  完整档案（机器可读资产，比 stdout 更全）：<cwd>/.agent-run-history/<runId>/ 下的 events.jsonl / meta.json / trace.jsonl / transcript.jsonl；run 级台账逐行 JSON 在 <cwd>/.agent-runs.jsonl",
     "",
     "Doctor is static: it performs no network request and starts no execution worker.",
   ].join("\n");

@@ -247,12 +247,15 @@ describe("initFilePreview 停靠面板", () => {
     expect(api.element.querySelector(".ac-office-title")?.textContent).toBe("章一");
   });
 
-  it("取件失败画错误卡", async () => {
+  it("取件失败画错误卡（说清是「读不动」）", async () => {
     const api = initFilePreview({}, { fetch: async () => ({ ok: false }) });
     api.open({ path: "ghost.md", url: "/api/file-preview?path=ghost.md" });
     await flush();
     expect(api.element.querySelector(".ac-fallback")).toBeTruthy();
-    expect(api.element.textContent).toContain("读取失败");
+    // P3 起文案按真相分三类：这句走的是「读不动」那一支。
+    // 守的是意图（有错误卡 + 说得清是什么错 + HTTP 码不进脸上），不是旧字面。
+    expect(api.element.textContent).toContain("读不动");
+    expect(api.element.textContent).not.toMatch(/HTTP|\b5\d\d\b/);
   });
 
   it("Esc 收起并还原焦点；再打开另一份仍是新渲染", async () => {

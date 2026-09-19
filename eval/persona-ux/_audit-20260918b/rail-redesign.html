@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>右列重设计 · 第一例（内容驱动）</title>
+<style>
+  :root{
+    --paper:#faf9f5; --paper2:#f0eee6; --ink:#14130f; --ink2:#4a463d; --ink3:#665f4f;
+    --line:#ddd9ce; --accent:#b4552d; --good:#3f6f46; --bad:#b23c2e; --warnbg:#fdf3e3; --badbg:#fbeceb; --goodbg:#eef4ee;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font:15px/1.65 -apple-system,"Segoe UI","Noto Sans SC","Microsoft YaHei",sans-serif;padding:34px 30px 60px}
+  h1{font-size:23px;margin:0 0 4px;letter-spacing:.2px}
+  .sub{color:var(--ink3);font-size:13px;margin-bottom:26px}
+  h2{font-size:16px;margin:34px 0 14px;padding-top:18px;border-top:1px solid var(--line)}
+  h2 .n{color:var(--accent);font-family:ui-monospace,Consolas,monospace;margin-right:8px}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+  .card{border:1px solid var(--line);border-radius:12px;background:#fff;overflow:hidden}
+  .card .cap{font-size:12.5px;padding:8px 12px;border-bottom:1px solid var(--line);color:var(--ink2);background:var(--paper)}
+  .card .cap b{color:var(--ink)}
+  .verdict{font-size:12.5px;padding:8px 12px;display:flex;gap:7px;align-items:flex-start}
+  .verdict.good{background:var(--goodbg);color:var(--good);border-top:1px solid var(--line)}
+  .verdict.bad{background:var(--badbg);color:var(--bad);border-top:1px solid var(--line)}
+  /* 线框 */
+  .wf{display:flex;height:170px;background:var(--paper);position:relative}
+  .wf .col{border-right:1px dashed var(--line);padding:8px 7px;font-size:10.5px;color:var(--ink3)}
+  .wf .side{width:26%;background:var(--paper2)}
+  .wf .mid{flex:1;position:relative}
+  .wf .rail{width:34%;background:#fff;border-left:1px solid var(--line);padding:8px 7px;font-size:10.5px}
+  .wf .rail .tabrow{display:flex;gap:6px;margin-bottom:7px}
+  .wf .tab{font-size:10px;padding:1.5px 8px;border-radius:999px;background:var(--paper2);color:var(--ink2)}
+  .wf .tab.on{background:var(--accent);color:#fff}
+  .ph{background:var(--paper2);border-radius:4px;height:9px;margin:6px 0}
+  .ph.s{width:60%}.ph.m{width:80%}
+  .emptybox{border:1.5px dashed var(--line);border-radius:8px;color:var(--ink3);font-size:10.5px;
+    display:flex;align-items:center;justify-content:center;height:84px;margin-top:6px;text-align:center;padding:6px}
+  .composer{position:absolute;left:10%;right:34%;bottom:10px;height:30px;border:1.5px solid var(--accent);
+    border-radius:9px;background:#fff;box-shadow:0 2px 7px rgba(0,0,0,.07);display:flex;align-items:center;
+    padding:0 9px;font-size:10.5px;color:var(--ink3)}
+  .overlay{position:absolute;top:0;bottom:0;right:0;width:61%;background:#fff;border-left:1px solid var(--line);
+    box-shadow:-6px 0 16px rgba(0,0,0,.10);padding:9px 8px;font-size:10.5px}
+  .over{border:2px solid var(--bad);border-radius:9px;position:absolute;pointer-events:none}
+  .tag{position:absolute;background:var(--bad);color:#fff;font-size:10px;padding:2px 7px;border-radius:999px}
+  .wf.narrow{height:200px}
+  .wf.narrow .side{width:100%;height:64px;border-right:none;border-bottom:1px dashed var(--line)}
+  table{border-collapse:collapse;width:100%;font-size:13px;background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{background:var(--paper);font-weight:600;color:var(--ink2);font-size:12.5px}
+  tr:last-child td{border-bottom:none}
+  .consensus{margin-top:14px;padding:13px 16px;border-radius:12px;background:var(--warnbg);
+    border:1px solid #ecd9b4;font-size:14px}
+  .consensus b{color:var(--accent)}
+  .rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:6px}
+  .rule{border:1px solid var(--line);border-radius:12px;background:#fff;padding:13px 15px;font-size:13.5px}
+  .rule .rid{font-family:ui-monospace,Consolas,monospace;color:var(--accent);font-size:12px}
+  .rule b{display:block;margin:4px 0 6px;font-size:14px}
+  .rule .why{color:var(--ink3);font-size:12px}
+  .matrix td:first-child{white-space:nowrap;font-weight:600}
+  .ok{color:var(--good);font-weight:600}
+  .no{color:var(--bad);font-weight:600}
+  .q{border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:10px;background:#fff;
+    padding:13px 16px;margin:11px 0;font-size:13.5px}
+  .q b{font-size:14.5px}
+  .opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin-top:9px}
+  .opt{border:1px solid var(--line);border-radius:9px;padding:9px 11px;font-size:12.5px;background:var(--paper)}
+  .opt.rec{border-color:var(--accent);background:#fff}
+  .opt .recmark{color:var(--accent);font-weight:700;font-size:11px}
+  .opt .d{color:var(--ink3);margin-top:3px}
+  .foot{color:var(--ink3);font-size:12px;margin-top:30px;border-top:1px solid var(--line);padding-top:12px}
+  .kbd{font-family:ui-monospace,Consolas,monospace;font-size:11.5px;background:var(--paper2);border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+</style>
+</head>
+<body>
+
+<h1>右列重设计（第一例）· 内容驱动</h1>
+<div class="sub">证据 → 主流对照 → 提议模型 → 两个待拍板。纲领：能图形化的，不写成段落。</div>
+
+<h2><span class="n">01</span>现状四连拍（灰色=内容，红框=问题）</h2>
+<div class="cards">
+
+  <div class="card">
+    <div class="cap"><b>欢迎页 · 空目录</b>（你截图点名的那张）</div>
+    <div class="wf">
+      <div class="col side">侧栏<br>新建对话<br>搜索</div>
+      <div class="col mid">FATHOM 欢迎语<br><span class="ph m"></span><span class="ph s"></span>
+        <div class="composer">说要做什么…</div>
+      </div>
+      <div class="rail">
+        <div class="tabrow"><span class="tab on">文件</span><span class="tab">预览</span></div>
+        <div class="emptybox">这个工作目录里还没有可列出的文件。</div>
+      </div>
+    </div>
+    <div class="verdict bad">✗&nbsp;<span>空列照显：占 1/4 屏幕展示"什么都没有"。右列是<b>内容的家</b>——家里没人时不该开着门厅的灯。</span></div>
+  </div>
+
+  <div class="card">
+    <div class="cap"><b>欢迎页 · 有文件</b></div>
+    <div class="wf">
+      <div class="col side">侧栏</div>
+      <div class="col mid">欢迎语<br><span class="ph m"></span><span class="ph"></span>
+        <div class="composer">说要做什么…</div>
+      </div>
+      <div class="rail">
+        <div class="tabrow"><span class="tab on">文件</span><span class="tab">预览</span></div>
+        <div>sum.js</div><div>README.txt</div><div>@ 引用</div>
+      </div>
+    </div>
+    <div class="verdict good">✓&nbsp;<span>有文件时树是<b>真入口</b>——引导第一课「看右边的文件」点名的就是它。这条保留。</span></div>
+  </div>
+
+  <div class="card">
+    <div class="cap"><b>对话 · 运行中（宽档）</b></div>
+    <div class="wf">
+      <div class="col side">侧栏</div>
+      <div class="col mid">对话流…<br><span class="ph m"></span><span class="ph s"></span>
+        <div class="composer">运行中…</div>
+      </div>
+      <div class="rail">
+        <div class="tabrow"><span class="tab">文件</span><span class="tab on">预览</span></div>
+        <span class="ph m"></span><span class="ph"></span><span class="ph s"></span>
+      </div>
+    </div>
+    <div class="verdict good">✓&nbsp;<span>写盘后自动开预览 = 主流做法（v0/Bolt 同款）。宽档是<b>布局占位</b>不是遮挡，保留。</span></div>
+  </div>
+
+  <div class="card">
+    <div class="cap"><b>窄档 390px（实测几何）</b></div>
+    <div class="wf narrow">
+      <div class="col side">侧栏（顶部堆叠）</div>
+      <div class="col mid" style="border-right:none">
+        <div class="overlay">
+          <div class="tabrow"><span class="tab">文件</span><span class="tab on">预览</span></div>
+          <span class="ph m"></span><span class="ph"></span>
+        </div>
+        <div class="over" style="left:0;right:0;bottom:6px;height:44px"></div>
+        <span class="tag" style="right:6px;bottom:52px">输入框被盖住右半</span>
+      </div>
+    </div>
+    <div class="verdict bad">✗&nbsp;<span>实测：浮层 240px = 盖住内容区 <b>61%</b>，连输入框都被压；且<b>收起来就回不来</b>——0 宽消失，全站没有第二个入口（只等下一次自动开）。</span></div>
+  </div>
+
+</div>
+
+<h2><span class="n">02</span>主流对照（右侧到底该是什么）</h2>
+<table>
+  <tr><th>应用</th><th>右侧是什么</th><th>何时出现</th><th>窄屏形态</th></tr>
+  <tr><td>Cursor</td><td>编辑器 tab（预览/差异）</td><td>你打开时；不占默认版面</td><td>标签页/全宽</td></tr>
+  <tr><td>VS Code</td><td>编辑器分栏 / 次级侧栏</td><td>手动开；<b>按工作区记忆</b></td><td>抽屉</td></tr>
+  <tr><td>v0 · Bolt · Replit</td><td>实时预览</td><td><b>首个产物出现时自动</b>；可钉住</td><td>切换 / 全屏</td></tr>
+  <tr><td>Claude · ChatGPT Canvas</td><td>画布</td><td>仅当内容够格；否则没有画布</td><td>全屏切换</td></tr>
+</table>
+<div class="consensus">共识一句话：<b>内容驱动、按需开、关是可记住的、窄屏变全屏切换</b>——没有任何一家在空状态挂一个常驻空列。</div>
+
+<h2><span class="n">03</span>提议：三条规则</h2>
+<div class="rules">
+  <div class="rule">
+    <span class="rid">R1 · 出现</span><b>没有内容就收起，有内容才打开</b>
+    判据 = 工作区文件非空 ∪ 有打开的预览/产物。欢迎页与对话一视同仁；空目录的欢迎页不再挂空列。<span class="why">（收起的形态保留"细条把手"，不是 0 宽消失。）</span>
+  </div>
+  <div class="rule">
+    <span class="rid">R2 · 窄档</span><b>永不自动展开；把手角标 → 点开是全屏 sheet</b>
+    运行中写盘不抢屏，只在把手亮角标「有新产物」；点开 = 全宽 + 遮罩 + <span class="kbd">Esc</span>/点外关闭。<span class="why">（修 61% 遮挡与"回不来"）</span>
+  </div>
+  <div class="rule">
+    <span class="rid">R3 · 尊重</span><b>手动收起 = 你的决定，直到你下次再开</b>
+    同一内容不反复自动弹；新产物仍只发角标（宽档允许"新路径产物开一次"）。<span class="why">（对应主流"dismiss 要粘住"）</span>
+  </div>
+</div>
+
+<h2><span class="n">04</span>遮挡矩阵（"应该挡什么"的答案）</h2>
+<table class="matrix">
+  <tr><th>场景</th><th>遮挡判定</th><th>形式</th></tr>
+  <tr><td>宽档 side</td><td class="ok">✓ 允许</td><td>布局占位（中心列有地板），不是浮层压内容</td></tr>
+  <tr><td>窄档 · 你点开的 sheet</td><td class="ok">✓ 允许</td><td><b>用户主动 + 一键即关</b>；全屏看内容是主流选择</td></tr>
+  <tr><td>窄档 · 自动弹的全屏</td><td class="no">✗ 禁止</td><td>打断读流；改为角标提示</td></tr>
+  <tr><td>任何档 · 不请自来的浮层压输入框</td><td class="no">✗ 禁止</td><td>输入框是不可侵占区（当前窄档在犯）</td></tr>
+</table>
+
+<h2><span class="n">05</span>两个待拍板</h2>
+
+<div class="q"><b>Q1 · 欢迎页 + 有文件：右列默认开还是默认收？</b>
+  <div class="opts">
+    <div class="opt rec"><span class="recmark">推荐</span><div><b>默认开</b></div><div class="d">有文件时树是真入口，引导第一课就教它；空目录按 R1 收。</div></div>
+    <div class="opt"><div><b>默认收</b></div><div class="d">欢迎页只服务"开始说话"一件事，更素净；要看得自己开把手。</div></div>
+  </div>
+</div>
+
+<div class="q"><b>Q2 · 窄档有内容时（自动）怎么呈现？</b>
+  <div class="opts">
+    <div class="opt rec"><span class="recmark">推荐</span><div><b>角标 → 点开全屏 sheet</b></div><div class="d">不抢屏；点开拿满宽度看内容，Esc/点外即关。</div></div>
+    <div class="opt"><div><b>角标 → 点开仍是 240 浮层</b></div><div class="d">改动最小，但代码/图在 240px 里读不了，治标。</div></div>
+    <div class="opt"><div><b>自动开全屏 sheet</b></div><div class="d">内容优先（v0 风格），但会打断正在读的执行流。</div></div>
+  </div>
+</div>
+
+<div class="foot">拍板后按 TDD 落：<span class="kbd">rail-policy.js</span> 纯函数加 R1/R2/R3 判据 + 单测；index.html 接线；窄档 sheet 走既有 overlay 档扩展。纲领「能图形化就不生硬文字」在右列之外还有一批落点（消耗图表、Progress、agent 产物默认给图）——列为下一批。</div>
+
+</body>
+</html>

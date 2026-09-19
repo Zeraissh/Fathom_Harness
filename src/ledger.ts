@@ -146,7 +146,8 @@ export function emptyHooksTally(): LedgerHooksTally {
  * 机制始终存在，新行恒写对象（零次也是 `{0,0,0}`）。
  * 老行没有这个字段（undefined）= 切片落地前，不是零次。
  *
- * asked = 问过人（含过期未决）；auto = 宿主/规则代行（--yes、auto-run、SAFE-04）；
+ * asked = 问过人（含过期未决）；auto = 宿主/规则代行（--yes、auto-run、SAFE-04、
+ * 圈内只读命令免问）；
  * denied ⊆ asked ∪ auto（人点了拒，或自动路径给出 deny——后者几乎不该发生）。
  * 计划确认门、permission:deny / 圈禁 / hook 阻断都没有审批事件，不进这里。
  */
@@ -161,7 +162,8 @@ export function emptyApprovalsTally(): LedgerApprovalsTally {
 }
 
 /**
- * 累加一次审批结局（不是请求）。只认 `approval_resolved` / `approval_expired`。
+ * 累加一次审批结局（不是请求）。只认 `approval_resolved` / `approval_expired`
+ * / `approval_auto`（只读免问，没有请求只有放行——按"规则代行"计入 auto）。
  * `approval_request` 不计——Web 自动放行会先发请求再发 resolved，计请求会加倍。
  */
 export function tallyApprovalOutcome(
@@ -170,6 +172,10 @@ export function tallyApprovalOutcome(
 ): LedgerApprovalsTally {
   if (event.type === "approval_expired") {
     tally.asked += 1;
+    return tally;
+  }
+  if (event.type === "approval_auto") {
+    tally.auto += 1;
     return tally;
   }
   if (event.type !== "approval_resolved") return tally;

@@ -16,8 +16,6 @@ import {
   deriveToolsFace,
   deriveVerificationFace,
   deriveActionState,
-  deriveLogEntries,
-  buildFactorCards,
   derivePlanFace,
   renderPlanReviewHtml,
   deriveAssemblyBar,
@@ -195,6 +193,50 @@ describe("deriveLoopFace", () => {
     expect(chain[3].passed).toBe(true);
   });
 
+  /**
+   * 编排下"返工裁决序列"按子任务归属配对（H8 边界另一半）。
+   * 段链此前按序号取裁决（verdictOf(round) + verifierSeen++）：单执行者下
+   * 等价于按序配对，编排一进来就错位——s1 返工一轮后，s2 的首个 verifier
+   * 段会去捡 round=2 的裁决（s1 的），s2 自己的裁决谁也取不到。
+   */
+  it("返工裁决序列：编排下按子任务归属配对，不按序号捡", () => {
+    const s = feed([
+      ev("s1/main", { type: "turn_start", turn: 1 }),
+      ev("s1/verifier", { type: "turn_start", turn: 1 }),
+      ev("s1/verifier", { type: "verification", round: 0, subtaskId: "s1", judgedTurn: 1, verdict: { passed: false, issues: ["x"], unverified: [], advisory: [], summary: "" } }),
+      ev("s1/rework", { type: "turn_start", turn: 2 }),
+      ev("s1/verifier", { type: "turn_start", turn: 1 }),
+      ev("s1/verifier", { type: "verification", round: 1, subtaskId: "s1", judgedTurn: 1, verdict: { passed: true, issues: [], unverified: [], advisory: [], summary: "" } }),
+      ev("s2/main", { type: "turn_start", turn: 1 }),
+      ev("s2/verifier", { type: "turn_start", turn: 1 }),
+      ev("s2/verifier", { type: "verification", round: 0, subtaskId: "s2", judgedTurn: 1, verdict: { passed: true, issues: [], unverified: [], advisory: [], summary: "" } }),
+    ]);
+    const chain = deriveLoopFace(s, HARNESS).chain;
+    expect(chain.map((c) => c.role)).toEqual(["main", "verifier", "rework", "verifier", "main", "verifier"]);
+    expect(chain[1].passed).toBe(false);
+    expect(chain[3].passed).toBe(true);
+    // 关键点：s2 那一段必须拿到 s2 自己的裁决（修前为 null——去捡 round=2 捡空）
+    expect(chain[5].passed).toBe(true);
+  });
+
+  /**
+   * 归属配对的另一面：没有归属的核查段不许去捡编排子任务的裁决。
+   * 编排 run 里可能同时存在两类裁决——子任务带 subtaskId 的，和 spawn 支线
+   * 转发进来不带归属的。只按轮号找的话，先到的那条会顶替掉后面那条，
+   * 把"别人的通过"画成"我的通过"。
+   */
+  it("返工裁决序列：无归属的核查段不捡编排子任务的裁决", () => {
+    const s = feed([
+      // spawn 支线转发的裁决：无归属，且先到（round 与 s1 的相撞）
+      ev("spawn/查寄存器", { type: "verification", round: 0, judgedTurn: 1, verdict: { passed: false, issues: ["支线未过"], unverified: [], advisory: [], summary: "" } }),
+      ev("main", { type: "turn_start", turn: 1 }),
+      ev("s1/verifier", { type: "turn_start", turn: 1 }),
+      ev("s1/verifier", { type: "verification", round: 0, subtaskId: "s1", judgedTurn: 1, verdict: { passed: true, issues: [], unverified: [], advisory: [], summary: "" } }),
+    ]);
+    const chain = deriveLoopFace(s, HARNESS).chain;
+    expect(chain.filter((c) => c.role === "verifier").map((c) => c.passed)).toEqual([true]);
+  });
+
   it("运行中不给 stopReason；结束后给六值分档", () => {
     const running = feed([ev("main", { type: "turn_start", turn: 1 })]);
     expect(deriveLoopFace(running, HARNESS).stopReason).toBeNull();
@@ -342,7 +384,7 @@ describe("deriveToolsFace", () => {
     expect(deriveToolsFace(state, HARNESS).writeRoots).toEqual(["D:\\other"]);
   });
 
-  it("run_config 的执行边界覆盖进程快照，report-only 必须成为 Tools 异常", () => {
+  it("run_config 的执行边界覆盖进程快照", () => {
     const state = feed([ev("host", {
       type: "run_config",
       executionIsolation: {
@@ -353,15 +395,7 @@ describe("deriveToolsFace", () => {
     })]);
     const tools = deriveToolsFace(state, HARNESS);
     expect(tools.executionIsolation.effectiveState).toBe("report-only");
-    const card = buildFactorCards({
-      loop: deriveLoopFace(state, HARNESS),
-      context: deriveContextFace(state, HARNESS),
-      tools,
-      verification: deriveVerificationFace(state, HARNESS),
-      action: deriveActionState(state),
-    }).find((candidate) => candidate.id === "tools");
-    expect(card.abnormal).toBe(true);
-    expect(card.lines.some((line: string) => line.includes("宿主直跑"))).toBe(true);
+    // 四因子卡已随「运行详情」抽屉下线（2026-09-18），这里只锁派生层的事实
   });
 
   it("宿主快照缺席时照实降级，不编造工具面", () => {
@@ -446,78 +480,6 @@ describe("deriveActionState", () => {
   });
 });
 
-describe("buildFactorCards", () => {
-  const facesFor = (s: any, h = HARNESS) => ({
-    loop: deriveLoopFace(s, h),
-    context: deriveContextFace(s, h),
-    tools: deriveToolsFace(s, h),
-    verification: deriveVerificationFace(s, h),
-    action: deriveActionState(s),
-  });
-
-  it("四张卡恒在，正常态下顺序为 Loop/Context/Tools/Verification", () => {
-    const cards = buildFactorCards(facesFor(feed([ev("main", { type: "turn_start", turn: 1 })])));
-    expect(cards.map((c) => c.id)).toEqual(["loop", "context", "tools", "verify"]);
-    expect(cards.every((c) => !c.abnormal)).toBe(true);
-  });
-
-  it("异常面排到首位——用户第一眼该看到哪一面出了问题", () => {
-    const s = feed([
-      ev("main", { type: "turn_start", turn: 1 }),
-      ev("verifier", { type: "verdict", verdict: { passed: false, issues: ["不符"], unverified: [], advisory: [], summary: "" } }),
-    ]);
-    const cards = buildFactorCards(facesFor(s));
-    expect(cards[0].id).toBe("verify");
-    expect(cards[0].abnormal).toBe(true);
-  });
-
-  it("通过但有备注同样算异常——不能被绿色吞掉", () => {
-    const s = feed([
-      ev("verifier", { type: "verdict", verdict: { passed: true, issues: ["boot_count 规格不严谨"], unverified: [], advisory: [], summary: "" } }),
-    ]);
-    const cards = buildFactorCards(facesFor(s));
-    expect(cards[0].id).toBe("verify");
-    expect(cards[0].lines[0]).toContain("通过（有备注）");
-  });
-
-  it("压缩发生过 → Context 卡异常且写明置换与账本", () => {
-    const s = feed([ev("main", { type: "compaction", droppedBlocks: 5, ledgerEntries: 3 })]);
-    const ctx = buildFactorCards(facesFor(s)).find((c) => c.id === "context");
-    expect(ctx.abnormal).toBe(true);
-    expect(ctx.lines.some((l: string) => l.includes("置换") && l.includes("账本"))).toBe(true);
-  });
-
-  /**
-   * MEM-01 Phase C：compaction 事件新增 collapsedTurns / reactive。reducer 的投影是逐字段
-   * 白名单——不列就静默丢（本项目第 N 次踩这条），所以三处（投影 / 派生 / 卡片）一次锁死。
-   */
-  it("tier 2 折叠与反应式压缩：投影保留字段、派生汇总、Context 卡写明轮数与撞 400 次数", () => {
-    const s = feed([
-      ev("main", { type: "compaction", droppedBlocks: 2, ledgerEntries: 3, collapsedTurns: 4 }),
-      ev("main", { type: "compaction", droppedBlocks: 0, ledgerEntries: 3, collapsedTurns: 2, reactive: true }),
-      ev("main", { type: "compaction", droppedBlocks: 1, ledgerEntries: 3 }), // 旧形状：缺两字段
-    ]);
-    const entries = s.timeline.filter((e) => e.type === "compaction");
-    expect(entries.map((e) => e.collapsedTurns)).toEqual([4, 2, 0]);
-    expect(entries.map((e) => e.reactive)).toEqual([false, true, false]);
-    const f = deriveContextFace(s, HARNESS);
-    expect(f.collapsedTurns).toBe(6);
-    expect(f.reactiveCount).toBe(1);
-    const ctx = buildFactorCards(facesFor(s)).find((c) => c.id === "context");
-    const line = ctx.lines.find((l: string) => l.includes("压缩"));
-    expect(line).toContain("折叠 6 轮旧对话");
-    expect(line).toContain("撞 400 后反应式 1 次");
-  });
-
-  it("没有折叠、没有反应式时 Context 卡不多说一个字（旧行为不变）", () => {
-    const s = feed([ev("main", { type: "compaction", droppedBlocks: 5, ledgerEntries: 3 })]);
-    const ctx = buildFactorCards(facesFor(s)).find((c) => c.id === "context");
-    const line = ctx.lines.find((l: string) => l.includes("压缩"));
-    expect(line).not.toContain("折叠");
-    expect(line).not.toContain("反应式");
-  });
-});
-
 describe("normalizeTab", () => {
   it("旧标签 id 与非法值一律归到 loop", () => {
     for (const legacy of ["overview", "log", undefined, null, "", "bogus"]) {
@@ -529,25 +491,6 @@ describe("normalizeTab", () => {
     for (const t of ["loop", "context", "tools", "verify"]) {
       expect(normalizeTab(t)).toBe(t);
     }
-  });
-});
-
-describe("deriveLogEntries 的工具名回填 (V-12)", () => {
-  it("tool_result 显示工具名而不是 toolUseId", () => {
-    const s = feed([
-      ev("main", { type: "tool_call", toolUseId: "toolu_01AbC", name: "read_file", input: {} }),
-      ev("main", { type: "tool_result", toolUseId: "toolu_01AbC", result: { content: "ok" }, durationMs: 3 }),
-    ]);
-    const result = deriveLogEntries(s).find((e) => e.type === "tool_result");
-    expect(result.name).toBe("read_file");
-  });
-
-  it("回填不到时保留原样，不伪造名字", () => {
-    const s = feed([
-      ev("main", { type: "tool_result", toolUseId: "orphan", result: { content: "ok" }, durationMs: 1 }),
-    ]);
-    const result = deriveLogEntries(s).find((e) => e.type === "tool_result");
-    expect(result.name).toBeUndefined();
   });
 });
 
@@ -1072,39 +1015,24 @@ describe("计划确认门", () => {
       sources: { progressExtensionTurns: "pack", stagnationWindow: "default", maxStagnationRecoveries: "default" },
     };
 
-    it("reduceEvent 投影保留 recovery（三字段 + sources + armed），派生进 Loop 面", () => {
+    it("reduceEvent 投影保留 recovery（三字段 + sources + armed）", () => {
       seq = 0;
       const s = feed([ev("host", { type: "run_config", pack: { name: "kicad" }, recovery })]);
       expect(s.runConfig.recovery).toEqual(recovery);
       const loop = deriveLoopFace(s, HARNESS);
       expect(loop.recovery).toEqual(recovery);
-      // 卡片文案：数字 + 非默认字段标来源
-      const card = buildFactorCards({
-        loop, context: deriveContextFace(s, HARNESS), tools: deriveToolsFace(s, HARNESS),
-        verification: deriveVerificationFace(s, HARNESS),
-      }).find((c) => c.id === "loop");
-      const line = card.lines.find((l) => l.startsWith("恢复"));
-      expect(line).toContain("续跑 12 轮·包");
-      expect(line).toContain("停滞窗 3");
-      expect(line).toContain("换策略 1 次");
-      expect(line).not.toContain("（默认）"); // 有一个字段来自包，就不能整体标"默认"
+      // 四因子卡已下线（2026-09-18），卡片文案那半条锁随之移除
     });
 
-    it("armed=false 时明说'关'，不把配着的数字画成生效的续跑", () => {
+    it("armed=false 时事实如实进 Loop 面，不把配着的数字当成生效", () => {
       seq = 0;
       const s = feed([ev("host", { type: "run_config", recovery: { ...recovery, armed: false } })]);
       const loop = deriveLoopFace(s, HARNESS);
       expect(loop.recovery.armed).toBe(false);
-      const card = buildFactorCards({
-        loop, context: deriveContextFace(s, HARNESS), tools: deriveToolsFace(s, HARNESS),
-        verification: deriveVerificationFace(s, HARNESS),
-      }).find((c) => c.id === "loop");
-      const line = card.lines.find((l) => l.startsWith("恢复"));
-      expect(line).toContain("关");
-      expect(line).not.toContain("续跑 12 轮");
+      expect(loop.recovery.progressExtensionTurns).toBe(12);
     });
 
-    it("全默认时只标一次（默认）；没有 run_config 时回落进程级快照；快照也没有则不显示", () => {
+    it("没有 run_config 时回落进程级快照；快照也没有则不显示", () => {
       seq = 0;
       const allDefault = {
         ...recovery,
@@ -1113,11 +1041,6 @@ describe("计划确认门", () => {
       };
       const viaHarness = deriveLoopFace(feed([]), { ...HARNESS, recovery: allDefault });
       expect(viaHarness.recovery).toEqual(allDefault);
-      const card = buildFactorCards({
-        loop: viaHarness, context: deriveContextFace(feed([]), HARNESS), tools: deriveToolsFace(feed([]), HARNESS),
-        verification: deriveVerificationFace(feed([]), HARNESS),
-      }).find((c) => c.id === "loop");
-      expect(card.lines.find((l) => l.startsWith("恢复"))).toBe("恢复：续跑 8 轮 · 停滞窗 3 · 换策略 1 次（默认）");
 
       seq = 0;
       const none = deriveLoopFace(feed([]), HARNESS);
@@ -1130,7 +1053,7 @@ describe("计划确认门", () => {
       expect(s.runConfig.recovery).toBeNull();
     });
 
-    it("recovery_decision 事件计入 Loop 面，与策略并排", () => {
+    it("recovery_decision 事件计入 Loop 面", () => {
       seq = 0;
       const s = feed([
         ev("host", { type: "run_config", recovery }),
@@ -1138,11 +1061,7 @@ describe("计划确认门", () => {
       ]);
       const loop = deriveLoopFace(s, HARNESS);
       expect(loop.recoveryDecisions).toHaveLength(1);
-      const card = buildFactorCards({
-        loop, context: deriveContextFace(s, HARNESS), tools: deriveToolsFace(s, HARNESS),
-        verification: deriveVerificationFace(s, HARNESS),
-      }).find((c) => c.id === "loop");
-      expect(card.lines).toContain("⤷ 恢复决策 1 次");
+      expect(loop.recoveryDecisions[0].reason).toBe("max_turns");
     });
   });
 

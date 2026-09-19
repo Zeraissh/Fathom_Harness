@@ -1,12 +1,13 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import {
   extractPendingToolUses,
   planMidToolReplay,
 } from "../src/mid-tool-replay.js";
 import { canonicalInputHash, type DurableToolTx } from "../src/tool-tx.js";
-import { mkdtemp, readFile, rm } from "node:fs/promises";
-import { readFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { spawn } from "node:child_process";
+import { mkdir, mkdtemp, readFile, rm } from "node:fs/promises";
+import { readFileSync, writeFileSync } from "node:fs";
+import os, { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
@@ -20,15 +21,18 @@ import {
 import type { PlannedRunResult } from "../src/orchestrate.js";
 import {
   cliMetaCheckpoint,
+  cliRunEndForStopReason,
   createCliDurable,
   formatCliResumeStop,
   lastExecutorTranscriptMessages,
   nextArchiveEventSeq,
   prepareCliPlanResume,
   prepareCliSingleResume,
+  reconcileCliHistoryRoot,
 } from "../src/cli-durable.js";
 import type { TurnEvent } from "../src/types.js";
-import { loadArchivedMetas } from "../ui/history.js";
+import { STOP_REASONS } from "../src/types.js";
+import { archiveOwnerLiveness, loadArchivedMetas, pidIsAlive } from "../ui/history.js";
 import { durablePlanFromPlan, planNodesFromSubtasks } from "../src/planner.js";
 import { initialRunState, transitionRunState } from "../src/run-state.js";
 import type { Plan } from "../src/planner.js";
@@ -740,5 +744,317 @@ describe("CLI events.jsonl TurnEvent 投影", () => {
     } finally {
       await rm(root, { recursive: true, force: true });
     }
+  });
+});
+
+/**
+ * 终态口径（2026-09-18 走查 U1/H3）：CLI 归档的 run_end 必须写真话。
+ *
+ * 旧病两处：①网络错误与人工停止一样写 outcome=closed/mainStopReason=aborted，
+ * 消费方从 meta 分不清"端点挂了"还是"人按了停"；②除 error/aborted 外的终态
+ * （max_turns/stalled/incomplete…）一律 markCompleted，run_end 里冒充 completed。
+ * 口径表逐值覆盖 STOP_REASONS——上游加新值而这里没跟上时，测试必须红。
+ */
+describe("终态口径：markEnded 写真话（U1/H3）", () => {
+  it("口径表逐值覆盖 STOP_REASONS（新值必须显式定档，不许默认冒充）", () => {
+    const expected: Record<string, { transition: string; outcome: string }> = {
+      completed: { transition: "complete", outcome: "completed" },
+      partial: { transition: "complete", outcome: "partial" },
+      blocked: { transition: "complete", outcome: "blocked" },
+      max_tokens: { transition: "complete", outcome: "error" },
+      max_turns: { transition: "complete", outcome: "error" },
+      budget_exhausted: { transition: "complete", outcome: "error" },
+      incomplete: { transition: "complete", outcome: "error" },
+      stalled: { transition: "complete", outcome: "error" },
+      refusal: { transition: "complete", outcome: "error" },
+      aborted: { transition: "interrupt", outcome: "closed" },
+      // error 保持 interrupted 相位：CLI 的同 run 热续（canSameRunResume）只认
+      // interrupted——错误终态若落 failed 会让"端点挂了→修好→--resume-run"断掉。
+      // 与 Web 的 failed 相位差异是有意的，真话由 outcome/mainStopReason 承担。
+      error: { transition: "interrupt", outcome: "error" },
+      plan_rejected: { transition: "close", outcome: "rejected" },
+      plan_gate_expired: { transition: "interrupt", outcome: "closed" },
+    };
+    for (const v of STOP_REASONS) {
+      expect(expected[v], `STOP_REASONS 新增了 ${v}：先在 cliRunEndForStopReason 里定档`).toBeTruthy();
+      expect(cliRunEndForStopReason(v)).toEqual(expected[v]);
+    }
+    // 未登记值 fail-closed：不冒充 completed
+    expect(cliRunEndForStopReason("no_such_reason")).toEqual({ transition: "complete", outcome: "error" });
+  });
+
+  it("error 落盘为 error 而不是 aborted（H3 语义混叠封口）", async () => {
+    const root = await mkdtemp(path.join(tmpdir(), "cli-end-err-"));
+    try {
+      const handle = createCliDurable({ runId: "cli-end-err", historyRoot: root });
+      handle.apply({ type: "start" });
+      handle.markEnded("error");
+      await handle.writer.flush();
+      const listed = await loadArchivedMetas(root);
+      expect(listed[0]!.meta.status).toBe("done");
+      expect(listed[0]!.meta.mainStopReason).toBe("error");
+      const state = JSON.parse(
+        await readFile(path.join(root, "cli-end-err", "state.json"), "utf8"),
+      ) as { phase: string };
+      expect(state.phase).toBe("interrupted");
+      const ends = (await readFile(path.join(root, "cli-end-err", "events.jsonl"), "utf8"))
+        .trim()
+        .split("\n")
+        .map((line) => (JSON.parse(line) as { event: { type: string; outcome?: string; mainStopReason?: string } }).event)
+        .filter((e) => e.type === "run_end");
+      expect(ends).toEqual([{ type: "run_end", outcome: "error", mainStopReason: "error", finishedAt: expect.any(Number), host: "cli" }]);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it("max_turns 不再冒充 completed（fail-open 封口）", async () => {
+    const root = await mkdtemp(path.join(tmpdir(), "cli-end-max-"));
+    try {
+      const handle = createCliDurable({ runId: "cli-end-max", historyRoot: root });
+      handle.apply({ type: "start" });
+      handle.markEnded("max_turns");
+      await handle.writer.flush();
+      const listed = await loadArchivedMetas(root);
+      expect(listed[0]!.meta.mainStopReason).toBe("max_turns");
+      const state = JSON.parse(
+        await readFile(path.join(root, "cli-end-max", "state.json"), "utf8"),
+      ) as { phase: string };
+      expect(state.phase).toBe("completed");
+      const ends = (await readFile(path.join(root, "cli-end-max", "events.jsonl"), "utf8"))
+        .trim()
+        .split("\n")
+        .map((line) => (JSON.parse(line) as { event: { type: string; outcome?: string; mainStopReason?: string } }).event)
+        .filter((e) => e.type === "run_end");
+      expect(ends).toEqual([{ type: "run_end", outcome: "error", mainStopReason: "max_turns", finishedAt: expect.any(Number), host: "cli" }]);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it("aborted / completed 回归锁：相位与 outcome 保持既有语义", async () => {
+    const root = await mkdtemp(path.join(tmpdir(), "cli-end-reg-"));
+    try {
+      const aborted = createCliDurable({ runId: "cli-end-ab", historyRoot: root });
+      aborted.apply({ type: "start" });
+      aborted.markEnded("aborted");
+      await aborted.writer.flush();
+      const done = createCliDurable({ runId: "cli-end-ok", historyRoot: root });
+      done.apply({ type: "start" });
+      done.markEnded("completed");
+      await done.writer.flush();
+      const listed = await loadArchivedMetas(root);
+      const byId = new Map(listed.map((l) => [l.meta.runId, l.meta]));
+      expect(byId.get("cli-end-ab")!.mainStopReason).toBe("aborted");
+      expect(byId.get("cli-end-ok")!.mainStopReason).toBe("completed");
+      const phase = async (id: string) =>
+        (JSON.parse(await readFile(path.join(root, id, "state.json"), "utf8")) as { phase: string }).phase;
+      expect(await phase("cli-end-ab")).toBe("interrupted");
+      expect(await phase("cli-end-ok")).toBe("completed");
+      const outcome = async (id: string) =>
+        (await readFile(path.join(root, id, "events.jsonl"), "utf8"))
+          .trim()
+          .split("\n")
+          .map((line) => (JSON.parse(line) as { event: { type: string; outcome?: string } }).event)
+          .filter((e) => e.type === "run_end")
+          .map((e) => e.outcome);
+      expect(await outcome("cli-end-ab")).toEqual(["closed"]);
+      expect(await outcome("cli-end-ok")).toEqual(["completed"]);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it("CLI 宿主把终态口径接到 markEnded / 退出码（host-lags）", () => {
+    const root = path.dirname(fileURLToPath(import.meta.url));
+    const cli = readFileSync(path.join(root, "..", "src", "cli.ts"), "utf8");
+    // 三条单执行者路径（热续 / --verify / 普通）都必须收尾 durable。
+    // --verify 路径 2026-09-18 前从不收尾（档案永远 running，僵尸工厂）——
+    // 逐条数出来，防它再丢。
+    expect(cli.match(/cliDurable\?\.markEnded\(event\.result\.stopReason\)/g)).toHaveLength(2);
+    expect(cli).toMatch(/cliDurable\?\.markEnded\(outcome\.main\.stopReason\)/);
+    expect(cli).toMatch(/cliDurable\?\.markEnded\(plannedStopReason\(outcome\)\)/);
+    // 退出码：终态事实来自 ledgerFacts，不许被别的分支静默盖掉
+    expect(cli).toMatch(/cliExitCodeForRun\(ledgerFacts\)/);
+  });
+});
+
+/**
+ * 僵尸档案收殓（2026-09-18 走查 F4-B）：被硬杀的 run 在盘上永远 status=running /
+ * phase=executing，堆积无清理，任何直读档案的工具都被骗。修法：档案创建时盖
+ * owner{pid,host} 章（writer 单点）→ 收殓只看"可证已死"：同机 + pid 不在。
+ * **并行 CLI（pid 活）/ 他机（共享目录）/ 老档案（无章）一律不碰**——这正是
+ * 当初设计这一刀时拦下 naive 扫描的原因。
+ */
+describe("僵尸档案收殓（owner 门控）", () => {
+  const OTHER_META_OWNER = { pid: 999999999, host: "some-other-host", startedAt: 1 };
+
+  async function freshRoot(): Promise<string> {
+    const root = await mkdtemp(path.join(tmpdir(), "cli-reap-"));
+    rootDirs.push(root);
+    return root;
+  }
+  const rootDirs: string[] = [];
+  afterEach(async () => {
+    for (const d of rootDirs.splice(0)) await rm(d, { recursive: true, force: true });
+  });
+
+  it("archiveOwnerLiveness：无章=unknown、他机=foreign、同机按 alive 分死活", () => {
+    const me = "test-host";
+    expect(archiveOwnerLiveness({ owner: undefined }, { host: me, alive: () => true })).toBe("unknown");
+    expect(
+      archiveOwnerLiveness({ owner: OTHER_META_OWNER }, { host: me, alive: () => true }),
+    ).toBe("foreign");
+    expect(
+      archiveOwnerLiveness(
+        { owner: { pid: 4242, host: me, startedAt: 1 } },
+        { host: me, alive: () => true },
+      ),
+    ).toBe("self-alive");
+    expect(
+      archiveOwnerLiveness(
+        { owner: { pid: 4242, host: me, startedAt: 1 } },
+        { host: me, alive: () => false },
+      ),
+    ).toBe("self-dead");
+  });
+
+  /**
+   * `pidIsAlive` 是收殓器 `alive` 的默认实现——判据全在这一处。
+   * 方向必须保守：判不准就当活着（EPERM 也返回 true），宁愿漏收不能误收。
+   */
+  it("pidIsAlive：自己活着、退出的子进程死了、非法 pid 直接判死", async () => {
+    expect(pidIsAlive(process.pid)).toBe(true);
+    // 非法输入连 process.kill 都不该碰：pid 0 在 Windows 上会"成功"（信号发进程组）
+    expect(pidIsAlive(0)).toBe(false);
+    expect(pidIsAlive(-1)).toBe(false);
+    expect(pidIsAlive(1.5)).toBe(false);
+    expect(pidIsAlive(Number.NaN)).toBe(false);
+    // 不可能存在的 pid：确定性，不依赖时序
+    expect(pidIsAlive(2_147_483_647)).toBe(false);
+
+    const child = spawn(process.execPath, ["-e", "process.exit(0)"], { stdio: "ignore" });
+    const pid = child.pid!;
+    await new Promise((r) => child.on("exit", r));
+    expect(pidIsAlive(pid)).toBe(false);
+  });
+
+  it("收殓：同机死 pid → state 收成终态、meta 落 done/aborted、run_end 补进事件流", async () => {
+    const root = await freshRoot();
+    const handle = createCliDurable({ runId: "cli-zombie", historyRoot: root });
+    handle.apply({ type: "start" }); // executing
+    await handle.writer.flush();
+    // 伪造"已被硬杀"：owner 换成一个死 pid（同机）
+    const metaPath = path.join(root, "cli-zombie", "meta.json");
+    const meta = JSON.parse(readFileSync(metaPath, "utf8")) as Record<string, unknown>;
+    meta.owner = { pid: 4242, host: os.hostname(), startedAt: meta.createdAt };
+    writeFileSync(metaPath, JSON.stringify(meta), "utf8");
+
+    const reaped = await reconcileCliHistoryRoot(root, { host: os.hostname(), alive: () => false });
+    expect(reaped).toEqual(["cli-zombie"]);
+
+    const after = JSON.parse(readFileSync(metaPath, "utf8")) as Record<string, unknown>;
+    expect(after.status).toBe("done");
+    expect(after.mainStopReason).toBe("aborted");
+    expect(typeof after.finishedAt).toBe("number");
+    const state = JSON.parse(
+      readFileSync(path.join(root, "cli-zombie", "state.json"), "utf8"),
+    ) as { phase: string };
+    expect(state.phase).toBe("interrupted");
+    const ends = readFileSync(path.join(root, "cli-zombie", "events.jsonl"), "utf8")
+      .trim()
+      .split("\n")
+      .map((l) => (JSON.parse(l) as { event: { type: string; outcome?: string; mainStopReason?: string } }).event)
+      .filter((e) => e.type === "run_end");
+    expect(ends.some((e) => e.outcome === "closed" && e.mainStopReason === "aborted")).toBe(true);
+  });
+
+  /**
+   * 收殓一轮是**逐条**的，每条各起一个 RunHistoryWriter：某一条的写链熄火
+   * （盘满 / 权限 / 结构坏），不许把后面的档案一起带停——启动路径上的清理器
+   * 最忌讳"一个坏档案卡住启动"。
+   */
+  it("坏档案不阻断整轮：它的 writer 熄火，下一条照常收干净", async () => {
+    const root = await freshRoot();
+    const mk = async (runId: string): Promise<string> => {
+      const h = createCliDurable({ runId, historyRoot: root });
+      h.apply({ type: "start" });
+      await h.writer.flush();
+      const p = path.join(root, runId, "meta.json");
+      const m = JSON.parse(readFileSync(p, "utf8")) as Record<string, unknown>;
+      m.owner = { pid: 4242, host: os.hostname(), startedAt: m.createdAt };
+      writeFileSync(p, JSON.stringify(m), "utf8");
+      return p;
+    };
+    // 坏的那个先建 → 排序在前，确保它先被处理，"不阻断"才验得实。
+    // 触发器：把它的 events.jsonl 换成**目录**——收殓末尾要追一条 run_end，
+    // 追加重定向到目录必 EISDIR（Windows/Linux 一致），它的 writer 当场熄火。
+    const badDir = path.join(root, "cli-bad");
+    const badEvents = path.join(badDir, "events.jsonl");
+    const goodMeta = await mk("cli-good");
+    await mk("cli-bad");
+    await rm(badEvents, { force: true });
+    await mkdir(badEvents, { recursive: true });
+    try {
+      const reaped = await reconcileCliHistoryRoot(root, { host: os.hostname(), alive: () => false });
+      expect(reaped).toContain("cli-good");
+      const good = JSON.parse(readFileSync(goodMeta, "utf8")) as Record<string, unknown>;
+      expect(good.status).toBe("done");
+      expect(good.mainStopReason).toBe("aborted");
+      // 好的那条连 run_end 都补上了：没被上一条的死 writer 带停
+      const ends = readFileSync(path.join(root, "cli-good", "events.jsonl"), "utf8")
+        .trim()
+        .split("\n")
+        .map((l) => JSON.parse(l) as { event: { type: string; mainStopReason?: string } })
+        .filter((e) => e.event.type === "run_end" && e.event.mainStopReason === "aborted");
+      expect(ends.length).toBeGreaterThan(0);
+    } finally {
+      await rm(badEvents, { recursive: true, force: true });
+    }
+  });
+
+  it("不碰：活 owner（并行 CLI）/ 他机 owner / 无章老档案 / 已终态", async () => {
+    const root = await freshRoot();
+    const mk = async (runId: string, status: string) => {
+      const h = createCliDurable({ runId, historyRoot: root });
+      h.apply({ type: "start" });
+      await h.writer.flush();
+      if (status === "done") {
+        h.markEnded("completed");
+        await h.writer.flush();
+      }
+      return path.join(root, runId, "meta.json");
+    };
+    const setOwner = (p: string, owner: unknown | null) => {
+      const m = JSON.parse(readFileSync(p, "utf8")) as Record<string, unknown>;
+      if (owner === null) delete m.owner;
+      else m.owner = owner;
+      writeFileSync(p, JSON.stringify(m), "utf8");
+    };
+    const alivePath = await mk("cli-live", "running");
+    setOwner(alivePath, { pid: process.pid, host: os.hostname(), startedAt: Date.now() });
+    const foreignPath = await mk("cli-foreign", "running");
+    setOwner(foreignPath, OTHER_META_OWNER);
+    const legacyPath = await mk("cli-legacy", "running");
+    setOwner(legacyPath, null);
+    const donePath = await mk("cli-done", "done");
+    setOwner(donePath, { pid: process.pid, host: os.hostname(), startedAt: Date.now() });
+
+    const reaped = await reconcileCliHistoryRoot(root, { host: os.hostname(), alive: () => true });
+    expect(reaped).toEqual([]);
+    for (const p of [alivePath, foreignPath, legacyPath]) {
+      const m = JSON.parse(readFileSync(p, "utf8")) as { status: string };
+      expect(m.status, p).toBe("running");
+    }
+    expect((JSON.parse(readFileSync(donePath, "utf8")) as { status: string }).status).toBe("done");
+  });
+
+  it("接线锁：writer 单点盖章 + CLI 启动收殓 + server 收殓前查 owner", () => {
+    const hist = readFileSync(path.join(__dirname, "..", "ui", "history.ts"), "utf8");
+    expect(hist).toMatch(/status === "running"[\s\S]{0,120}?owner/);
+    const cli = readFileSync(path.join(__dirname, "..", "src", "cli.ts"), "utf8");
+    expect(cli).toMatch(/reconcileCliHistoryRoot\(/);
+    const server = readFileSync(path.join(__dirname, "..", "ui", "server.ts"), "utf8");
+    expect(server).toMatch(/archiveOwnerLiveness\(/);
   });
 });

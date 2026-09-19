@@ -6,6 +6,8 @@ import {
 } from "./mcp.js";
 import { STM32_FIX_THEN_VERIFY, type PackHandoff } from "./handoff.js";
 import { githubMcpPermissionPolicy, mergeHostGithubTools } from "./mcp-github.js";
+// 仅取类型：verifier 侧不反向依赖包定义（它用的是结构化类型），这里也不引运行时环
+import type { VerifierMeans } from "./verifier.js";
 
 export interface DomainMcpPolicy extends McpPermissionPolicy {
   /** 只暴露这些 MCP 原始工具名；缺省全部暴露 */
@@ -211,6 +213,19 @@ Image-lazy discipline:
 - For many images, extract with repeated summaries or structured text. Do not view_image a batch.
 - Use detail=full or view_image only when the question is about pixels, contrast, or layout. view_image is only on the tool surface when the executor can see images; uploading a file never describes it automatically.`;
 
+/**
+ * 视觉优先（2026-09-18 走查纲领，委托方原话）：「能图形化来解释的事情绝不
+ * 用语言文字生硬描述——统计图、函数图像、演示，可以用 Canvas 画布生成来作」。
+ * 产物 = 自包含 HTML 写进工作目录，宿主画布就地渲染；无法成图时才退化文字。
+ */
+export const VISUAL_FIRST_DISCIPLINE = `
+
+Visual-first discipline:
+- When the substance is inherently visual — statistics, distributions, trends, comparisons, function plots, flows, or a demo — produce a self-contained HTML artifact (inline CSS/SVG/canvas and inline data; no external requests) and say which file it is. The host renders it beside the chat, so do not re-describe the numbers in long prose.
+- Draw with static markup: the preview sandbox enforces a strict CSP (default-src 'none'), so inline JavaScript is BLOCKED and a script-rendered chart shows up blank. Compute the geometry yourself when you generate the file and emit plain SVG/CSS bars — never <script>.
+- Keep it honest: if the data is too thin for a chart, say so in one line instead of drawing a decorative one.
+- In pure-terminal or otherwise unrenderable contexts, fall back to a compact text summary.`;
+
 /** 默认宿主（无领域包）与咨询包共用：先分清对话/任务，再谈口径、出处与进度。 */
 export const DEFAULT_HOST_DISCIPLINES =
   CONVERSATION_DISCIPLINE +
@@ -218,7 +233,8 @@ export const DEFAULT_HOST_DISCIPLINES =
   GROUNDED_CONSULTATION_DISCIPLINE +
   PRESENTATION_DISCIPLINE +
   PROGRESS_DISCIPLINE +
-  IMAGE_LAZY_DISCIPLINE;
+  IMAGE_LAZY_DISCIPLINE +
+  VISUAL_FIRST_DISCIPLINE;
 
 const CONSULT_SYSTEM = `你是有据可查的技术咨询 agent：回答标准、校准、选型、原理与操作步骤时，以本轮工具取到的一手资料为准。
 
@@ -879,6 +895,24 @@ export function selectPackTools(
     return applyMcpPackPermission(tool, rawName, packPolicy);
   });
   return mergeHostGithubTools(pack, [...builtins, ...resolvedMcp], mcpPool);
+}
+
+/**
+ * 这次核查的"动手面"（H8 徽标的判据②③，见 `verifierCanExecute`）：
+ * 包声明 + **实际装配出来的**工具一起看，宿主四处调用点共用这一处口径。
+ *
+ * 为什么按实际工具而不是按包声明：MCP 工具会因"宿主没配 MCP""包用
+ * includeTools 收窄""权限被 deny"而不在场——那时核查者手里确实没有探针，
+ * 标「静态推导」是对的。声明说"能"，装配说"这次真有没有"，要的是后者。
+ */
+export function verifierMeansFor(
+  pack: DomainPack | undefined,
+  tools: readonly Tool[] | undefined,
+): VerifierMeans {
+  return {
+    programmatic: pack?.verify.mode === "programmatic",
+    mcpTools: (tools ?? []).filter((tool) => originalMcpToolName(tool) !== undefined).length,
+  };
 }
 
 // ————— 兼容别名（v0.8 及之前的 Preset 命名）—————

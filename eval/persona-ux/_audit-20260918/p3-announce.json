@@ -1,0 +1,18 @@
+{
+  "verdict": {
+    "判据1 选中不播报：播报区不含「产物画布已打开」": true,
+    "判据1 播报区不含视图事件字样（画布/已打开）": true,
+    "判据2 坞的可及名称是静态「预览 · X」": true,
+    "判据2 名称里带的是真实文件名": true
+  },
+  "after": {
+    "announcerText": "运行已完成：列一下这个目录有什么，再写一份只有三行的说明到 devin-dir-note.txt。",
+    "dockExists": true,
+    "dockAriaLabel": "预览 · devin-dir-note.txt",
+    "dockHidden": false,
+    "tabs": [
+      "devin-dir-note.txt"
+    ]
+  },
+  "runId": "5d6a3212-1716-4be7-99db-0dbfb20228e5"
+}

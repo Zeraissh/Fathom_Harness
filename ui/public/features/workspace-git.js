@@ -212,6 +212,19 @@ export function initWorkspaceGitChip(root, hooks = {}, env = {}) {
     return snapshot;
   }
 
+  /**
+   * 同目录短 TTL + 在飞去重（走查 UX-D1 网络实录）。
+   *
+   * 一次导航/渲染有 5-11 个调用方各喊一次 refresh()（syncComposer、目录切换
+   * 统一出口、初始化、resize 一族……），此前每条都发一次真实 git 调用——
+   * 真机会话 4 分钟打了 112 条，末段背靠背 6-7ms。目录真的换了立即重打；
+   * 同目录 2s 内复用上一次结果（git 状态是显示件，秒级陈旧无感）。
+   */
+  const REFRESH_TTL_MS = 2000;
+  let lastWorkdir = "";
+  let lastFetchAt = 0;
+  let inflight = null;
+
   async function refresh() {
     const workdir = hooks.getWorkdir?.();
     if (!workdir) {
@@ -219,17 +232,29 @@ export function initWorkspaceGitChip(root, hooks = {}, env = {}) {
       paint();
       return snapshot;
     }
-    try {
-      const res = await fetchFn(`/api/workspace/git?workdir=${encodeURIComponent(workdir)}`);
-      snapshot = res.ok ? await res.json() : { present: false };
-    } catch {
-      snapshot = { present: false };
+    if (workdir === lastWorkdir && Date.now() - lastFetchAt < REFRESH_TTL_MS) {
+      return snapshot;
     }
-    prReady = null;
-    prUrl = "";
-    prError = "";
-    paint();
-    return snapshot;
+    if (inflight && inflight.workdir === workdir) return inflight.promise;
+    const promise = (async () => {
+      try {
+        const res = await fetchFn(`/api/workspace/git?workdir=${encodeURIComponent(workdir)}`);
+        snapshot = res.ok ? await res.json() : { present: false };
+      } catch {
+        snapshot = { present: false };
+      }
+      lastWorkdir = workdir;
+      lastFetchAt = Date.now();
+      prReady = null;
+      prUrl = "";
+      prError = "";
+      paint();
+      return snapshot;
+    })().finally(() => {
+      if (inflight && inflight.promise === promise) inflight = null;
+    });
+    inflight = { workdir, promise };
+    return promise;
   }
 
   async function refreshPrReady() {

@@ -6,6 +6,7 @@
  */
 import { existsSync, readFileSync } from "node:fs";
 import { mkdir } from "node:fs/promises";
+import { hostname } from "node:os";
 import { join, resolve } from "node:path";
 import {
   canRestorePlanGate,
@@ -13,6 +14,7 @@ import {
   durableBudgetExhausted,
   initialRunState,
   planResumeFacts,
+  recoverDurableStateOnCrash,
   snapshotDurableBudget,
   transitionRunState,
   type DurableBudgetSnapshot,
@@ -29,6 +31,10 @@ import {
 } from "./tool-tx.js";
 import {
   RunHistoryWriter,
+  archiveOwnerLiveness,
+  loadArchivedMetas,
+  pidIsAlive,
+  readArchivedState,
   type ArchivedCheckpoint,
   type ArchivedMeta,
 } from "../ui/history.js";
@@ -179,6 +185,48 @@ export interface CliDurableHandle {
   markInterrupted(): void;
   markCompleted(): void;
   markFailed(): void;
+  /** 终态口径（走查 U1/H3）：按 stopReason 写真话的 run_end——phase、outcome、原因三处一致。 */
+  markEnded(stopReason: string): void;
+}
+
+/** run_end 的 outcome 词表（对齐 ui/server.ts 的 RunEndInfo.outcome）。 */
+export type CliRunEndOutcome = "completed" | "partial" | "blocked" | "closed" | "rejected" | "error";
+
+/**
+ * stopReason → CLI 归档终态（phase 迁移 + run_end outcome）。fail-closed：
+ * 未登记的原因不冒充 completed，落 error。
+ *
+ * 两条口径来源，别按"看着更顺"改：
+ * - outcome 镜像 ui/server.ts 的 runOutcomeForStopReason（那份注释就是纪律）；
+ * - 相位里只有 error 与 Web 不同（Web 落 failed）：CLI 的同 run 热续
+ *   （canSameRunResume）只认 interrupted——"端点挂了→修好→--resume-run"
+ *   是同一条链，error 落 failed 会把这条路断掉。真话由 outcome/mainStopReason
+ *   承担，消费方读 meta 就能分清"网络错"与"人按停"。
+ */
+export function cliRunEndForStopReason(reason: string): {
+  transition: "complete" | "fail" | "interrupt" | "close";
+  outcome: CliRunEndOutcome;
+} {
+  switch (reason) {
+    case "completed":
+      return { transition: "complete", outcome: "completed" };
+    case "partial":
+      return { transition: "complete", outcome: "partial" };
+    case "blocked":
+      return { transition: "complete", outcome: "blocked" };
+    case "aborted":
+    case "plan_gate_expired":
+      return { transition: "interrupt", outcome: "closed" };
+    case "error":
+      return { transition: "interrupt", outcome: "error" };
+    case "plan_rejected":
+      return { transition: "close", outcome: "rejected" };
+    default:
+      // max_tokens / max_turns / budget_exhausted / incomplete / stalled / refusal…
+      // 轮子停了但结果不是"完成"——相位按既有语义落在完成态（热续由各自的门管），
+      // outcome 不许再冒充 completed。
+      return { transition: "complete", outcome: "error" };
+  }
 }
 
 const CLI_CRASH_PHASES = new Set([
@@ -427,7 +475,7 @@ export function createCliDurable(opts: {
   let eventSeq = nextArchiveEventSeq(dir);
   let archiveSegmentIndex = state.checkpoint ? state.checkpoint.segmentIndex + 1 : 0;
 
-  function appendHostEnd(outcome: "completed" | "closed" | "error", mainStopReason: string): void {
+  function appendHostEnd(outcome: CliRunEndOutcome, mainStopReason: string): void {
     const finishedAt = Date.now();
     writer.appendEvent({
       seq: eventSeq++,
@@ -577,6 +625,15 @@ export function createCliDurable(opts: {
       appendHostEnd("error", "error");
       closeTrace("error");
     },
+    markEnded(stopReason) {
+      const { transition, outcome } = cliRunEndForStopReason(stopReason);
+      const next = transitionRunState(state, { type: transition });
+      if (next) state = next;
+      writer.writeState(state);
+      appendHostEnd(outcome, stopReason);
+      // 正常交付三档（completed/partial/blocked）收 ok；closed（人工停止等）与 error 仍记 error
+      closeTrace(outcome === "completed" || outcome === "partial" || outcome === "blocked" ? "ok" : "error");
+    },
   };
 }
 
@@ -585,4 +642,62 @@ export async function ensureCliHistoryRoot(cwd = process.cwd()): Promise<string>
   const root = resolve(cwd, ".agent-run-history");
   await mkdir(root, { recursive: true });
   return root;
+}
+
+/**
+ * 僵尸档案收殓（2026-09-18 走查 F4-B）：硬杀/断电过的 run 在盘上永远
+ * status=running、phase=executing——堆积、且任何直读档案的工具都被骗。
+ * 收殓**只看「可证已死」**：同机 + owner pid 不在（见 archiveOwnerLiveness）。
+ * 并行 CLI 的活档案、他机的共享目录、无章老档案一律不碰（fail-safe：只漏收，
+ * 不误收）。返回被收殓的 runId，调用方决定要不要打印。
+ */
+export async function reconcileCliHistoryRoot(
+  root: string,
+  deps: { host: string; alive: (pid: number) => boolean } = {
+    host: hostname(),
+    alive: pidIsAlive,
+  },
+): Promise<string[]> {
+  const reaped: string[] = [];
+  /**
+   * 这里**刻意不包** try/catch：两个依赖各自已经把"不阻断启动"兑现了——
+   * `loadArchivedMetas` 把根目录不可读当空历史返回（ui/history.ts），
+   * RunHistoryWriter 的 enqueue 把写失败收进 `dead` 健康位、永不 reject。
+   * 原先那两层 catch 一行都进不去（changed-line 门把它捞了出来：真跑不进的分支）。
+   * 收殓是逐条的：某条写不进去，循环照走，后面的档案照收。
+   */
+  const metas = await loadArchivedMetas(root);
+  for (const a of metas) {
+    if (a.meta.status !== "running") continue;
+    if (archiveOwnerLiveness(a.meta, deps) !== "self-dead") continue;
+    await reapDeadArchive(a.dir, a.meta);
+    reaped.push(a.meta.runId);
+  }
+  return reaped;
+}
+
+/**
+ * 把一条「确死」档案收成终态：state 按 ADR 表迁移、meta 落 done/aborted、
+ * events.jsonl 补一条 run_end——与信号中断（markInterrupted）同形，
+ * 口径是"被中断"，不是"跑完了"。
+ */
+async function reapDeadArchive(dir: string, meta: ArchivedMeta): Promise<void> {
+  const writer = new RunHistoryWriter(dir, () => {});
+  const at = Date.now();
+  const state = await readArchivedState(dir);
+  if (state) writer.writeState(recoverDurableStateOnCrash(state, at));
+  writer.writeMeta({ ...meta, status: "done", finishedAt: at, mainStopReason: "aborted" });
+  writer.appendEvent({
+    seq: nextArchiveEventSeq(dir),
+    source: "host",
+    ts: at,
+    event: {
+      type: "run_end",
+      outcome: "closed",
+      mainStopReason: "aborted",
+      finishedAt: at,
+      host: "cli",
+    },
+  });
+  await writer.flush();
 }

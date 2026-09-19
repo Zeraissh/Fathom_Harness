@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
@@ -8,11 +8,14 @@ import {
   CLI_VERSION,
   CliArgumentError,
   cliCanPrompt,
+  cliExitCodeForRun,
   cliHelpText,
   formatCliNeedsConfirmMessage,
+  formatSignalNotice,
   formatStaticDoctor,
   isReadlineClosedError,
   parseCliArgs,
+  resolveColorEnabled,
 } from "../src/cli-args.js";
 
 describe("CLI argument contract", () => {
@@ -206,5 +209,129 @@ describe("static doctor", () => {
     expect(report.ok).toBe(false);
     expect(report.provider.value).toBe("<invalid>");
     expect(report.model.value).toBe("<invalid>");
+  });
+});
+
+/**
+ * 退出码口径（2026-09-18 走查 F1/H1）：终态失败 ≠ 进程成功。
+ *
+ * 旧病：断端点跑任务输出 `■ error (0 turns)` 而退出码 0——CI 的
+ * `if [ $? -ne 0 ]` 把"端点挂了"当成功，消费方被迫 parse stdout。
+ * 口径：只有 completed 是 0；completed 但--verify 核查未通过也是 1；
+ * plan_rejected 不表态（抛错路径已定 2，别覆盖）。
+ */
+describe("退出码口径（CI 消费者）", () => {
+  it("只有 completed 是 0；核查未通过与一切非 completed 终态都是 1", () => {
+    expect(cliExitCodeForRun({ stopReason: "completed" })).toBe(0);
+    expect(cliExitCodeForRun({ stopReason: "completed", finalPassed: true })).toBe(0);
+    expect(cliExitCodeForRun({ stopReason: "completed", finalPassed: null })).toBe(0);
+    expect(cliExitCodeForRun({ stopReason: "completed", finalPassed: false })).toBe(1);
+    expect(cliExitCodeForRun({ stopReason: "aborted" })).toBe(1);
+    expect(cliExitCodeForRun({ stopReason: "error" })).toBe(1);
+    expect(cliExitCodeForRun({ stopReason: "max_turns" })).toBe(1);
+    expect(cliExitCodeForRun({ stopReason: "partial" })).toBe(1);
+    expect(cliExitCodeForRun({ stopReason: "budget_exhausted" })).toBe(1);
+    expect(cliExitCodeForRun({ stopReason: "stalled" })).toBe(1);
+  });
+
+  it("没有终态事实时不表态；plan_rejected 让抛错路径的 2 生效", () => {
+    expect(cliExitCodeForRun(null)).toBeUndefined();
+    expect(cliExitCodeForRun(undefined)).toBeUndefined();
+    expect(cliExitCodeForRun({})).toBeUndefined();
+    expect(cliExitCodeForRun({ stopReason: null })).toBeUndefined();
+    expect(cliExitCodeForRun({ stopReason: "plan_rejected" })).toBeUndefined();
+  });
+
+  it("--help 写明退出码表（消费方不用猜）", () => {
+    const help = cliHelpText();
+    expect(help).toMatch(/退出码：0=completed/);
+    expect(help).toMatch(/1=（核查未通过|其它终态）/);
+    expect(help).toMatch(/130\/143=信号/);
+  });
+});
+
+/**
+ * H2 · 机器可读出口（2026-09-18 走查）：--json / --quiet / 颜色决策。
+ *
+ * 旧病：重定向到文件后 ANSI 原样落盘（手写 \x1b 常量、无 isTTY/NO_COLOR 判断）；
+ * 唯一的机器可读出口（.agent-run-history 档案）藏在启动 dim 文案里，--help 不提。
+ */
+describe("机器可读出口（--json/--quiet/NO_COLOR）", () => {
+  it("--json / --quiet 可解析；二者同给时 json 优先且不报互斥", () => {
+    expect(parseCliArgs(["run", "--json", "任务"])).toMatchObject({ json: true, quiet: false });
+    expect(parseCliArgs(["--quiet", "--yes", "任务"])).toMatchObject({ quiet: true, json: false });
+    expect(parseCliArgs(["--json", "--quiet", "任务"])).toMatchObject({ json: true, quiet: true });
+    // 旧入口（无 run 子命令）同样接受
+    expect(parseCliArgs(["--json", "任务"])).toMatchObject({ json: true, task: "任务" });
+  });
+
+  it("颜色决策：FORCE_COLOR 显式优先 > NO_COLOR 非空 > isTTY（管道即关）", () => {
+    expect(resolveColorEnabled({}, true)).toBe(true);
+    expect(resolveColorEnabled({}, false)).toBe(false);
+    expect(resolveColorEnabled({ NO_COLOR: "1" }, true)).toBe(false);
+    // NO_COLOR 规范：存在且非空才算；空串不生效
+    expect(resolveColorEnabled({ NO_COLOR: "" }, true)).toBe(true);
+    expect(resolveColorEnabled({ FORCE_COLOR: "1" }, false)).toBe(true);
+    expect(resolveColorEnabled({ FORCE_COLOR: "0" }, true)).toBe(false);
+    expect(resolveColorEnabled({ FORCE_COLOR: "1", NO_COLOR: "1" }, false)).toBe(true);
+  });
+
+  it("--help 写明机器可读出口与档案路径（消费方不用考古）", () => {
+    const help = cliHelpText();
+    expect(help).toMatch(/--json/);
+    expect(help).toMatch(/run_result/);
+    expect(help).toMatch(/--quiet/);
+    expect(help).toMatch(/NO_COLOR/);
+    expect(help).toMatch(/\.agent-run-history/);
+    expect(help).toMatch(/\.agent-runs\.jsonl/);
+  });
+});
+
+/**
+ * H4/H5 · 走查小项：中断提示 + 跨目录调用。
+ * H4：优雅中断路径存在但静默消失（130 无提示）；Windows 上非控制台信号投递不了，
+ *     得把"只有控制台 Ctrl+C 才算优雅中断"写进帮助。
+ * H5：无 bin，--help 只教仓库内 npm 脚本——在自己项目里跑要试错两轮绝对路径。
+ */
+describe("H4/H5 · 中断提示与跨目录调用", () => {
+  it("H4：中断提示分两态——有检查点给续跑命令，没检查点说清不能热续", () => {
+    const withCp = formatSignalNotice("SIGINT", { runId: "cli-123", hasCheckpoint: true });
+    expect(withCp).toContain("SIGINT");
+    expect(withCp).toContain("--resume-run cli-123");
+    const noCp = formatSignalNotice("SIGTERM", { runId: "cli-9", hasCheckpoint: false });
+    expect(noCp).toContain("SIGTERM");
+    expect(noCp).toContain("不能热续");
+    expect(noCp).not.toContain("--resume-run cli-9");
+  });
+
+  it("H4：help 写明「控制台 Ctrl+C 才是优雅中断；硬杀不能热续」", () => {
+    const help = cliHelpText();
+    expect(help).toMatch(/Ctrl\+C/);
+    expect(help).toMatch(/硬杀/);
+  });
+
+  it("H4 接线锁：信号处理器退出前打提示（读活 durable 的检查点事实）", () => {
+    const cli = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "..", "src", "cli.ts"), "utf8");
+    expect(cli).toMatch(/formatSignalNotice\(/);
+    expect(cli).toMatch(/hasCheckpoint/);
+  });
+
+  it("H5：help 给跨目录调用示例（在别的项目里怎么跑）", () => {
+    const help = cliHelpText();
+    expect(help).toMatch(/node_modules/);
+    expect(help).toMatch(/tsx/);
+    expect(help).toMatch(/你的项目/);
+  });
+
+  it("H5：package.json 有 bin，指向构建产物 dist/src/cli.js（rootDir=. 保留 src 前缀）", () => {
+    const pkg = JSON.parse(
+      readFileSync(join(dirname(fileURLToPath(import.meta.url)), "..", "package.json"), "utf8"),
+    ) as { bin?: Record<string, string> };
+    expect(pkg.bin?.["agent-harness"]).toBe("dist/src/cli.js");
+    // 构建产物必须真在那个位置（pack 允许清单只放行 dist/**）
+    const built = join(dirname(fileURLToPath(import.meta.url)), "..", "dist", "src", "cli.js");
+    if (existsSync(built)) {
+      expect(readFileSync(built, "utf8").startsWith("#!/usr/bin/env node")).toBe(true);
+    }
   });
 });

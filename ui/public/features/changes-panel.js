@@ -65,6 +65,10 @@ export const CHANGES_COPY = {
   previewError: (status) => humanizeHttpFailure(status, "文件内容没加载出来"),
   previewNetworkError: "文件内容加载失败（网络错误）",
   previewTruncated: (n) => `仅显示前 ${n} 行`,
+  // P4：编辑的具体改动——审计原话「没有行内 diff」指的就是缺这一段。
+  edits: (n) => `改动 ${n} 处`,
+  editsHint: "编辑工具当时的旧文 → 新文。不是磁盘上的旧版本：整文件覆盖写拿不到旧版本，那种不给。",
+  noEdits: "这次只有整文件写入，没有逐行改动可看",
 };
 
 /** 内联预览的行数上限 */
@@ -320,12 +324,50 @@ export function initChangesPanel(host = {}, env = {}) {
     row.appendChild(meta);
 
     if (canPreview && entry.path === expandedPath) {
+      // P4：有逐行改动就先给「改动」，再给"现在长什么样"。
+      // 放在独立的容器里：内容预览是异步填的（会 innerHTML=""），别被它冲掉。
+      const hunks = typeof host.getEditHunks === "function" ? host.getEditHunks(entry.path) : null;
+      if (Array.isArray(hunks) && hunks.length > 0) {
+        row.appendChild(renderHunks(hunks));
+      }
       const preview = doc.createElement("div");
       preview.className = "chg-preview";
       preview.dataset.chgPreviewFor = entry.path;
       row.appendChild(preview);
     }
     return row;
+  }
+
+  /**
+   * 旧文 → 新文，逐行铺开。`-` 行是要去掉的、`+` 行是换上的。
+   * 逐行建元素而不是塞一个大 `<pre>`：按行着色，读屏也逐行念得清。
+   */
+  function renderHunks(hunks) {
+    const box = doc.createElement("div");
+    box.className = "chg-hunks";
+    box.dataset.chgHunks = "1";
+    const title = doc.createElement("div");
+    title.className = "chg-hunks-title";
+    title.textContent = CHANGES_COPY.edits(hunks.length);
+    title.title = CHANGES_COPY.editsHint;
+    box.appendChild(title);
+    for (const h of hunks) {
+      const pre = doc.createElement("div");
+      pre.className = "chg-hunk";
+      const oldLines = String(h?.oldText ?? "").split(/\r?\n/);
+      const newLines = String(h?.newText ?? "").split(/\r?\n/);
+      for (const [sign, cls, line] of [
+        ...oldLines.map((l) => ["-", "del", l]),
+        ...newLines.map((l) => ["+", "add", l]),
+      ]) {
+        const el = doc.createElement("div");
+        el.className = `chg-hunk-line chg-hunk-line--${cls}`;
+        el.textContent = `${sign} ${line}`;
+        pre.appendChild(el);
+      }
+      box.appendChild(pre);
+    }
+    return box;
   }
 
   function render() {

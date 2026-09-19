@@ -1,0 +1,22 @@
+{
+  "verdict": {
+    "1 右栏「变更」分区列出了本 run 触碰的文件": true,
+    "2 展开后出现「改动 N 处」": true,
+    "2 有 - 行（旧文）": true,
+    "2 有 + 行（新文）": true,
+    "2 行内容确实带 +/- 前缀": true
+  },
+  "rowCount": 22,
+  "target": "anhui-tv-center/_src/scene_b.js",
+  "before": "Progress ⟩Progress○补落 evidence：安徽广播电视中心 fact sheet（一手来源核过再写盘）○核对 _research/refs 下 4 张参考图，清理候选文件名○构建单文件 WebGL2 三维对象页 index.html（程序化几何+篆字幕墙 shader）○独立核验：无头 Chrome 多机位截图 + 交互/降级/离线探针编排 · 并行度 1（auto） · 3 ",
+  "after": {
+    "hunksFound": true,
+    "title": "改动 2 处",
+    "delCount": 5,
+    "addCount": 7,
+    "firstDel": "-       var bh = 9.5;",
+    "firstAdd": "+       var bh = 9.5;",
+    "fullText": "-       var bh = 9.5; | -       var f0 = [e0[0], bh, e0[2]], f1 = [e1[0], bh, e1[2]]; | -       solid.quad(e0, e1, f1, f0, nS, [0, 0, 1, 0, 1, 1, 0, 1], COL.metal, 0.28, [0, 0, 0], matMetal); | -       solid.quadAuto(f0, f1, f1, f0, [0, 0, 1, 0, 1, 1, 0, 1], COL.metal, 0.2, [0, 0, 0], matMetal); | +"
+  },
+  "runId": "46f123df-4f70-4ce7-98ee-f0d7ce5dcb28"
+}

@@ -65,7 +65,7 @@ export interface CostResult {
 }
 
 const ANTHROPIC_DOCS = "https://platform.claude.com/docs/en/build-with-claude/prompt-caching";
-const DEEPSEEK_DOCS = "https://api-docs.deepseek.com/quick_start/pricing-details-usd";
+const DEEPSEEK_DOCS = "https://api-docs.deepseek.com/quick_start/pricing";
 
 /** Anthropic 家族：cacheWrite 取 5 分钟档（1.25× 输入），本 harness 用的就是 ephemeral */
 function anthropic(model: string, input: number, output: number, cacheRead: number, cacheWrite: number): ModelPrice {
@@ -86,9 +86,8 @@ function anthropic(model: string, input: number, output: number, cacheRead: numb
  * DeepSeek：官方按 cache miss / cache hit 两档计输入，**不单独对缓存写入计费**，
  * 所以 cacheWrite 填与输入同价（OpenAI wire 下 `cache_creation_input_tokens` 恒 0，
  * 这个数实际不参与折算，填它只是为了不留一个含义不明的空洞）。
- * 已知不确定性：有第三方来源报 2026-08-16 起分峰谷计价（谷价约为此表 1.5×，峰价 2×）。
- * 官方文档未见该口径，故**按官方平价登记**并把分歧写在这里——真要按峰谷算，
- * 用 AGENT_PRICE_TABLE 覆盖，不要让代码去猜现在是不是峰段。
+ * 官方现已列峰谷（工作日 01:00–04:00 与 06:00–10:00 UTC 为峰，其余为谷，谷=峰/2）。
+ * 内置按**峰值**登记——宁可高估，不要在峰段把花费画低。要谷价用 AGENT_PRICE_TABLE。
  */
 function deepseek(model: string, input: number, output: number, cacheRead: number): ModelPrice {
   return {
@@ -99,8 +98,8 @@ function deepseek(model: string, input: number, output: number, cacheRead: numbe
     cacheReadPer1M: cacheRead,
     cacheWritePer1M: input,
     source: DEEPSEEK_DOCS,
-    asOf: "2026-09-03",
-    note: "官方平价；第三方报 2026-08-16 起分峰谷，官方文档未见，未采纳——需要就用 AGENT_PRICE_TABLE 覆盖",
+    asOf: "2026-09-16",
+    note: "官方峰值（谷=峰/2）；代码不猜现在是不是峰段——要谷价用 AGENT_PRICE_TABLE 覆盖",
   };
 }
 
@@ -122,9 +121,13 @@ const BUILTIN_CORE: readonly ModelPrice[] = [
   anthropic("claude-mythos-5", 10, 50, 1, 12.5),
 
   // DeepSeek —— 本仓日常执行 / 核查 / 视觉都在这条端点上
-  deepseek("deepseek-v4-pro", 0.435, 0.87, 0.003625),
-  deepseek("deepseek-v4-flash", 0.14, 0.28, 0.0028),
-  deepseek("deepseek-v4-flash-vision-exp", 0.14, 0.28, 0.0028),
+  // 2026-09-16 官方：现名 deepseek-flash（V4.1-Flash，自带 Vision）；
+  // 旧名 deepseek-v4-flash / deepseek-v4-flash-vision-exp 仍被接受，价同 Flash。
+  // Pro 不认图。价按峰值 cache-miss / output / cache-hit。
+  deepseek("deepseek-flash", 0.3, 1.2, 0.006),
+  deepseek("deepseek-v4-pro", 1.32, 3.96, 0.044),
+  deepseek("deepseek-v4-flash", 0.3, 1.2, 0.006),
+  deepseek("deepseek-v4-flash-vision-exp", 0.3, 1.2, 0.006),
 ];
 
 const BUILTIN_CORE_MODELS = new Set(BUILTIN_CORE.map((p) => p.model));

@@ -535,6 +535,33 @@ function renderPreviewErrorCard(body, message) {
 }
 
 /**
+ * 预览读不到时说什么（P3）。
+ *
+ * 以前这里只有一句「读取失败——文件可能已被移动或删除。」——可真相往往**不是**那个：
+ * 最常见的一种是**根本还没写**（工具还在等批准、或写盘没成功），把它说成"文件被删了"
+ * 会让人去找一个从来没存在过的东西。真相不同，话就不能一样。
+ *
+ * 判据只看两件事实，都是既有的、不新增状态：
+ *   - `writtenInRun`：本 run 有没有**成功**写过这个路径（由 deriveArtifacts /
+ *     deriveWrittenPaths 那套从成功的写工具结果派生）
+ *   - `status`：这次读取的 HTTP 状态（拿不到就是 null）
+ *
+ * @param {{ writtenInRun?: boolean|null, status?: number|null, reason?: string|null }} [facts]
+ *   `writtenInRun` 是**三态里的"是不是"**：true=本 run 写过、false=本 run 打算写但没写成、
+ *   null/undefined=本 run 没提过这个路径（如工作区既有文件）。第三态不许说「还没写到磁盘。」
+ * @returns {string}
+ */
+export function previewReadFailureMessage(facts = {}) {
+  const written = facts.writtenInRun;
+  const status = Number.isFinite(Number(facts.status)) ? Number(facts.status) : null;
+  const reason = String(facts.reason ?? "").trim();
+  // 只有"确实打算写但没写成"才配说这句（审计 N2 的形状）
+  if (written === false) return "还没写到磁盘。";
+  if (status === 404 || status === 410) return "文件不在了（可能被移动或删除）。";
+  return `读不动：${reason || "预览服务没有返回内容。"}`;
+}
+
+/**
  * 把 Office 预览 JSON 画进容器：每页一篇，自带翻页 chrome。
  * @param {HTMLElement} body
  * @param {{ kind?:string, pages?:{ index?:number, title?:string, texts?:string[], images?:{ name?:string, mime?:string, dataUrl?:string }[] }[] }} preview
@@ -626,14 +653,25 @@ export async function renderPreviewBody(body, opts) {
   const isStale = typeof opts?.isStale === "function" ? opts.isStale : () => false;
   const kind = artifactRendererKind(path);
   const name = artifactBasename(path);
+  // 本 run 有没有**成功**写过这个路径（P3 三分类的第一判据）。宿主注入三态；
+  // 宿主没给这个能力时留 undefined（"不认识这个路径"）——**不是** false，
+  // 因为 false 专指"打算写但没写成"，不该由缺省值冒充。
+  const writtenInRun = opts?.writtenInRun === true ? true : opts?.writtenInRun === false ? false : undefined;
+
+  /** 最近一次取件失败的状态码（fetchText 吞了 res，这里把它留下来给分诊用） */
+  let lastStatus = null;
 
   /** @returns {Promise<string|null>} 失败或已切走回 null（调用方用 isStale 区分） */
   const fetchText = async () => {
+    lastStatus = null;
     if (!fetchImpl) return null;
     try {
       const res = await fetchImpl(url);
       if (isStale()) return null;
-      if (!res || res.ok === false) return null;
+      if (!res || res.ok === false) {
+        lastStatus = res && Number.isFinite(Number(res.status)) ? Number(res.status) : null;
+        return null;
+      }
       return await res.text();
     } catch {
       return null;
@@ -670,7 +708,7 @@ export async function renderPreviewBody(body, opts) {
       body.innerHTML = '<p class="ac-note">正在读取…</p>';
       const raw = await fetchText();
       if (isStale()) return null;
-      if (raw == null) { renderPreviewErrorCard(body, "读取失败——文件可能已被移动或删除。"); return { size: null }; }
+      if (raw == null) { renderPreviewErrorCard(body, previewReadFailureMessage({ writtenInRun, status: lastStatus })); return { size: null }; }
       const { text, clipped } = clipPreviewText(raw);
       body.innerHTML =
         `<div class="md ac-doc">${renderMarkdown(text)}</div>` +
@@ -682,7 +720,7 @@ export async function renderPreviewBody(body, opts) {
       body.innerHTML = '<p class="ac-note">正在读取…</p>';
       const raw = await fetchText();
       if (isStale()) return null;
-      if (raw == null) { renderPreviewErrorCard(body, "读取失败——文件可能已被移动或删除。"); return { size: null }; }
+      if (raw == null) { renderPreviewErrorCard(body, previewReadFailureMessage({ writtenInRun, status: lastStatus })); return { size: null }; }
       const { text, clipped } = clipPreviewText(raw);
       if (kind === "code") {
         const lang = artifactCodeLang(path);
@@ -702,7 +740,7 @@ export async function renderPreviewBody(body, opts) {
       body.innerHTML = '<p class="ac-note">正在读取…</p>';
       const raw = await fetchText();
       if (isStale()) return null;
-      if (raw == null) { renderPreviewErrorCard(body, "读取失败——文件可能已被移动或删除。"); return { size: null }; }
+      if (raw == null) { renderPreviewErrorCard(body, previewReadFailureMessage({ writtenInRun, status: lastStatus })); return { size: null }; }
       const { rows, truncated, totalRows } = parseCsv(raw);
       if (rows.length === 0) { renderPreviewErrorCard(body, "空表格——没有可显示的行。"); return { size: new TextEncoder().encode(raw).length }; }
       const [headRow, ...dataRows] = rows;
@@ -729,12 +767,16 @@ export async function renderPreviewBody(body, opts) {
         const res = await fetchImpl(previewUrl);
         if (isStale()) return null;
         if (!res || res.ok === false) {
-          let message = "读取失败——文件可能已被移动、损坏或已加密。";
+          let reason = null;
           try {
             const payload = await res.json();
-            if (payload?.error) message = String(payload.error);
-          } catch { /* 用默认文案 */ }
-          renderPreviewErrorCard(body, message);
+            if (payload?.error) reason = String(payload.error);
+          } catch { /* 取不到原因就让分诊给默认话 */ }
+          renderPreviewErrorCard(body, previewReadFailureMessage({
+            writtenInRun,
+            status: res && Number.isFinite(Number(res.status)) ? Number(res.status) : null,
+            reason,
+          }));
           return { size: null };
         }
         const payload = await res.json();
@@ -747,7 +789,11 @@ export async function renderPreviewBody(body, opts) {
         return { size: null };
       } catch {
         if (isStale()) return null;
-        renderPreviewErrorCard(body, "读取失败——文件可能已被移动、损坏或已加密。");
+        renderPreviewErrorCard(body, previewReadFailureMessage({
+          writtenInRun,
+          status: null,
+          reason: "读取时出错了。",
+        }));
         return { size: null };
       }
     }
@@ -1566,6 +1612,10 @@ export function initArtifactCanvas(host = {}, env = {}) {
       fetch: fetchImpl,
       isStale: () => token !== renderToken,
       inspect: inspectOn && (kind === "html" || isOfficeKind(kind)),
+      // P3：读不到时先回答「它写过没有」。宿主按本 run 的写状态答三态：
+      // true=写过、false=打算写但没写成、undefined=本 run 没提过这个路径
+      // （工作区既有文件走这一路，不许说成"还没写到磁盘"）。
+      writtenInRun: typeof host.hasWrittenPath === "function" ? host.hasWrittenPath(path) : undefined,
     });
     if (result && token === renderToken) setSize(result.size);
     if (token === renderToken && kind === "html") bindInspectBridge(htmlPreviewFrame());
@@ -1624,14 +1674,29 @@ export function initArtifactCanvas(host = {}, env = {}) {
     if (!dock.isOpen() || dock.isCollapsed()) {
       dock.open();
       collapseRailForPreview();
-      host.onAnnounce?.(`产物画布已打开：${artifactBasename(artifacts[current].path)}`);
+      // P3：**选中不播报**。以前这里 announce「产物画布已打开：X」——那是"你换了个视图"，
+      // 不是"发生了什么事实"，而且它曾在未写盘时先响（见 deriveWrittenPaths 的注释）。
+      // 现在只把坞的可及名称改成静态的「预览 · X」：读屏用户照样知道在看哪个文件，
+      // 但不会把一次点击听成一次事件。写盘成功由宿主单独播「已写出 X」。
+      syncDockLabel();
     }
     void renderCurrent();
     if (doc.activeElement == null || !view.contains(doc.activeElement)) dock.closeBtn.focus();
     return true;
   }
 
+  /**
+   * 坞的可及名称：静态「预览 · X」，没有产物时退回外壳默认名。
+   * 这是**静态标题**，不是 aria-live 播报（P3：选中不播报）。
+   */
+  function syncDockLabel() {
+    const art = current >= 0 ? artifacts[current] : null;
+    const base = art ? `预览 · ${artifactBasename(art.path)}` : "产物画布";
+    if (view.getAttribute("aria-label") !== base) view.setAttribute("aria-label", base);
+  }
+
   function paintTabs() {
+    syncDockLabel();
     const sig = `${artifacts.map((a) => a.path).join("\0")}#${current}`;
     if (tablist.dataset.sig === sig) return;
     tablist.dataset.sig = sig;

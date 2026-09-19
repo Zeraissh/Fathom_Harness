@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:4199/",
+  "verdict_flash_noWorkdir": false,
+  "verdict_two_states_seen": true,
+  "saw_noWorkdir_frames": [
+    {
+      "ms": 131,
+      "text": "先选一个工作目录。"
+    }
+  ],
+  "saw_confirming_frames": [],
+  "confirming_disappeared_at_ms": null,
+  "first_real_frame": {
+    "ms": 147,
+    "text": "正在列出文件…"
+  },
+  "final_tree_text": "文件文件 ⟩hello.txt@",
+  "all_frames": [
+    {
+      "ms": 28,
+      "text": ""
+    },
+    {
+      "ms": 131,
+      "text": "先选一个工作目录。"
+    },
+    {
+      "ms": 147,
+      "text": "正在列出文件…"
+    },
+    {
+      "ms": 164,
+      "text": "文件文件 ⟩hello.txt@"
+    }
+  ]
+}

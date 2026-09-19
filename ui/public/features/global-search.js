@@ -415,6 +415,8 @@ export function initGlobalSearch(host = {}, env = {}) {
   function openPanel() {
     if (open) return;
     open = true;
+    // 浮层互斥（走查 UX-B4/E13）：开之前让宿主先关掉别的浮层
+    host.onOpen?.();
     overlay.hidden = false;
   }
 

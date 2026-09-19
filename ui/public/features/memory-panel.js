@@ -440,6 +440,8 @@ export function initMemoryPanel(host = {}, env = {}) {
   function openPanel() {
     if (open) return;
     open = true;
+    // 浮层互斥（走查 UX-B4/E13）：开之前让宿主先关掉别的浮层
+    host.onOpen?.();
     restoreFocusTo = /** @type {HTMLElement|null} */ (doc.activeElement);
     overlay.hidden = false;
     trigger?.setAttribute("aria-expanded", "true");

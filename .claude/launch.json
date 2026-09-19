@@ -12,6 +12,50 @@
       "runtimeArgs": ["tsx", "--env-file-if-exists=.env", "ui/serve.ts"],
       "port": 4173,
       "autoPort": true
+    },
+    {
+      "name": "fathom-live",
+      "url": "http://127.0.0.1:4173",
+      "port": 4173
+    },
+    {
+      "name": "fathom-audit",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "tsx",
+        "--env-file-if-exists=.env",
+        "--env-file-if-exists=D:/Work/scratch/fathom-ux-audit-20260918/audit.env",
+        "ui/serve.ts"
+      ],
+      "port": 4201
+    },
+    {
+      "name": "personas-audit",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "tsx",
+        "--env-file-if-exists=.env",
+        "--env-file-if-exists=D:/Work/scratch/fathom-personas-20260918/personas.env",
+        "ui/serve.ts"
+      ],
+      "port": 4203
+    },
+    {
+      "name": "fathom-rewalk",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "tsx",
+        "--env-file-if-exists=.env",
+        "--env-file-if-exists=D:/Work/scratch/fathom-rewalk-20260918/rewalk.env",
+        "ui/serve.ts"
+      ],
+      "port": 4199
+    },
+    {
+      "name": "planverif",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["tsx", "eval/persona-ux/_audit-20260918b/serve-planverif.ts"],
+      "port": 4207
     }
   ]
 }

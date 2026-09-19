@@ -1163,6 +1163,16 @@ body.sidebar-collapsed .sidebar {
   background: var(--surface-0);
   padding: 4px 8px;
   font-size: var(--font-sm);
+  max-width: 100%;
+  min-width: 0;
+}
+/* 子对话标题是整句任务描述且原样注入——单枚 chip 不许比 strip 还宽
+   （走查 UX-C2/O9）。 */
+.campaign-chip-title {
+  max-width: 18rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .campaign-chip--running { border-color: color-mix(in srgb, var(--accent) 42%, var(--border-1)); }
 .campaign-chip-enter,
@@ -1506,8 +1516,233 @@ body.sidebar-collapsed .sidebar {
 }
 .center-row > .content-area {
   flex: 1 1 22rem;
-  min-width: min(20rem, 42%);
+  /* 对话列的不可侵犯下限：与 rail-policy.js 的 CENTER_MIN_PX 同源（26rem）。
+     此前是 min(20rem, 42%)——那个 42% 会让地板在窄屏上跟着容器一起塌。 */
+  min-width: var(--center-min, 26rem);
 }
+
+/* ===== P1 右列空间契约 =====
+
+   右列是**唯一 owner**：文件树与预览坞都是它的面板，宽度/折叠/选哪个面板只有
+   一份记忆。边界由 core/rail-policy.js 按预算算出（左栏 280 展开时为 936，
+   不是当初 preview-dock 单独写的 900），所以这里不写任何 @media 断点——
+   JS 把算出来的结果落在 data-* 与 CSS 变量上。
+
+   形态（data-mode / data-layout / data-collapsed / data-panel）：
+     side + tabbed   中档：单列，tab 互斥
+     side + split    宽档（≥1440）：树与预览并排两列
+     overlay         窄档：不占位，退成覆盖抽屉，默认收起
+*/
+
+/* 右列变量的默认值。运行时由 index.html 的 paintRightRail() 用 inline style 覆盖；
+   这里必须有定义，一是给无 JS 的兜底，二是本仓库那条常驻测试要求同文件内
+   每个 CSS 变量引用都能找到定义（它扫原始文本，所以这条注释里也不能写出
+   变量引用的字面形状）。数值与 core/rail-policy.js 的常量同源。 */
+:root {
+  --center-min: 26rem;      /* = CENTER_MIN_PX 416 */
+  --rail-width: 288px;      /* 中档默认（RAIL_MIN 240 ~ RAIL_MAX 360 之间） */
+  --rail-tree-w: 144px;     /* split 档只在 ≥1440 生效 */
+  --rail-preview-w: 144px;
+  --rail-expand-inset: 0px; /* 放大态左伸量：宿主按 -(主区宽-右列宽) 写 */
+}
+
+.right-rail {
+  flex: 0 0 auto;
+  width: var(--rail-width, 288px);
+  min-width: 0;
+  min-height: 0;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid var(--border-1);
+  background: var(--surface-1);
+  position: relative;
+  z-index: 30;
+}
+.right-rail[data-collapsed="true"] { width: 40px; overflow: hidden; }
+
+/* split 档：**并排**两列。缺这一行时面板的 `flex: 0 0 var(--rail-tree-w)`
+   在 column 容器里被当成高度用——两条 141px 横条叠在 769px 的列顶、下面全空
+   （2026-09-18 走查 UX-B1 活页实锤）。 */
+.right-rail[data-layout="split"] { flex-direction: row; }
+.right-rail[data-layout="split"] > .right-rail-preview { border-left: 1px solid var(--border-1); }
+
+.right-rail-tabs {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 6px 2px;
+}
+.right-rail[data-layout="split"] .right-rail-tabs { display: none; }
+.right-rail[data-collapsed="true"] .right-rail-tabs { display: none; }
+
+.right-rail-tab {
+  flex: 0 0 auto;
+  padding: 2px 8px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-3);
+  font: inherit;
+  font-size: var(--font-xs);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+}
+.right-rail-tab:hover { color: var(--text-1); background: var(--surface-2); }
+.right-rail-tab[aria-pressed="true"] { color: var(--text-1); background: var(--surface-2); }
+.right-rail-tab:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 1px; }
+
+.right-rail-collapse {
+  /* 浮在右列右上角，独立于 tab 行——split 档 tab 行整排隐藏（走查 UX-B1/B2），
+     收起态（40px 细条）也得留着它当展开入口。
+     z 序：坞 40 < 本键 45 < 放大态 70——坞开着时键仍可点，放大态则由坞接管。 */
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 45;
+  padding: 2px 4px;
+  border: 0;
+  background: transparent;
+  color: var(--text-2);
+  font: inherit;
+  cursor: pointer;
+}
+.right-rail-collapse:hover { color: var(--text-1); }
+.right-rail-collapse:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 1px; }
+/* 收起后箭头掉头：▸ 收起 → ◂ 展开，入口还在看得见的地方 */
+.right-rail[data-collapsed="true"] .right-rail-collapse i { transform: rotate(180deg); }
+
+/* 拖拽柄：右列左缘的一条热区（覆盖与收起形态下不出现） */
+.right-rail-drag {
+  position: absolute;
+  left: -3px;
+  top: 0;
+  bottom: 0;
+  width: 7px;
+  cursor: col-resize;
+  z-index: 5;
+}
+.right-rail-drag:hover,
+.right-rail--dragging .right-rail-drag {
+  background: color-mix(in srgb, var(--accent) 35%, transparent);
+}
+.right-rail--dragging { user-select: none; }
+.right-rail--dragging iframe { pointer-events: none; }
+.right-rail[data-collapsed="true"] .right-rail-drag,
+.right-rail[data-mode="overlay"] .right-rail-drag { display: none; }
+
+/* 两个面板：tabbed 下互斥占满；split 下按算出的像素并排 */
+.right-rail > .workspace-file-tree,
+.right-rail > .right-rail-preview {
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+}
+.right-rail > .workspace-file-tree { width: auto; }
+.right-rail[data-panel="tree"] > .right-rail-preview,
+.right-rail[data-layout="split"] > .right-rail-preview { display: none; }
+.right-rail[data-panel="preview"] > .workspace-file-tree,
+.right-rail[data-layout="split"] > .workspace-file-tree { display: none; }
+.right-rail[data-panel="preview"] > .right-rail-preview,
+.right-rail[data-layout="split"] > .right-rail-preview {
+  display: flex;
+  flex-direction: column;
+}
+.right-rail[data-panel="tree"] > .workspace-file-tree { display: flex; }
+
+.right-rail[data-layout="split"] > .workspace-file-tree {
+  display: flex;
+  flex: 0 0 var(--rail-tree-w, 144px);
+}
+.right-rail[data-layout="split"] > .right-rail-preview { flex: 0 0 var(--rail-preview-w, 144px); }
+
+/* 覆盖形态：不占 flex 位，钉在主区右侧（窄档用；absolute 相对 #main-panel） */
+.right-rail[data-mode="overlay"] {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 60;
+  border-left: 1px solid var(--border-1);
+  box-shadow: -18px 0 48px color-mix(in srgb, var(--text-1) 18%, transparent);
+}
+.right-rail[data-mode="overlay"][data-collapsed="true"] { display: none; }
+
+/* ---- 窄档的重开入口与层级（二轮走查 2026-09-18 夜）----
+   实测：收起后右列 0 宽消失、全站没有第二个入口（断头路）；
+   打开时 240px 浮层盖住内容区 61% 且压输入框。修法：
+   · 把手 = 0 宽收起态唯一的入口（浮在主区右侧中部，角标=有新内容）
+   · 打开 = 全宽 sheet（宽度由 railPolicy 给 available），遮罩表达层级、点外即关
+   两条 [hidden] 守卫是必须的：[hidden] 的 UA 样式优先级极低，会被下面的
+   display 直接压过（本仓在 .live-strip 上踩过同款坑）。 */
+.right-rail-handle {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 55;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 48px;
+  border: 1px solid var(--border-1);
+  border-right: none;
+  border-radius: 10px 0 0 10px;
+  background: var(--surface-1);
+  color: var(--text-2);
+  box-shadow: -6px 0 18px color-mix(in srgb, var(--text-1) 12%, transparent);
+  cursor: pointer;
+}
+.right-rail-handle[hidden] { display: none; }
+.right-rail-handle:hover { color: var(--text-1); background: var(--surface-2); }
+.right-rail-handle:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 1px; }
+.right-rail-handle--badge,
+.right-rail-badge { position: relative; }
+.right-rail-handle--badge::after,
+.right-rail-badge::after {
+  content: "";
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.right-rail-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 59;
+  background: color-mix(in srgb, var(--text-1) 28%, transparent);
+  cursor: pointer;
+}
+.right-rail-scrim[hidden] { display: none; }
+
+/* 坞进了右列之后不再自己写宽度（preview-dock.js 的 railHosted 分支），
+   这里把它的兜底 38% 让会给右列 */
+.right-rail-preview > .preview-dock {
+  width: auto;
+  flex: 1 1 auto;
+  min-width: 0;
+  border-left: 0;
+}
+/* 走查 UX-B4/E14：坞收起只写 root.hidden，槽还是 display:flex——右列留一块空槽。
+   注意槽里有**两个**坞实例（文件预览 overlay + 产物画布），判据必须是
+   "没有任何可见坞"而不是"存在 hidden 坞"，否则一个收起会把另一个也连坐藏掉。 */
+.right-rail-preview:not(:has(> .preview-dock:not([hidden]))) { display: none; }
+/* 坞自带的手柄（z-40）压住右列拖柄（z-30），且 railHosted 下 mousedown 早退
+   ——右列拖宽在坞打开时被静默吞掉。手柄在列里本就不该有拖拽语义。 */
+.right-rail-preview .preview-dock .pd-handle { pointer-events: none; }
+
+/* 右列自己管收起（键在 tab 行右侧）。树自带的收起键让位——否则两个收起键
+   各写一份偏好，"一份记忆"就不成立了。树模块内部的折叠逻辑保留不动，
+   它只是不再有用户入口，也因此不再写旧键。 */
+.right-rail .files-rail-toggle { display: none; }
+/* 树的标题行在有了 tab 之后是重复信息 */
+.right-rail .files-rail-title { display: none; }
 
 /* ===== 窄屏返回栏 ===== */
 
@@ -1563,6 +1798,19 @@ body.sidebar-collapsed .sidebar {
 }
 
 .dh-kicker-text { min-width: 0; }
+
+/* 会话头的进行时计数（「第 N 轮 · 已跑 Xm」）：长 run 在会话页此前零计数。
+   盖掉 kicker 的等宽/大字距/大写——中文串在那种排版下难读。 */
+.chat-progress {
+  font-family: var(--font-ui);
+  font-size: var(--font-sm);
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--text-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 .chat-title {
   min-width: 0;
@@ -1825,8 +2073,11 @@ body.sidebar-collapsed .sidebar {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 6px;
+  min-width: 0;
 }
-.approval-tool-name { font-weight: 600; font-size: var(--font-md); }
+/* 无分隔符长文件名（Windows 允许 255 字符）此前不换行、压出卡框（走查 UX-C2/O5）：
+   审批卡必须让人看清改哪个文件——选择换行而不是省略。 */
+.approval-tool-name { font-weight: 600; font-size: var(--font-md); min-width: 0; overflow-wrap: anywhere; }
 
 .approval-result { font-size: var(--font-xs); padding: 1px 6px; border-radius: var(--radius-xs); }
 .approval-result--allow { background: var(--green-bg); color: var(--green); }
@@ -1839,12 +2090,6 @@ body.sidebar-collapsed .sidebar {
   margin-top: var(--space-xs);
 }
 
-.approval-summary {
-  margin: 0 0 var(--space-sm);
-  font-size: var(--font-sm);
-  color: var(--text-1);
-  line-height: 1.45;
-}
 .approval-details {
   margin: 0 0 var(--space-sm);
   font-size: var(--font-xs);
@@ -2087,9 +2332,18 @@ body.sidebar-collapsed .sidebar {
   border-bottom: 1px solid var(--tl-border);
 }
 
+/* P5：连续工具成组。组体左侧拉一条细竖线，让"这些属于同一段过程"看得见 */
+.log-entry-group-body {
+  margin-left: 4px;
+  padding-left: 10px;
+  border-left: 2px solid var(--tl-border);
+}
+.log-entry--group > .log-entry-header .log-entry-action {
+  font-variant-numeric: tabular-nums;
+}
+
 .log-entry-text {
-  color: var(--fg);
-  max-height: 300px;
+  color: var(--fg);  max-height: 300px;
 }
 
 /* ===== 裁决卡 (R-07: 视觉收敛 — magenta 仅身份) ===== */
@@ -2509,6 +2763,7 @@ body.sidebar-collapsed .sidebar {
   align-self: flex-start;
   width: fit-content;
   max-width: 100%;
+  min-width: 0;
   gap: 0.4em;
   margin: 0.4em 0;
   padding: 0;
@@ -2516,6 +2771,14 @@ body.sidebar-collapsed .sidebar {
   background: transparent;
   color: var(--text-2);
   font-size: var(--font-sm);
+}
+/* 「正在 <工具>」的工具名同上可省略（走查 UX-C2/O7）——peek 那截早有守卫，
+   名字这截此前没有。 */
+.chat-activity code {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .live-text {
@@ -3688,7 +3951,23 @@ body.sidebar-collapsed .sidebar {
 }
 .run-group-caret { color: var(--text-3); font-size: var(--font-sm); }
 .run-group--collapsed .run-group-items { display: none; }
-.run-group-identity { min-width: 0; display: inline-flex; align-items: center; gap: 7px; }
+/* 分组头的展开钮是**真按钮**（走查 UX-B4/E15：键盘可达）：重置 UA 样式，
+   外观与当 span 时一致 */
+.run-group-identity {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  border-radius: var(--radius-xs);
+}
+.run-group-identity:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 .run-group-identity > .ph { color: var(--accent); }
 .run-group-name {
   min-width: 0;
@@ -3886,6 +4165,31 @@ body.sidebar-collapsed .sidebar {
   outline: 2px solid var(--focus);
   outline-offset: 1px;
 }
+/* G3 · 视角切换（轮次|成本）：文本钮，与图标钮同族的安静风格 */
+.usage-metric-toggle {
+  display: inline-flex;
+  gap: 2px;
+  align-items: center;
+}
+.usage-metric-btn {
+  height: 28px;
+  padding: 0 10px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-3);
+  font-size: var(--font-sm);
+  cursor: pointer;
+}
+.usage-metric-btn:hover { color: var(--text-1); }
+.usage-metric-btn[aria-pressed="true"] {
+  background: var(--surface-2);
+  color: var(--text-1);
+}
+.usage-metric-btn:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
 .usage-legend {
   display: flex;
   flex-wrap: wrap;
@@ -3997,8 +4301,9 @@ body.sidebar-collapsed .sidebar {
   font-size: var(--font-xs);
   text-align: center;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: clip;
+  /* 不裁（走查 UX-C2/O2）：标签居中、允许溢出自己那根窄列——邻居间距由
+     chartLabelPlan 的步长保证。此前按列宽裁剪，把 30d/90d 的日期切成"半个字"。 */
+  overflow: visible;
 }
 .usage-col-label.is-muted { visibility: hidden; }
 .usage-tip {
@@ -4124,6 +4429,9 @@ body.sidebar-collapsed .sidebar {
   background: var(--accent);
   animation: agent-pulse 1.2s ease-in-out infinite;
 }
+/* U1：终态标签按分档着色——已停止/截断等不是绿色"已完成" */
+.run-item-state-label--warn { color: var(--yellow); }
+.run-item-state-label--bad { color: var(--red); }
 .run-item-task { color: var(--text-1); font-size: var(--font-md); line-height: 1.45; }
 .run-item-meta {
   margin-top: 4px;
@@ -4316,6 +4624,12 @@ body.sidebar-collapsed .sidebar {
 .tool-headline {
   display: inline-block;
   white-space: nowrap;
+  /* 长 bash（动词不截断 + 目标 28 字）此前在列右缘无省略号硬切（走查 UX-C2/O4）：
+     作为 flex 子项可收缩、出省略号。 */
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .tool-kw,
 .tool-target {
@@ -4352,6 +4666,37 @@ body.sidebar-collapsed .sidebar {
   box-shadow: 0 0 0 1px var(--accent), 0 12px 40px rgba(0, 0, 0, 0.18);
 }
 .submit-bar[data-mode="append"] { border-left: 3px solid var(--accent); }
+
+/* 上排控件收成一行摘要（2026-09-18 回走 §2.4）：默认收起，点开才是控件本体。
+   收起是 details 自身的 open=false；原生 marker 各浏览器不一致，统一用 ::before 画。 */
+.composer-scope > summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  margin-bottom: 2px;
+  padding: 4px 8px;
+  border-radius: var(--radius);
+  color: var(--text-3);
+  font-size: var(--font-sm);
+  cursor: pointer;
+  list-style: none;
+}
+.composer-scope > summary::-webkit-details-marker { display: none; }
+.composer-scope > summary::before {
+  content: "▸";
+  flex: 0 0 auto;
+  font-size: var(--font-xs);
+}
+.composer-scope[open] > summary::before { content: "▾"; }
+.composer-scope > summary:hover { background: var(--surface-2); color: var(--text-2); }
+.composer-scope > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.composer-scope-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
 .composer-scopebar {
   display: flex;
@@ -5070,7 +5415,9 @@ body.sidebar-collapsed .sidebar {
   color: var(--accent);
   margin: 0 0 var(--space-sm);
 }
-.chat-sources .md-table-wrap { margin: 0; }
+/* 来源卡的表不在 .md 树里——.md-table 那套横滚规则够不着（走查 UX-C2/O6）：
+   长 URL 的宽表在这里自己横滚，不撑破对话列。 */
+.chat-sources .md-table-wrap { margin: 0; overflow-x: auto; }
 .chat-sources-export { margin-top: var(--space-sm); }
 .chat-msg--assistant .md-table-wrap {
   margin: var(--space-sm) 0;
@@ -5332,12 +5679,27 @@ body.sidebar-collapsed .sidebar {
   justify-content: center;
   overflow: auto;
 }
+/* 欢迎页的收起态右列**彻底不占位**（二轮走查密度收拢）：40px 细条占着 center-row
+   的位、把中栏推左 20px，而输入框在主栏全宽上居中——两条中心轴差 20px 就是
+   「零散」的来源之一。收成 0 宽后主轴合一；重开入口交给右侧把手
+   （见 paintRightRail 的 welcomeQuiet 分支）。 */
+#main-panel.is-welcome .right-rail[data-collapsed="true"] {
+  width: 0;
+  border-left: none;
+  overflow: hidden;
+}
 #main-panel.is-welcome #center-row {
   flex: 0 0 auto;
   min-height: 0;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+/* 密度收拢：快捷按钮到输入框的间距 51px → ~27px——按钮是"这句话怎么说"的示范，
+   属于输入框的引力场，不该浮在标题与输入框之间的半空。base 的 .content-area
+   底衬是 var(--space-xl)（24px），这里收回 8px。 */
+#main-panel.is-welcome #main-area {
+  padding-bottom: 8px;
 }
 #main-panel.is-welcome #main-area {
   overflow: hidden;
@@ -5349,7 +5711,7 @@ body.sidebar-collapsed .sidebar {
 #main-panel.is-welcome .empty-state {
   min-height: 0;
   height: auto;
-  padding-bottom: var(--space-md);
+  padding-bottom: 4px;
   justify-content: center;
 }
 #main-panel.is-welcome #submit-form {
@@ -5375,7 +5737,9 @@ body.sidebar-collapsed .sidebar {
   flex: 0 0 auto;
   min-height: 0;
   width: min(100%, 40rem);
-  margin: 10px auto 0;
+  /* 密度收拢：卡片与输入框之间 10px 黏在一起会把输入框的边界吃掉；
+     留出 ~22px 让它读作"输入框下方的一排起步卡"，而不是输入框的一部分 */
+  margin: 22px auto 0;
   padding: 0 var(--space-lg) var(--space-lg);
   overflow: visible;
 }
@@ -6296,11 +6660,30 @@ body.sidebar-collapsed .sidebar {
   font-weight: 400;
 }
 .progress-card:not([open]) .progress-card-summary::after { content: "▸"; }
-.progress-waiting {
+
+/* G2 · 视觉优先（走查纲领）：摘要行的 done/total 与细进度条（逐条清单仍在下面） */
+.progress-count {
+  margin-left: 8px;
   color: var(--text-2);
-  font-size: var(--font-md);
-  padding: 0 12px 12px;
-  margin: 0;
+  font-weight: 500;
+  font-size: var(--font-sm);
+}
+.progress-bar {
+  display: inline-flex;
+  vertical-align: middle;
+  width: 84px;
+  height: 6px;
+  margin-left: 8px;
+  border-radius: 999px;
+  background: var(--border-2);
+  overflow: hidden;
+}
+.progress-bar-fill {
+  --fill: 0%; /* 定义在这：行内 style 覆盖它（CSS 变量 lint 要求引用必有定义） */
+  width: var(--fill, 0%);
+  background: var(--accent);
+  border-radius: 999px;
+  transition: width 0.2s ease;
 }
 .progress-list {
   list-style: none;
@@ -6470,9 +6853,18 @@ body.sidebar-collapsed .sidebar {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.chat-tool > summary > code,
+/* 放行徽章与状态标记：不可省略、不许换行 */
 .chat-tool-gate,
 .chat-tool > summary > .aside-mark { flex: 0 0 auto; white-space: nowrap; }
+/* 工具名可省略（走查 UX-C2/O3）：MCP 全名 `server__tool` 可达 67 字符，撑出去
+   会钻出工具卡。title 由渲染层补全文。 */
+.chat-tool > summary > code {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .chat-tool--err { border-color: var(--red); }
 .chat-tool--live { border-style: dashed; }
 .chat-tool .chat-body {
@@ -6487,6 +6879,9 @@ body.sidebar-collapsed .sidebar {
 }
 /* 曾被人工放行过：事后回看必须看得出这一步被拦过，否则读起来像凭空执行 */
 .chat-tool-gate { color: var(--yellow); font-size: var(--font-sm); }
+/* 只读免问留痕（走查 UX-A6）：比「经放行」更安静的一档——它放行的本来就是
+   无写能力的读，逐条 notice 会成噪声，用 chip 挂回被放行的工具行。 */
+.chat-tool-auto { flex: 0 0 auto; color: var(--text-3); font-size: var(--font-xs); white-space: nowrap; }
 
 .chat-gate {
   color: var(--yellow);
@@ -6673,6 +7068,26 @@ body.sidebar-collapsed .sidebar {
 .chat-verdict--ok { border-left-color: var(--green); }
 .chat-verdict--warn { border-left-color: var(--yellow); }
 .chat-verdict--bad { border-left-color: var(--red); }
+/* 编排裁决卡的归属（id · 标题）：子任务标题可以很长，撑破卡片就是另一场
+   事故（.aside-peek 在 390px 越界的同款教训）。三条一起才成立：
+     ① 结论词（「核查未通过」）钉死不折行——一屏里最该一眼看清的就是它；
+     ② 归属行做唯一可缩项，但**留 5em 下限**：宽度不够时把它整个挪到下一行，
+        而不是压成「s」这种比不显示还糟的残字；
+     ③ 整行允许换行，换行比横向溢出好（窄档 390 的实测要求）。 */
+.chat-verdict-head {
+  flex-wrap: wrap;
+}
+.chat-verdict-head > * {
+  flex: none;
+  white-space: nowrap;
+}
+.chat-verdict-subtask {
+  flex: 0 1 auto;
+  min-width: 5em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .chat-verdict-head {
   font-weight: 600;
   display: flex;
@@ -6851,6 +7266,16 @@ body.sidebar-collapsed .sidebar {
 .rail-section-title::-webkit-details-marker { display: none; }
 .rail-section-title .ph { font-size: 0.95em; }
 .rail-section-title .aside-peek { margin-left: auto; font-weight: 400; }
+/* 分区标题也有折叠提示（走查 UX-B4/E15）：与 progress-card / composer-scope 同款。
+   summary 是 flex，peek 已 margin-left:auto 顶右，三角跟在它后面收尾。 */
+.rail-section-title::after {
+  content: "▾";
+  flex: 0 0 auto;
+  color: var(--text-3);
+  font-weight: 400;
+  font-size: var(--font-xs);
+}
+.rail-section:not([open]) .rail-section-title::after { content: "▸"; }
 .artifact {
   padding: 0.45em 0 0.45em 1.15em;
   border-bottom: 1px solid var(--border);
@@ -8384,6 +8809,33 @@ button.chg-row-head:focus-visible { outline: 2px solid var(--focus); outline-off
   line-height: var(--leading-normal);
 }
 
+/* P4：编辑的逐行改动（审计说的「没有行内 diff」就是缺这一段）。
+   逐行元素而不是一个大 pre：按行着色，读屏也逐行念得清。 */
+.chg-hunks {
+  margin-top: var(--space-xs);
+  border-top: 1px solid var(--border-1);
+  padding-top: var(--space-xs);
+  font-size: var(--font-xs);
+}
+.chg-hunks-title {
+  color: var(--text-3);
+  margin-bottom: 2px;
+}
+.chg-hunk {
+  margin: 0 0 var(--space-xs);
+  padding: 2px 6px;
+  border-left: 2px solid var(--border-1);
+  background: var(--surface-1);
+  overflow-x: auto;
+}
+.chg-hunk-line {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+.chg-hunk-line--del { color: var(--status-bad); background: var(--status-bad-surface); }
+.chg-hunk-line--add { color: var(--status-ok); background: var(--status-ok-surface); }
+
 .chg-preview {
   margin-top: var(--space-xs);
   border-top: 1px solid var(--border-1);
@@ -8901,7 +9353,9 @@ button.chg-row-head:focus-visible { outline: 2px solid var(--focus); outline-off
     specificity 相同，必须排在 --overlay 之后才能盖住它 */
 .preview-dock--expanded {
   position: absolute;
-  inset: 0;
+  /* 左伸量由宿主算（paintRightRail 写 --rail-expand-inset = -(主区宽-右列宽)）：
+     坞在右列里，inset:0 只填右列自己；要兑现"盖满整个主区"就得向左伸过对话列。 */
+  inset: 0 0 0 var(--rail-expand-inset, 0);
   width: auto !important; /* 盖掉拖拽写下的内联宽度 */
   min-width: 0;
   z-index: 70;
@@ -8932,13 +9386,18 @@ button.chg-row-head:focus-visible { outline: 2px solid var(--focus); outline-off
   border-bottom: 1px solid var(--border-1);
   flex-shrink: 0;
   min-width: 0;
+  /* split 档预览列可能只有 ~141px：头里的「放大」等键够不着时允许横滚，
+     不让它越列而过（走查 UX-C1 的同族边角） */
+  overflow-x: auto;
 }
 .ac-title {
   display: flex;
   align-items: baseline;
   gap: var(--space-sm);
   min-width: 0;
-  flex: 0 0 auto;
+  /* 必须可收缩：flex:0 0 auto 时父不缩，.ac-name 的 ellipsis 永远不触发
+     （超长文件名把坞顶条撑出右列——走查 O1）。 */
+  flex: 0 1 auto;
 }
 .ac-name {
   font-size: var(--font-lg);
@@ -9044,10 +9503,18 @@ button.chg-row-head:focus-visible { outline: 2px solid var(--focus); outline-off
   border-bottom: 1px solid var(--border-1);
   flex-shrink: 0;
   background: var(--surface-0);
+  /* 窄档收纳（走查 UX-C1）：此前不换行，URL 被压成 16px 缝、最右按钮被窗口
+     右缘直接切断。允许换行后按钮落到第二行，全都看得见点得着。
+     split 档预览列可能只有 ~141px（单按钮 134px 都放不下）——再加横滚兜底，
+     保证"够得着"优先于"排得美"。 */
+  flex-wrap: wrap;
+  overflow-x: auto;
 }
 .ac-browser-url {
-  flex: 1;
-  min-width: 0;
+  flex: 1 1 96px;
+  /* 地板：不允许再被压成一条缝（压到 16px 时地址完全不可读）；基准给 96px
+     是为了让"URL + 前往"能在 328px 的内容盒里与后续按钮同排，少折一行 */
+  min-width: 96px;
   height: 32px;
   padding: 0 var(--space-sm);
   border: 1px solid var(--border-1);
@@ -9067,6 +9534,8 @@ button.chg-row-head:focus-visible { outline: 2px solid var(--focus); outline-off
   display: flex;
   gap: var(--space-xs);
   flex-shrink: 0;
+  /* 极窄档（右列 240 的内容盒 ≈208）：按钮组自己也允许换行，别越出窗口 */
+  flex-wrap: wrap;
 }
 .ac-nav { padding: var(--space-xs) var(--space-sm); }
 .ac-nav:disabled { opacity: 0.4; cursor: default; }
@@ -10125,7 +10594,7 @@ button.cc-card:hover { border-color: var(--border-2); }
   gap: var(--space-xs);
   min-width: 0;
 }
-.settings-model-copy strong { font-size: var(--font-md); font-weight: 600; color: var(--text-1); }
+.settings-model-copy strong { font-size: var(--font-md); font-weight: 600; color: var(--text-1); overflow-wrap: anywhere; }
 .settings-model-copy small { font-size: var(--font-xs); color: var(--text-3); word-break: break-all; }
 .settings-model-actions { display: flex; gap: var(--space-xs); flex-shrink: 0; }
 .settings-badge {

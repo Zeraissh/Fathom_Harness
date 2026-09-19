@@ -117,12 +117,14 @@ export function deriveSpendFace(input = {}) {
     };
   }
   const today = todayUsageOf(input.usage, now);
+  // 可见文字也带「本机」：台账是本机全局的（含其他工作目录/其他 run），
+  // 只说「今日 $X」会让人以为是这一圈的开销（2026-09-18 回走基线 §2.2）。
   const todayMoney =
     today.usd == null
       ? today.runs === 0
-        ? "今日还没花费"
-        : "今日未计价"
-      : `今日 ${formatUsd(today.usd)}`;
+        ? "本机今日还没花费"
+        : "本机今日未计价"
+      : `本机今日 ${formatUsd(today.usd)}`;
   const todayUsed = `今日已用 ${today.runs} 次`;
   const unpriced = today.unpricedRuns ? `${today.unpricedRuns} 未计价` : "";
   const thisRunText = formatThisRunSpend(input.runCost ?? null);
@@ -198,6 +200,12 @@ export function formatChartDayFull(day) {
   return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
 }
 
+/** 密区间用的短标签：只给日号（区间的月份由视图标题与 tooltip 的全日期兜底）。 */
+export function formatChartDayShort(day) {
+  const d = parseLocalDay(day);
+  return d ? String(d.getDate()) : String(day ?? "");
+}
+
 export function formatCompactCount(value) {
   const n = Number(value);
   if (!Number.isFinite(n)) return "0";
@@ -231,6 +239,31 @@ export function dayLabelStep(days) {
   if (n <= 7) return 1;
   if (n <= 30) return 4;
   return 10;
+}
+
+/** 全日期标签（"9月18日" @ --font-xs）的保守宽度 */
+export const CHART_LABEL_FULL_PX = 58;
+/** 日号标签（"18"）的保守宽度 */
+export const CHART_LABEL_DAY_PX = 18;
+
+/**
+ * 日期标签的节奏计划（走查 UX-C2/O2）。
+ *
+ * 此前标签被 `overflow:hidden; text-overflow:clip` 按列宽硬切——30d/90d 必现
+ * "半个字"。修法不裁而是**按容器宽度算节奏**：间距放得下全日期就用全日期
+ * （枚数变少但整枚可读），全日期连两枚都铺不下才退日号；标签允许溢出自己
+ * 那根窄列，邻居间距由 step 保证。量不到宽度（面板隐藏）时退回固定步长。
+ */
+export function chartLabelPlan({ plotWidth, days } = {}) {
+  const n = Math.max(1, Number(days) || 7);
+  const fixed = dayLabelStep(n);
+  const w = Number(plotWidth);
+  if (!Number.isFinite(w) || w <= 0) return { step: fixed, form: "full" };
+  const colW = w / n;
+  const fullStep = Math.max(fixed, Math.ceil(CHART_LABEL_FULL_PX / colW));
+  if (fullStep <= n / 2) return { step: fullStep, form: "full" };
+  const dayStep = Math.max(fixed, Math.ceil(CHART_LABEL_DAY_PX / colW));
+  return { step: Math.min(dayStep, n), form: "day" };
 }
 
 function addUsd(current, next) {
@@ -366,6 +399,12 @@ export function attachUsagePanel(container, env = {}) {
     '<i class="ph ph-chart-bar" aria-hidden="true"></i></button>' +
     '<button type="button" class="usage-view-btn" data-view="table" aria-pressed="false" aria-label="表格">' +
     '<i class="ph ph-table" aria-hidden="true"></i></button>' +
+    "</div>" +
+    // G3 · 视觉优先（走查纲领）：数据里的 usd/unpricedRuns 一直在，只是没画。
+    // 轮次看量、成本看钱——同一份堆叠换高的口径（未计价绝不画成 $0，见脚注）。
+    '<div class="usage-metric-toggle" role="group" aria-label="视角">' +
+    '<button type="button" class="usage-metric-btn" data-metric="turns" aria-pressed="true">轮次</button>' +
+    '<button type="button" class="usage-metric-btn" data-metric="usd" aria-pressed="false">成本</button>' +
     "</div></header>" +
     `<div class="usage-legend" id="${prefix}-legend"></div>` +
     `<div class="usage-plot" id="${prefix}-plot"></div>` +
@@ -378,6 +417,7 @@ export function attachUsagePanel(container, env = {}) {
   let report = parseUsageReport(null);
   let periodDays = 7;
   let viewMode = "chart";
+  let metric = "turns"; // G3：轮次 | 成本（同一份堆叠，换的是高的口径）
 
   root.querySelector(".usage-period")?.addEventListener("click", (ev) => {
     const btn = ev.target instanceof Element ? ev.target.closest("[data-days]") : null;
@@ -397,6 +437,15 @@ export function attachUsagePanel(container, env = {}) {
     paint();
   });
 
+  root.querySelector(".usage-metric-toggle")?.addEventListener("click", (ev) => {
+    const btn = ev.target instanceof Element ? ev.target.closest("[data-metric]") : null;
+    if (!btn) return;
+    const next = btn.getAttribute("data-metric") === "usd" ? "usd" : "turns";
+    if (next === metric) return;
+    metric = next;
+    paint();
+  });
+
   function nowMs() {
     return typeof env.now === "function" ? Number(env.now()) : Date.now();
   }
@@ -409,11 +458,14 @@ export function attachUsagePanel(container, env = {}) {
     for (const btn of root.querySelectorAll(".usage-view-btn")) {
       btn.setAttribute("aria-pressed", String(btn.getAttribute("data-view") === viewMode));
     }
+    for (const btn of root.querySelectorAll(".usage-metric-btn")) {
+      btn.setAttribute("aria-pressed", String(btn.getAttribute("data-metric") === metric));
+    }
     const sub = root.querySelector(`#${prefix}-chart-sub`);
-    if (sub) sub.textContent = `按模型堆叠，近 ${periodDays} 天`;
+    if (sub) sub.textContent = `按模型堆叠，近 ${periodDays} 天${metric === "usd" ? "（成本）" : ""}`;
     renderCards(root.querySelector(`#${prefix}-cards`), win);
     renderLegend(root.querySelector(`#${prefix}-legend`), win);
-    renderPlot(root.querySelector(`#${prefix}-plot`), win);
+    renderPlot(root.querySelector(`#${prefix}-plot`), win, metric);
     renderTable(root.querySelector(`#${prefix}-table-wrap`), win);
     const plot = root.querySelector(`#${prefix}-plot`);
     const table = root.querySelector(`#${prefix}-table-wrap`);
@@ -507,39 +559,68 @@ function renderLegend(el, win) {
     .join("");
 }
 
-function renderPlot(el, win) {
+function renderPlot(el, win, metric = "turns") {
   if (!el) return;
-  const axisMax = niceAxisMax(Math.max(0, ...win.columns.map((c) => c.turns)));
-  const step = dayLabelStep(win.days);
+  // G3（走查纲领）：轮次看量、成本看钱——同一份堆叠换高与轴的口径。
+  // 未计价（usd=null）在成本视角按 0 高画，但 aria/tooltip 写明「未计价」，
+  // 绝不把没报价画成 $0（既有脚注口径）。
+  const metricVal = (b) => (metric === "usd" ? (typeof b.usd === "number" ? b.usd : 0) : b.turns);
+  const metricFmt = (n) => (metric === "usd" ? formatUsd(n) : formatCompactCount(n));
+  const axisMax = niceAxisMax(Math.max(0, ...win.columns.map((c) => metricVal(c))));
+  // 量的是上次渲染留下的列区（首次没有就退整块宽度）——y 轴那截 24px 会高估
+  // 列宽，但 58px 的全日期宽度本就保守，少一枚标签好过互相压字。
+  const measured = el.querySelector(".usage-cols")?.clientWidth || el.clientWidth;
+  const plan = chartLabelPlan({ plotWidth: measured, days: win.days });
+  const step = plan.step;
+  const dayLabel = plan.form === "full" ? formatChartDay : formatChartDayShort;
   const ticks = [axisMax, axisMax / 2, 0];
   const yHtml = ticks
-    .map((t) => `<span>${escapeHtml(formatCompactCount(t))}</span>`)
+    .map((t) => `<span>${escapeHtml(metricFmt(t))}</span>`)
     .join("");
   const colsHtml = win.columns
     .map((col, index) => {
-      const heightPct = axisMax > 0 ? Math.min(100, (col.turns / axisMax) * 100) : 0;
+      const heightPct = axisMax > 0 ? Math.min(100, (metricVal(col) / axisMax) * 100) : 0;
       const segs = col.parts
         .map((part, i) => {
-          if (!part.turns) return "";
-          const grow = part.turns;
+          const grow = metricVal(part);
+          if (!grow) return "";
           return `<span class="usage-seg" data-series="${i}" style="flex-grow:${grow}"></span>`;
         })
         .join("");
       const showLabel = index === 0 || index === win.columns.length - 1 || index % step === 0;
-      const aria = `${formatChartDayFull(col.day)}，${col.turns} 轮，${col.runs} 次运行`;
+      const aria =
+        metric === "usd"
+          ? `${formatChartDayFull(col.day)}，${
+              col.runs === 0
+                ? "没有运行"
+                : col.usd == null
+                  ? `未计价，${col.runs} 次运行`
+                  : `成本 ${metricFmt(col.usd)}，${col.runs} 次运行${
+                      col.unpricedRuns ? `（另有 ${col.unpricedRuns} 次未计价）` : ""
+                    }`
+            }`
+          : `${formatChartDayFull(col.day)}，${col.turns} 轮，${col.runs} 次运行`;
       return (
         `<button type="button" class="usage-col" data-day="${escapeHtml(col.day)}" aria-label="${escapeHtml(aria)}">` +
         `<span class="usage-col-track"><span class="usage-col-stack" style="height:${heightPct}%">${segs}</span></span>` +
-        `<span class="usage-col-label${showLabel ? "" : " is-muted"}">${showLabel ? escapeHtml(formatChartDay(col.day)) : ""}</span>` +
+        `<span class="usage-col-label${showLabel ? "" : " is-muted"}">${showLabel ? escapeHtml(dayLabel(col.day)) : ""}</span>` +
         `<span class="usage-tip" hidden><strong>${escapeHtml(formatChartDayFull(col.day))}</strong>` +
         (col.turns
           ? col.parts
               .filter((p) => p.turns || p.runs)
               .map((p, i) => {
                 const series = win.series.findIndex((s) => s.model === p.model);
+                const valueText =
+                  metric === "usd"
+                    ? p.usd == null
+                      ? "未计价"
+                      : `${escapeHtml(metricFmt(p.usd))}${
+                          p.unpricedRuns ? `（另有 ${p.unpricedRuns} 次未计价）` : ""
+                        }`
+                    : escapeHtml(metricFmt(p.turns));
                 return (
                   `<span class="usage-tip-row"><i class="usage-swatch" data-series="${series < 0 ? i : series}" aria-hidden="true"></i>` +
-                  `${escapeHtml(displayModelName(p.model))} <b>${escapeHtml(formatCompactCount(p.turns))}</b></span>`
+                  `${escapeHtml(displayModelName(p.model))} <b>${valueText}</b></span>`
                 );
               })
               .join("")
@@ -568,6 +649,28 @@ function renderPlot(el, win) {
     col.addEventListener("focus", show);
     col.addEventListener("mouseleave", hide);
     col.addEventListener("blur", hide);
+  }
+
+  /**
+   * 标签节奏跟着列宽走（chartLabelPlan），所以宽度变了要重画——否则拉窗后
+   * 旧节奏可能让标签互相压字。jsdom 没有 ResizeObserver，守卫后跳过；
+   * 关闭面板时元素一并消失，观察器随元素回收。
+   */
+  if (typeof ResizeObserver === "function") {
+    if (!el.__usagePlotRO) {
+      el.__usagePlotLastW = measured;
+      el.__usagePlotWin = win;
+      el.__usagePlotRO = new ResizeObserver(() => {
+        const nowW = el.querySelector(".usage-cols")?.clientWidth || el.clientWidth;
+        if (Math.abs(nowW - (el.__usagePlotLastW ?? 0)) < 8) return;
+        el.__usagePlotLastW = nowW;
+        renderPlot(el, el.__usagePlotWin ?? win, metric);
+      });
+      el.__usagePlotRO.observe(el);
+    } else {
+      el.__usagePlotWin = win;
+      el.__usagePlotLastW = measured;
+    }
   }
 }
 

@@ -517,3 +517,29 @@ export function parseToolTxList(raw: unknown): DurableToolTx[] | null {
   }
   return out;
 }
+
+/**
+ * 崩溃档案的收口（ADR 表）：crash 相 → interrupted，gate 相 → closed；
+ * 只读相与 plan_gated（restore_gate）原样返回。
+ *
+ * 2026-09-18 从 ui/server.ts 迁来（僵尸收殓刀）：CLI 收殓器与 Web 启动恢复
+ * 共用同一张表，不允许两处各写一份。Web 侧原样 re-export，导入面不变。
+ */
+export function recoverDurableStateOnCrash(
+  state: DurableRunState,
+  at = Date.now(),
+): DurableRunState {
+  const action = recoveryActionForPhase(state.phase);
+  if (action === "readonly" || action === "restore_gate") return state;
+  if (action === "close_archive") {
+    return transitionRunState(state, { type: "close" }, at) ?? { ...state, phase: "closed", updatedAt: at };
+  }
+  /**
+   * 走到这里 action 是 fork_from_checkpoint / expire_waits_and_fork，对应相位只可能是
+   * executing / verifying / reworking / awaiting_* ——而 interrupt 迁移只对
+   * completed / failed / closed 返回 null，那三个相位在上面的 `readonly` 分支就返回了。
+   * 所以这里的迁移**不会**返回 null（changed-line 门把原先那个 `?? {...}` 兜底捞了出来：
+   * 一行都进不去的分支）。守卫仍写死在 transitionRunState 里，不在这里重复一遍。
+   */
+  return transitionRunState(state, { type: "interrupt" }, at)!;
+}

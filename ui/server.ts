@@ -8,7 +8,7 @@ import { spawn, execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { existsSync, readFileSync } from "node:fs";
 import { join, extname, dirname, delimiter, resolve, basename, relative, sep, isAbsolute } from "node:path";
-import { homedir } from "node:os";
+import { homedir, hostname } from "node:os";
 import { fileURLToPath } from "node:url";
 import { createHash, randomUUID, timingSafeEqual } from "node:crypto";
 import { AsyncLocalStorage } from "node:async_hooks";
@@ -142,7 +142,7 @@ import {
   validateRunContextBudget,
   type ContextPlan,
 } from "../src/context-window.js";
-import { allPacks, clearFilePacks, getPack, selectPackTools, PACKS, DEFAULT_HOST_DISCIPLINES, type DomainPack } from "../src/presets.js";
+import { allPacks, clearFilePacks, getPack, selectPackTools, verifierMeansFor, PACKS, DEFAULT_HOST_DISCIPLINES, type DomainPack } from "../src/presets.js";
 import {
   discardDraftPack,
   filePackListView,
@@ -312,7 +312,7 @@ import {
   resolveOfficeNotifyFromEnv,
   type OfficeNotifyConfig,
 } from "../src/notify.js";
-import { DEFAULT_VERIFIER_MAX_TURNS, resolveVerifierReadOnlyCommands } from "../src/verifier.js";
+import { DEFAULT_VERIFIER_MAX_TURNS, resolveVerifierReadOnlyCommands, verifierCanExecute, type VerifierMeans } from "../src/verifier.js";
 import type { Plan, PlanNodeState, SubTask } from "../src/planner.js";
 import {
   applyPlanShortEdits,
@@ -432,6 +432,8 @@ import {
   readArchivedState,
   readArchivedTranscript,
   readArchivedTrace,
+  archiveOwnerLiveness,
+  pidIsAlive,
   type ArchivedApprovalGrant,
   type ArchivedCheckpoint,
   type ArchivedMeta,
@@ -470,6 +472,7 @@ import {
   canSameRunResume,
   initialRunState,
   planResumeFacts,
+  recoverDurableStateOnCrash,
   recoveryActionForPhase,
   transitionRunState,
   type DurableBudgetSnapshot,
@@ -1813,26 +1816,11 @@ export function planNodesFromOutcome(input: {
  * Phase 2：executing→interrupted 后，若有 checkpoint 可由 canSameRunResume
  * 在同 runId 续跑；本函数只负责相迁移，不执行续跑。
  * 返回应用后的 state（调用方落盘）；只读相原样返回。
+ *
+ * 2026-09-18（僵尸收殓刀）：实现迁去 src/run-state.ts——CLI 收殓器与这里共用
+ * 同一张表；此处 re-export，既有导入面（测试/其它模块）不变。
  */
-export function recoverDurableStateOnCrash(
-  state: DurableRunState,
-  at = Date.now(),
-): DurableRunState {
-  const action = recoveryActionForPhase(state.phase);
-  if (action === "readonly" || action === "restore_gate") return state;
-  if (action === "close_archive") {
-    return transitionRunState(state, { type: "close" }, at) ?? { ...state, phase: "closed", updatedAt: at };
-  }
-  return (
-    transitionRunState(state, { type: "interrupt" }, at) ?? {
-      ...state,
-      phase: "interrupted",
-      updatedAt: at,
-      pendingApprovalIds: [],
-      pendingQuestionIds: [],
-    }
-  );
-}
+export { recoverDurableStateOnCrash } from "../src/run-state.js";
 
 export interface UiServerHandle {
   server: Server;
@@ -3992,6 +3980,11 @@ export function createUiServer(options: UiServerOptions = {}): UiServerHandle {
       for (const a of await loadArchivedMetas(historyRoot)) {
         if (runs.has(a.meta.runId)) continue;
         const crashed = a.meta.status === "running";
+        // F4-B 门控（僵尸收殓刀）：owner 章说它**还活着**（同机 pid 在）→ 不动盘上
+        // 状态——那是并行 CLI 的活档案（共享根目录时会发生）。他机/无章保持既有行为。
+        const ownerLive =
+          archiveOwnerLiveness(a.meta, { host: hostname(), alive: pidIsAlive }) === "self-alive";
+        const treatAsCrashed = crashed && !ownerLive;
         const parsedCheckpoint = checkpointFromUnknown(a.meta.checkpoint);
         // checkpoint 中夹入其它 run 的 grant 只能作为篡改/复制痕迹丢弃；预算与正史仍可恢复。
         const archivedApprovalGrantAudit = parsedCheckpoint?.approvalGrants
@@ -4007,7 +4000,7 @@ export function createUiServer(options: UiServerOptions = {}): UiServerHandle {
           : undefined;
         // RUN-01：读 state.json；崩溃相按 ADR 表收成 closed/interrupted 并回写。
         let durableState = await readArchivedState(a.dir);
-        if (durableState && crashed) {
+        if (durableState && treatAsCrashed) {
           let recovered = recoverDurableStateOnCrash(durableState);
           // meta 说在跑、盘上 state 却已是终态：新一轮的 reopen 还没落盘就崩了（meta 先写、
           // 先到）。按 meta 走——它是"当时在跑"的事实源；有检查点就能同 run 热恢复。
@@ -4033,7 +4026,7 @@ export function createUiServer(options: UiServerOptions = {}): UiServerHandle {
           } else {
             durableState = recovered;
           }
-        } else if (!durableState && crashed) {
+        } else if (!durableState && treatAsCrashed) {
           // 旧档案无 state.json：合成 interrupted，仍不冒充在跑
           durableState = recoverDurableStateOnCrash(initialRunState(a.meta.runId, a.meta.createdAt));
         }
@@ -6164,7 +6157,11 @@ export function createUiServer(options: UiServerOptions = {}): UiServerHandle {
       const role = typeof event.role === "string" && event.role ? event.role : "main";
       broadcastDeltaReset(run, role);
     }
-    if (event.type === "approval_resolved" || event.type === "approval_expired") {
+    if (
+      event.type === "approval_resolved" ||
+      event.type === "approval_expired" ||
+      event.type === "approval_auto"
+    ) {
       tallyApprovalOutcome((run.approvalsTally ??= emptyApprovalsTally()), event);
     }
     const seq = run.events.length;
@@ -7803,6 +7800,14 @@ export function createUiServer(options: UiServerOptions = {}): UiServerHandle {
     let effectiveConcurrency = typeof concurrency === "number" ? concurrency : 1;
     let mainStopReason: string | undefined;
     let mainError: string | null = null;
+    /**
+     * 子任务 → 解析出的领域包：在 resolveSubtask 里填（那是对每个子任务解析包的
+     * **唯一**一处）。裁决透出要用它按子任务自己的包算核查白名单——编排的全部
+     * 意义就是逐子任务配置，按 run 级包算等于把 s1 与 s2 混成一个。
+     */
+    const subtaskPack = new Map<string, DomainPack | undefined>();
+    /** 子任务 → 该子任务核查者的动手面（包声明 + 实际挂上的 MCP 工具） */
+    const subtaskMeans = new Map<string, VerifierMeans>();
 
     try {
       const usePlanner = run.usePlannerModel ?? true;
@@ -7917,6 +7922,7 @@ export function createUiServer(options: UiServerOptions = {}): UiServerHandle {
         },
         resolveSubtask: (sub: SubTask) => {
           const sp = sub.pack ? getPack(sub.pack) : undefined;
+          subtaskPack.set(sub.id, sp);
           if (sub.pack && !sp) {
             // 未知包不静默吞：降级用默认配置，但必须让界面看见这次降级
             pushSyntheticEvent(run, "host", {
@@ -7934,6 +7940,9 @@ export function createUiServer(options: UiServerOptions = {}): UiServerHandle {
               || MEMORY_TOOL_NAMES.has(tool.name),
           );
           const domainTools = injectedTools ?? selectPackTools(sp, toolPool, mcpTools);
+          // 核查者的动手面按**这个子任务实际装配出来的工具**算（判据③要的是
+          // "这次真有没有探针"，不是包声明里写了没有）
+          subtaskMeans.set(sub.id, verifierMeansFor(sp, domainTools));
           const proposeForSub = sp?.handoffs?.length
             ? [(run.proposeHandoffTool ??= makeProposeHandoffTool(run))]
             : [];
@@ -7979,8 +7988,27 @@ export function createUiServer(options: UiServerOptions = {}): UiServerHandle {
         // 核查成本逐轮记账（子任务 verifier 的 done 被 orchestrate 压掉不经
         // pushEvent；此前从返回值 steps 收尾回扫——宿主级异常时已完成轮次
         // 整体漏记，长 run 期间成本指标到收尾才跳变，违背入口记账原则）
-        onVerification: (_subtaskId, _round, vo) => {
+        // 并且**逐轮透出**（H8 边界另一半）：单执行者路径早就发 verification
+        // 事件，编排路径此前只记账——子任务裁决在界面上一条都看不到，"为什么
+        // 返工"永远不可见。字段与单执行者同形，多的只有 subtaskId 归属。
+        onVerification: (subtaskId, round, vo) => {
           growTokens("verification", vo.usage, run);
+          pushSyntheticEvent(run, `${subtaskId}/verifier`, {
+            type: "verification",
+            subtaskId,
+            round,
+            judgedTurn: run.conversationTurn,
+            verdict: vo.verdict,
+            usage: vo.usage,
+            recovery: vo.recovery,
+            // H8：核查侧无执行手段 → 裁决是静态推导。按**该子任务**的包与工具面算
+            ...(verifierCanExecute(
+              readOnlyFor(subtaskPack.get(subtaskId)).commands,
+              subtaskMeans.get(subtaskId),
+            )
+              ? {}
+              : { staticOnly: true }),
+          });
         },
         // 跨 run 资源互斥：把宿主表注入调度器——子任务粒度互斥，被别的 run
         // 持有时等待而非 skip；holder 前缀 = runId，冲突诊断可读
@@ -8124,6 +8152,10 @@ export function createUiServer(options: UiServerOptions = {}): UiServerHandle {
     driverEpoch?: number,
   ): Promise<void> {
     const judgedTurn = run.conversationTurn;
+    // H8 的判据②③（包声明 + 实际挂上的 MCP 工具）在这里算一次，供下面两处
+    // 裁决事件共用——同一轮里逐轮裁决与末轮 verdict 的口径必须一致
+    const verifyPack = run.packName ? getPack(run.packName) : pack;
+    const verifyMeans = verifierMeansFor(verifyPack, cfg.tools);
     let mainStopReason: string | undefined;
     let mainError: string | null = null;
     try {
@@ -8156,6 +8188,10 @@ export function createUiServer(options: UiServerOptions = {}): UiServerHandle {
             // 裁决是怎么拿到的（direct/wrapup/reformat/failed）——让 fail-closed
             // 的三种误伤形态可计量，也是 §2.1 该不该做的判据
             recovery: vo.recovery,
+            // H8（走查）：核查侧无执行手段 → 裁决是静态推导，界面如实标注
+            ...(verifierCanExecute(readOnlyFor(verifyPack).commands, verifyMeans)
+              ? {}
+              : { staticOnly: true }),
           });
         },
       });
@@ -8164,7 +8200,14 @@ export function createUiServer(options: UiServerOptions = {}): UiServerHandle {
       // 追加 verdict 合成事件（末轮裁决，保持既有契约）
       const lastVerdict = outcome.verifications.at(-1)?.verdict;
       if (lastVerdict) {
-        pushSyntheticEvent(run, "verifier", { type: "verdict", judgedTurn, verdict: lastVerdict });
+        pushSyntheticEvent(run, "verifier", {
+          type: "verdict",
+          judgedTurn,
+          verdict: lastVerdict,
+          ...(verifierCanExecute(readOnlyFor(verifyPack).commands, verifyMeans)
+            ? {}
+            : { staticOnly: true }),
+        });
       }
       if (!mainStopReason) mainStopReason = outcome.main.stopReason;
       if (mainStopReason === "error" && !mainError && outcome.main.error) {
@@ -10039,43 +10082,54 @@ export function createUiServer(options: UiServerOptions = {}): UiServerHandle {
     });
     if (willPromoteDirector) {
       /* 导演不走设计门面 / autoPack：拆役已由 detectCampaignSplit 裁定 */
-    } else if (wantsDesign && pickedDesignTemplate) {
+    } else if (wantsDesign) {
       const installed = installedFilePacksFrom(allPacks());
       const installedNames = installed.map((p) => p.name);
       // 设计模式锁定后端包为 design，除非点了已安装文件包。内置工程包忽略。
-      if (parsed.pack && PACKS[parsed.pack] && !installedNames.includes(parsed.pack)) {
+      // 没点模板芯片也锁——否则请求体不带 pack，回落到进程 AGENT_PACK（常是 ts-coding）。
+      if (
+        parsed.pack
+        && parsed.pack !== "design"
+        && PACKS[parsed.pack]
+        && !installedNames.includes(parsed.pack)
+      ) {
         parsed.pack = undefined;
       }
-      const explicitFilePack =
-        typeof parsed.designFilePack === "string" && installedNames.includes(parsed.designFilePack)
-          ? parsed.designFilePack
-          : typeof parsed.pack === "string" && installedNames.includes(parsed.pack)
-            ? parsed.pack
-            : undefined;
-      admittedDesignRoute = await routeDesignTask({
-        cfg: { systemPrompt: "router", tools: [], workdir: runWorkdir ?? workdir, compat: envCompat },
-        model: modelClient,
-        task: parsed.task,
-        explicitId: typeof parsed.designId === "string" ? parsed.designId : undefined,
-        explicitTab: typeof parsed.designTab === "string" ? parsed.designTab : undefined,
-        explicitTemplate: typeof parsed.designTemplate === "string" ? parsed.designTemplate : undefined,
-        explicitFilePack,
-        installedFilePacks: installed,
-      });
-      // 没点芯片时普通发送直接走（上面已跳过路由）。点了芯片仍 R2 才用人话拒绝，不用 409。
-      if (designRouteBlocksCreate(admittedDesignRoute, pickedDesignTemplate)) {
-        return {
-          status: 400,
-          payload: {
-            error: "请先选一个稿件模板，或直接描述要做什么。",
-          },
-        };
+      if (pickedDesignTemplate) {
+        const explicitFilePack =
+          typeof parsed.designFilePack === "string" && installedNames.includes(parsed.designFilePack)
+            ? parsed.designFilePack
+            : typeof parsed.pack === "string" && installedNames.includes(parsed.pack)
+              ? parsed.pack
+              : undefined;
+        admittedDesignRoute = await routeDesignTask({
+          cfg: { systemPrompt: "router", tools: [], workdir: runWorkdir ?? workdir, compat: envCompat },
+          model: modelClient,
+          task: parsed.task,
+          explicitId: typeof parsed.designId === "string" ? parsed.designId : undefined,
+          explicitTab: typeof parsed.designTab === "string" ? parsed.designTab : undefined,
+          explicitTemplate: typeof parsed.designTemplate === "string" ? parsed.designTemplate : undefined,
+          explicitFilePack,
+          installedFilePacks: installed,
+        });
+        // 没点芯片时普通发送直接走（上面已跳过路由）。点了芯片仍 R2 才用人话拒绝，不用 409。
+        if (designRouteBlocksCreate(admittedDesignRoute, pickedDesignTemplate)) {
+          return {
+            status: 400,
+            payload: {
+              error: "请先选一个稿件模板，或直接描述要做什么。",
+            },
+          };
+        }
+        // 落到这里 kind 必不是 r2：进了 `if (pickedDesignTemplate)` 就说明点了芯片，
+        // 而 r2 + 点了芯片在上面已经被 designRouteBlocksCreate 拦成 400 了。
+        // （原先这里还有个 `else { admittedDesignRoute = undefined }`——一行永远
+        // 进不去的死分支，changed-line 门把它捞了出来。）
+        if (admittedDesignRoute.kind !== "r2") {
+          parsed.pack = admittedDesignRoute.pack;
+        }
       }
-      if (admittedDesignRoute.kind !== "r2") {
-        parsed.pack = admittedDesignRoute.pack;
-      } else {
-        admittedDesignRoute = undefined;
-      }
+      if (!parsed.pack) parsed.pack = "design";
     } else if (parsed.autoPack === true && !parsed.pack && !wantsOrchestrate) {
       try {
         const outcome = await routeToPack(

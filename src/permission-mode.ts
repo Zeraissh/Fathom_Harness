@@ -82,6 +82,8 @@ export function permissionModeSwitches(mode: PermissionMode): PermissionModeSwit
 /**
  * 装配条 / composer 一行人话：现在在哪一档，会不会自动放行危险动作。
  * 不替代展开开关；deny / 圈禁 / 硬拒三档都打不穿。
+ * 「只读命令自动放行」是 2026-09-18 的登记裁决（圈内只读 bash 免审批卡，见
+ * AgentConfig.readOnlyShellAutoAllow）：不是档位，任何档位下都成立，所以要写进来。
  */
 export function describePermissionStance(
   mode: PermissionMode | null,
@@ -90,7 +92,7 @@ export function describePermissionStance(
   const auto = switches.autoYes === true;
   const danger = auto
     ? "ask 级会自动放行；deny / 圈禁 / 硬拒仍拦住"
-    : "危险动作会先问你，不会自动放行";
+    : "危险动作会先问你（工作目录内的只读命令自动放行）";
   if (mode === "manual") return `手动 · ${danger}`;
   if (mode === "plan") return `计划 · 先出计划再动手；${danger}`;
   if (mode === "auto") return `自动 · ${danger}`;

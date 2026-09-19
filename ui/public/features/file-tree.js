@@ -19,6 +19,7 @@ export const FILE_TREE_COPY = {
   expand: "显示文件",
   empty: "这个文件夹是空的。",
   emptyRoot: "这个工作目录里还没有可列出的文件。",
+  confirming: "正在确认目录…",
   noWorkdir: "先选一个工作目录。",
   loading: "正在列出文件…",
   cite: "插入 @ 引用",
@@ -203,8 +204,12 @@ export function initFileTree(host = {}, env = {}) {
     if (!wd) {
       const empty = doc.createElement("p");
       empty.className = "ft-empty";
-      empty.textContent = FILE_TREE_COPY.noWorkdir;
+      // 三态：还没问完（上下文未落定）≠ 确实没有。
+      // host 不提供 isContextReady 时按旧行为视为已落定 —— 独立用法与老测试不受影响。
+      const settled = host.isContextReady?.() !== false;
+      empty.textContent = settled ? FILE_TREE_COPY.noWorkdir : FILE_TREE_COPY.confirming;
       body.appendChild(empty);
+      host.onEntriesChanged?.(null); // 未知：右列不据此自动开（走查：内容驱动）
       return;
     }
     if (rootError) {
@@ -212,9 +217,12 @@ export function initFileTree(host = {}, env = {}) {
       err.className = "ft-error";
       err.textContent = rootError;
       body.appendChild(err);
+      host.onEntriesChanged?.(null);
       return;
     }
     renderLevel("");
+    const rootCache = cache.get("");
+    host.onEntriesChanged?.(rootCache ? rootCache.entries.length : null);
   }
 
   function appendNotice(text) {
@@ -283,6 +291,10 @@ export function initFileTree(host = {}, env = {}) {
     const nameBtn = doc.createElement("button");
     nameBtn.type = "button";
     nameBtn.className = "ft-name";
+    // 走查 UX-B4/E15：目录的行名按钮也能切换折叠，展开态得让读屏听得见
+    if (entry.kind === "directory") {
+      nameBtn.setAttribute("aria-expanded", String(expanded.has(entry.relative)));
+    }
     const icon = entry.kind === "directory" ? "ph-folder" : "ph-file";
     nameBtn.innerHTML = `<i class="ph ${icon}" aria-hidden="true"></i>`;
     const label = doc.createElement("span");

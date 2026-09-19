@@ -389,3 +389,49 @@ describe("initChangesPanel DOM 层", () => {
     expect(document.querySelectorAll(".changes-section")).toHaveLength(1);
   });
 });
+
+// ---- P4: 展开一行时给「改了哪几行」----
+describe("P4 变更面板的逐行改动", () => {
+  beforeEach(() => { document.body.innerHTML = ""; });
+  afterEach(() => { document.body.innerHTML = ""; });
+
+  function mount(fetchFn, host = {}) {
+    const rail = document.createElement("div");
+    rail.className = "rail-body";
+    document.body.appendChild(rail);
+    const api = initChangesPanel(host, { fetchFn, now: () => NOW });
+    api.mount(rail);
+    return api;
+  }
+  const base = { runId: "r1", workdir: "D:/w", git: false, changes: [
+    { path: "src/app.ts", ops: ["edit"], count: 1, exists: true, sizeBytes: 10, mtimeMs: NOW },
+  ] };
+
+  it("有逐行改动时展开先给「改动 N 处」，含 - 与 + 两种行", async () => {
+    const fetchFn = vi.fn(async (url) => (
+      String(url).includes("/changes") ? mockJsonResponse(200, base) : mockTextResponse(200, "let x = 2")
+    ));
+    const api = mount(fetchFn, {
+      getEditHunks: () => [{ oldText: "let x = 1", newText: "let x = 2" }],
+    });
+    api.setRun("r1");
+    await waitFor(() => document.querySelectorAll(".chg-row").length === 1);
+    document.querySelector(".chg-row-head").click();
+    const box = await waitFor(() => document.querySelector(".chg-hunks"));
+    expect(box.querySelector(".chg-hunks-title").textContent).toBe("改动 1 处");
+    expect(box.querySelector(".chg-hunk-line--del").textContent).toBe("- let x = 1");
+    expect(box.querySelector(".chg-hunk-line--add").textContent).toBe("+ let x = 2");
+  });
+
+  it("宿主没有 getEditHunks 时不出改动块（覆盖写拿不到旧版本，不编）", async () => {
+    const fetchFn = vi.fn(async (url) => (
+      String(url).includes("/changes") ? mockJsonResponse(200, base) : mockTextResponse(200, "hi")
+    ));
+    const api = mount(fetchFn);
+    api.setRun("r1");
+    await waitFor(() => document.querySelectorAll(".chg-row").length === 1);
+    document.querySelector(".chg-row-head").click();
+    await waitFor(() => document.querySelector(".chg-preview"));
+    expect(document.querySelector(".chg-hunks")).toBeNull();
+  });
+});

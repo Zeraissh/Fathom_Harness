@@ -22,6 +22,7 @@ import {
   shouldAttemptMidToolReplay,
 } from "./mid-tool-replay.js";
 import { describeApprovalTargets } from "./approval-display.js";
+import { classifyReadOnlyShellCommand } from "./tools/read-only-shell.js";
 import { type DurableToolTx, type ToolTxController } from "./tool-tx.js";
 import { ToolExecutor, ToolRegistry } from "./tools/registry.js";
 import { parseProgressItems } from "./tools/update-progress.js";
@@ -409,6 +410,41 @@ export class AgentLoop {
   }
 
   /**
+   * 审批门的执行者侧决策（2026-09-18 走查第一刀）：
+   * 圈内只读 bash 命令免卡——记 `approval_auto` 留痕后就地放行；其余照常推
+   * `approval_request` 挂起等宿主。**判不准 = 回到卡，不是拒绝**（人仍然能批）。
+   *
+   * 默认开（AgentConfig.readOnlyShellAutoAllow，缺省 true）；verifier / planner
+   * 在自己的装配处显式置 false——它们的只读门是领域白名单，比本分类器更窄。
+   * 分类器见 src/tools/read-only-shell.ts（圈禁、凭据文件、动态构造都在那边挡）。
+   */
+  private approveBlock(
+    q: AsyncEventQueue<TurnEvent>,
+    block: Anthropic.ToolUseBlock,
+    resolve: (value: { decision: "allow" | "deny"; reason?: string }) => void,
+  ): void {
+    if (this.cfg.readOnlyShellAutoAllow !== false && block.name === "bash") {
+      const command = (block.input as { command?: unknown } | null)?.command;
+      if (typeof command === "string") {
+        const verdict = classifyReadOnlyShellCommand(command, this.cfg.workdir, this.cfg.readRoots);
+        if (verdict.allow) {
+          q.push({
+            type: "approval_auto",
+            toolUseId: block.id,
+            name: block.name,
+            input: block.input,
+            rule: "read-only-shell",
+            reason: verdict.reason,
+          });
+          resolve({ decision: "allow", reason: verdict.reason });
+          return;
+        }
+      }
+    }
+    this.pushApprovalRequest(q, block, resolve);
+  }
+
+  /**
    * 续跑正史修复入口（SAFE-06 mid-tool + P6）。
    *
    * 有悬空 tool_use 且 toolTx 有副作用记录 → 按计划重放/合成回执；
@@ -471,7 +507,7 @@ export class AgentLoop {
         signal,
         (block) =>
           new Promise((resolve) => {
-            this.pushApprovalRequest(q, block, resolve);
+            this.approveBlock(q, block, resolve);
           }),
         (exec) => {
           executed.set(exec.toolUseId, {
@@ -1200,7 +1236,7 @@ export class AgentLoop {
             signal,
             (block) =>
               new Promise((resolve) => {
-                this.pushApprovalRequest(q, block, resolve);
+                this.approveBlock(q, block, resolve);
               }),
             (executed) => {
               // OBS-02：工具延迟。名字只从**本轮的 blocks** 取——`ExecutedTool`

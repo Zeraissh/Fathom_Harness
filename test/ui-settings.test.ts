@@ -776,3 +776,32 @@ describe("MCP / Skills 小型市场", () => {
     expect(styles).toMatch(/@media \(max-width: 700px\) \{[\s\S]*\.settings-mcp-grid \{ grid-template-columns: 1fr; \}/);
   });
 });
+
+/**
+ * U2 · Code 脸的核查出发状态与设置中心同源（2026-09-18 走查）。
+ *
+ * 两套事实源打架：启动时本轮开关先按设置默认值定了（index.html「独立核查
+ * 默认值同样来自设置中心」），随后「默认 office → 应用记忆的 Code 脸」那段
+ * 迁移又用硬编码 `codeVerifyPref = true` 把它盖回去——于是全新设置档
+ * （localStorage 里连 settings 记录都没有）下：设置页说默认关、提交栏文案
+ * 写「默认关；需要时再开」，而新对话实际带着核查开跑（首跑 meta.verify=true）。
+ * 活页复现：清档启动 → 勾选态 true → 真跑一轮 verify:true。
+ */
+describe("U2 · Code 脸核查出发状态跟设置中心同源", () => {
+  const html = readFileSync(
+    join(dirname(fileURLToPath(import.meta.url)), "../ui/public/index.html"),
+    "utf8",
+  );
+
+  it("codeVerifyPref 初值来自设置默认值，不再是硬编码 true", () => {
+    expect(html).toMatch(/let codeVerifyPref = composerDefaults\(uiSettings\)\.verify;/);
+    expect(html).not.toMatch(/let codeVerifyPref = true;/);
+  });
+
+  it("设置页改动实时同步时，Code 脸的核查记忆跟着走（不留下旧值）", () => {
+    const idx = html.indexOf("onApplyComposerDefaults:");
+    expect(idx, "宿主侧 onApplyComposerDefaults 不见了").toBeGreaterThan(-1);
+    const body = html.slice(idx, idx + 800);
+    expect(body).toMatch(/codeVerifyPref\s*=\s*Boolean\(patch\.verify\)|codeVerifyPref\s*=\s*patch\.verify/);
+  });
+});

@@ -116,9 +116,13 @@ const HOST_SHELL_DESC =
 export function shellDescription(env: NodeJS.ProcessEnv = process.env): string {
   try {
     const policy = parseExecutionPolicy(env);
+    // H7（走查 2026-09-18）：旧文案 "REPORT-ONLY / UNISOLATED" 被模型读成"只读/
+    // 不执行"——真机实录它为此犹豫三轮（"Note the shell is report-only. Let's try
+    // running node."）。"报告制"是策略内部话，对模型只说事实：命令直接跑在宿主、
+    // 无沙箱、副作用是真的。状态机原文仍在回执 header 里（机器可读，另有释义）。
     return policy.mode === "required"
       ? "/bin/sh in required OCI boundary (unavailable fails closed)"
-      : `${HOST_SHELL_DESC} — host execution is ${policy.mode === "report" ? "REPORT-ONLY / UNISOLATED" : "UNISOLATED"}`;
+      : `${HOST_SHELL_DESC} — commands run directly on the host; no sandbox (real side effects)`;
   } catch {
     return "execution disabled: invalid isolation configuration";
   }
@@ -136,7 +140,7 @@ export function createBashTool(options: {
 } = {}): Tool {
   return {
   name: "bash",
-  description: `Execute a shell command in the working directory (shell: ${SHELL_DESC}). Call this for anything not covered by a dedicated tool: listing/globbing files, git, running programs, etc. Commands time out after 120s; stdout and stderr are both returned together with the effective execution-boundary state.`,
+  description: `Execute a shell command in the working directory (shell: ${SHELL_DESC}). Call this for anything not covered by a dedicated tool: listing/globbing files, git, running programs, etc. Commands time out after 120s; stdout and stderr are both returned together with the effective execution-boundary state. The result starts with a [execution boundary=…] receipt: state=report-only means the command ran directly on the host with NO sandbox — it does NOT mean the shell is read-only or that commands are merely reported instead of running.`,
   inputSchema: {
     type: "object",
     properties: {

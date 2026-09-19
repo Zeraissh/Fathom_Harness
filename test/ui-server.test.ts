@@ -8736,6 +8736,138 @@ describe("监控闭环：outcome 分档指标与告警文件一致性", () => {
     }
   });
 
+  it("编排补发 verification 事件：逐子任务逐轮透出，静态推导徽标按子任务自己的包算", async () => {
+    // 两个子任务**故意**用不同的包，这正是编排与单执行者的分野：
+    //   consult       白名单 ["ls","head",...] 无可运行器 → 裁决只能是静态推导
+    //   python-coding 白名单含 "python -m pytest"    → 核查者能亲自运行
+    // staticOnly 必须按子任务自己的包算——按 run 级包算等于把两个子任务混成
+    // 一个（逐子任务配置是编排的全部意义）。修前：编排路径的 onVerification
+    // 只记账、不发事件，对话里一条裁决卡都不出现。
+    const planJson = JSON.stringify({
+      subtasks: [
+        { id: "s1", title: "静态核查的一步", pack: "consult", description: "做 A", acceptance: ["A 完成"], dependsOn: [] },
+        { id: "s2", title: "能跑测试的一步", pack: "python-coding", description: "做 B", acceptance: ["B 完成"], dependsOn: ["s1"] },
+      ],
+    });
+    const pass = () =>
+      fakeMessage([textBlock(JSON.stringify({ passed: true, issues: [], summary: "通过" }))], "end_turn");
+    const model = new FakeModelClient([
+      fakeMessage([textBlock(["```json", planJson, "```"].join("\n"))], "end_turn"),
+      fakeMessage([textBlock("s1 完成")], "end_turn"), pass(),
+      fakeMessage([textBlock("s2 完成")], "end_turn"), pass(),
+    ]);
+    const dir = await mkdtemp(join(tmpdir(), "plan-verification-events-"));
+    const handle = createUiServer({ modelClient: model, workdir: dir });
+    try {
+      const port = await startServer(handle);
+      const base = baseUrl(port);
+      const { runId } = await (await fetch(`${base}/api/runs`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ task: "两步任务", mode: "plan" }),
+      })).json() as { runId: string };
+      await waitForDone(base, runId);
+
+      const events = await readSSEAll(await fetch(`${base}/api/runs/${runId}/events`));
+      const verifs = events
+        .filter((e: any) => e.event.type === "verification")
+        .map((e: any) => ({ source: String(e.source), event: e.event as Record<string, any> }));
+      // 每个子任务各一发；来源带子任务前缀（同 plan / plan_result 的口径），
+      // 否则并行下根本分不清是谁的裁决
+      expect(verifs.map((v) => [v.event.subtaskId, v.source])).toEqual([
+        ["s1", "s1/verifier"],
+        ["s2", "s2/verifier"],
+      ]);
+      // 徽标按子任务自己的包算
+      expect(verifs[0]!.event.staticOnly).toBe(true);
+      expect(verifs[1]!.event.staticOnly).toBeUndefined();
+      // 与单执行者同口径的字段一个都不能少——UI 是逐字段白名单投影，
+      // 少列一个就在渲染层静默消失（judgedTurn 的坑踩过六次）
+      for (const v of verifs) {
+        expect(v.event.judgedTurn).toBe(1);
+        expect(v.event.round).toBe(0);
+        expect(v.event.verdict.passed).toBe(true);
+        expect(v.event.usage).toBeTruthy();
+      }
+    } finally {
+      await handle.close();
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("H8 判据③：包里真挂上 MCP 探针 → 不再误标「静态推导」（stm32-debug 的形态）", async () => {
+    // 同一个子任务跑两遍，只差"探针在不在场"：
+    //   ① 宿主没开 MCP（AGENT_UI_MCP 未置 1）→ 核查者手里确实没有探针 → 标静态
+    //   ② 挂上探针 server（工具名落在 stm32-debug 的 includeTools 里）→ 不许标
+    // 病：stm32-debug 不声明 readOnlyCommands（bash 默认全 deny），而真机核查
+    // 全靠探针取证——旧判据只看 bash 白名单，于是一份真机核查被判成"未经运行验证"。
+    const planJson = JSON.stringify({
+      subtasks: [
+        {
+          id: "s1",
+          title: "烧录并读数",
+          pack: "stm32-debug",
+          description: "烧录后读心跳",
+          acceptance: ["心跳递增"],
+          dependsOn: [],
+        },
+      ],
+    });
+    const pass = () =>
+      fakeMessage([textBlock(JSON.stringify({ passed: true, issues: [], summary: "通过" }))], "end_turn");
+    const dir = await mkdtemp(join(tmpdir(), "plan-h8-mcp-"));
+    const fixture = join(dirname(fileURLToPath(import.meta.url)), "fixtures", "mcp-probe-server.mjs");
+    await writeFile(
+      join(dir, "mcp.json"),
+      JSON.stringify({
+        servers: { probe: { command: process.execPath, args: [fixture], permission: "auto" } },
+      }),
+      "utf8",
+    );
+    const runOnce = async (withMcp: boolean): Promise<Record<string, any> | undefined> => {
+      if (withMcp) process.env.AGENT_UI_MCP = "1";
+      else delete process.env.AGENT_UI_MCP;
+      const handle = createUiServer({
+        modelClient: new FakeModelClient([
+          fakeMessage([textBlock(["```json", planJson, "```"].join("\n"))], "end_turn"),
+          fakeMessage([textBlock("s1 完成")], "end_turn"),
+          pass(),
+        ]),
+        workdir: dir,
+        mcpConfigFile: join(dir, "mcp.json"),
+      });
+      try {
+        const port = await startServer(handle);
+        const base = baseUrl(port);
+        const { runId } = await (await fetch(`${base}/api/runs`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ task: "烧录并读数", mode: "plan" }),
+        })).json() as { runId: string };
+        await waitForDone(base, runId);
+        const events = await readSSEAll(await fetch(`${base}/api/runs/${runId}/events`));
+        return events.find((e: any) => e.event.type === "verification")?.event as
+          | Record<string, any>
+          | undefined;
+      } finally {
+        await handle.close();
+      }
+    };
+    try {
+      const bare = await runOnce(false);
+      expect(bare, "未发出裁决事件").toBeDefined();
+      expect(bare!.staticOnly, "探针不在场时标静态推导是对的").toBe(true);
+
+      const probed = await runOnce(true);
+      expect(probed, "未发出裁决事件").toBeDefined();
+      expect(probed!.subtaskId).toBe("s1");
+      expect(probed!.staticOnly, "探针在手还被标「未经运行验证」= 误标").toBeUndefined();
+    } finally {
+      delete process.env.AGENT_UI_MCP;
+      await rm(dir, { recursive: true, force: true });
+    }
+  }, 60_000);
+
   it("token 计量 plan 模式三角色全链路：planner/execution/verification 各归各档", async () => {
     // 五段脚本（同 v2-17 形状）：planner 拆两步 + s1 执行/裁决 + s2 执行/裁决。
     // 子任务 verifier 的 done 被 orchestrate 压掉——verification 档只能靠
@@ -9007,6 +9139,17 @@ describe("监控闭环：outcome 分档指标与告警文件一致性", () => {
         body: JSON.stringify({ task: "占着探针", pack: "stm32-debug" }),
       });
       const { runId: runA } = await a.json();
+      /**
+       * 先等 A **真的**把探针攥住（审批挂起 ⇒ 工具已发起 ⇒ 资源已持有），再创建 B。
+       *
+       * 旧版是"A 与 B 并发创建 + 睡 150ms 再看 B 有没有 s1 事件"——那是掷骰子：
+       * 慢跑道上 A 还没走到工具调用，B 的 s1 就先合法地拿到了探针，测试红而产品
+       * 没毛病（2026-09-18 夜 CI 两条 run 同秒挂在这一句上，本地却 8/8 绿）。
+       * 资源互斥要验的是"持有期间别人得等"，前提是先有"持有"这个既成事实。
+       */
+      const held = await waitForEvent(base, runA, (e: any) => e.event?.type === "approval_request");
+      expect(held, "run A 没挂上审批——探针未被持有，后面的断言失去前提").toBeDefined();
+
       const b = await fetch(`${base}/api/runs`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -9015,7 +9158,7 @@ describe("监控闭环：outcome 分档指标与告警文件一致性", () => {
       expect(b.status).toBe(200); // plan 模式创建不整体占资源——按子任务粒度管
       const { runId: runB } = await b.json();
 
-      // 给调度器时间走到 s1：s1 必须在等待（零 s1/ 前缀事件），而不是被 skip 或硬闯
+      // 探针此刻确定被 A 持有：s1 必须在等待（零 s1/ 前缀事件），而不是被 skip 或硬闯
       await new Promise((r) => setTimeout(r, 150));
       const midEvents = await readSSESnapshot(base, runB);
       expect(
@@ -10082,3 +10225,94 @@ describe("对话回退 POST /api/runs/:id/rewind", () => {
   });
 });
 
+
+/**
+ * 设计模式建 run 时的**包锁定**（changed-line 门捞出来的未覆盖分支）。
+ *
+ * 逐条：
+ *   ① 请求体带一个内置工程包（如 ts-coding）时，设计模式把它忽略掉——
+ *      否则会回落到进程 AGENT_PACK，设计任务被工程包接走；
+ *   ② 已安装文件包有两条点名路：`designFilePack`，或直接把它放进 `pack`；
+ *   ③ 路由 resolved 成 r2 时不该发生（进了这段就说明点了芯片，r2 上一句已 400）。
+ */
+describe("设计模式建 run：包锁定", () => {
+  const FILE_PACK = "thermo-consult";
+
+  async function designHost(): Promise<{ handle: UiServerHandle; base: string; dir: string }> {
+    const dir = await mkdtemp(join(tmpdir(), "design-pack-lock-"));
+    const packsDir = join(dir, "packs");
+    const packDir = join(packsDir, "installed", FILE_PACK);
+    await mkdir(packDir, { recursive: true });
+    await writeFile(
+      join(packDir, "pack.json"),
+      JSON.stringify({
+        schemaVersion: 1,
+        name: FILE_PACK,
+        description: "热电偶接线咨询",
+        builtinTools: ["read_file"],
+        mcp: false,
+        verify: { enabled: false, mode: "rubric" },
+      }),
+      "utf8",
+    );
+    await writeFile(join(packDir, "SYSTEM.md"), "先问冷端补偿，再谈接线。\n", "utf8");
+    const handle = createUiServer({
+      modelClient: new FakeModelClient([fakeMessage([textBlock("ok")], "end_turn")]),
+      workdir: dir,
+      packsDir,
+    });
+    const port = await startServer(handle);
+    return { handle, base: baseUrl(port), dir };
+  }
+
+  async function packOfRun(base: string, runId: string): Promise<string | null> {
+    const list = (await (await fetch(`${base}/api/runs`)).json()) as {
+      runId: string;
+      packName: string | null;
+    }[];
+    return list.find((r) => r.runId === runId)?.packName ?? null;
+  }
+
+  it("内置工程包被忽略；已安装文件包两条点名路都认", async () => {
+    const { handle, base, dir } = await designHost();
+    const started: string[] = [];
+    try {
+      const create = async (body: Record<string, unknown>) => {
+        const res = await fetch(`${base}/api/runs`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        const { runId } = (await res.json()) as { runId: string };
+        started.push(runId);
+        return runId;
+      };
+
+      // ① 内置工程包：被清掉 → 落回 design
+      const builtin = await create({ task: "做一个落地页", mode: "design", pack: "ts-coding" });
+      expect(await packOfRun(base, builtin)).toBe("design");
+
+      // ② designFilePack 点名已安装文件包
+      const byDesignField = await create({ task: "问接线", mode: "design", designFilePack: FILE_PACK });
+      expect(await packOfRun(base, byDesignField)).toBe(FILE_PACK);
+
+      // ③ 直接放进 pack：同样认（它是已安装文件包，不是内置工程包）。
+      //    注意必须先"点了模板"才会走进这段路由——只传 pack 的话整块被跳过，
+      //    断言会因为别的原因通过（parsed.pack 本来就留着），线却没跑到。
+      const byPackField = await create({
+        task: "问接线",
+        mode: "design",
+        designTemplate: "not-a-real-template",
+        pack: FILE_PACK,
+      });
+      expect(await packOfRun(base, byPackField)).toBe(FILE_PACK);
+    } finally {
+      // 设计 run 会往 workdir 里铺模板文件——不停掉就删不掉（Windows 句柄）
+      for (const id of started) {
+        await fetch(`${base}/api/runs/${id}/stop`, { method: "POST" }).catch(() => {});
+      }
+      await handle.close();
+      await rm(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 200 });
+    }
+  }, 30_000);
+});

@@ -1,0 +1,25 @@
+
+> agent-harness@1.3.0 im:tunnel
+> tsx --env-file-if-exists=.env scripts/im-tunnel.ts
+
+飞书入站隧道：只打印命令，不会拉起 cloudflared，也不会裸开整站。
+本机回调路径：/api/im/feishu
+飞书云到不了 127.0.0.1，需要公网 HTTPS。
+
+1. 先在本机起 UI（默认只绑 127.0.0.1）：
+   npm run ui
+
+2. 另开终端，把本机端口映到临时 HTTPS（需已安装 cloudflared）：
+   cloudflared tunnel --url http://127.0.0.1:4173
+
+3. 把 cloudflared 印出的 https://xxxx.trycloudflare.com 写入 .env：
+   AGENT_IM_PUBLIC_BASE=https://xxxx.trycloudflare.com
+   Encrypt Key / webhook 只写 .env，不要贴进终端。
+
+4. 飞书开放平台 → 事件与回调 → 请求网址：
+   https://<隧道主机>/api/im/feishu
+
+注意：这条 quick tunnel 会把整个端口暴露到该主机名。
+/api/im/feishu 仍校验 X-Lark-Signature，不会因隧道关掉签名。
+UI 页面没有飞书签名。远程访问请设 AGENT_UI_ACCESS_TOKEN（至少 32 字符）。
+更好：反代只转发 POST /api/im/feishu，不要把整站推上网。
