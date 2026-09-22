@@ -1,0 +1,772 @@
+{
+ "run": {
+  "skeleton": [
+   {
+    "d": 0,
+    "el": "body",
+    "w": 1600,
+    "x": 0,
+    "h": 900,
+    "flexDir": "row",
+    "pos": "static",
+    "bg": "rgb(250, 249, 245)"
+   },
+   {
+    "d": 1,
+    "el": "aside#sidebar..idebar",
+    "w": 312,
+    "x": 0,
+    "h": 900,
+    "flexDir": "column",
+    "pos": "static",
+    "bg": "rgb(240, 238, 230)"
+   },
+   {
+    "d": 2,
+    "el": "div..idebar-header",
+    "w": 311,
+    "x": 0,
+    "h": 53,
+    "flexDir": "row",
+    "pos": "static",
+    "bg": "rgba(0, 0, 0, 0)"
+   },
+   {
+    "d": 3,
+    "el": "div..idebar-brand",
+    "w": 126,
+    "x": 12,
+    "h": 34,
+    "flexDir": "row",
+    "pos": "static",
+    "bg": "rgba(0, 0, 0, 0)"
+   },
+   {
+    "d": 3,
+    "el": "button#sidebar-collapse.icon-btn .idebar-collap.e-btn",
+    "w": 34,
+    "x": 265,
+    "h": 34,
+    "flexDir": "row",
+    "pos": "static",
+    "bg": "rgb(250, 249, 245)"
+   },
+   {
+    "d": 2,
+    "el": "div..idebar-top-tool.",
+    "w": 311,
+    "x": 0,
+    "h": 42,
+    "flexDir": "row",
+    "pos": "static",
+    "bg": "rgba(0, 0, 0, 0)"
+   },
+   {
+    "d": 3,
+    "el": "button#notifications-btn.icon-btn notification.-btn",
+    "w": 34,
+    "x": 12,
+    "h": 34,
+    "flexDir": "row",
+    "pos": "relative",
+    "bg": "rgb(250, 249, 245)"
+   },
+   {
+    "d": 3,
+    "el": "button#home-spend.home-.pend",
+    "w": 180,
+    "x": 79,
+    "h": 24,
+    "flexDir": "row",
+    "pos": "static",
+    "bg": "rgb(240, 238, 230)"
+   },
+   {
+    "d": 3,
+    "el": "div#theme-picker.theme-picker",
+    "w": 34,
+    "x": 265,
+    "h": 34,
+    "flexDir": "row",
+    "pos": "relative",
+    "bg": "rgba(0, 0, 0, 0)"
+   },
+   {
+    "d": 2,
+    "el": "div#workspace-face.work.pace-face",
+    "w": 287,
+    "x": 12,
+    "h": 38,
+    "flexDir": "row",
+    "pos": "static",
+    "bg": "rgb(250, 249, 245)"
+   },
+   {
+    "d": 2,
+    "el": "div..idebar-.earch",
+    "w": 311,
+    "x": 0,
+    "h": 86,
+    "flexDir": "column",
+    "pos": "static",
+    "bg": "rgb(240, 238, 230)"
+   },
+   {
+    "d": 3,
+    "el": "button#new-chat-btn.btn btn--primary new-chat-btn",
+    "w": 287,
+    "x": 12,
+    "h": 32,
+    "flexDir": "row",
+    "pos": "static",
+    "bg": "rgb(176, 82, 47)"
+   },
+   {
+    "d": 3,
+    "el": "div.run-.earch-row",
+    "w": 287,
+    "x": 12,
+    "h": 37,
+    "flexDir": "row",
+    "pos": "relative",
+    "bg": "rgba(0, 0, 0, 0)"
+   },
+   {
+    "d": 2,
+    "el": "div#run-list.run-li.t",
+    "w": 311,
+    "x": 0,
+    "h": 622,
+    "flexDir": "row",
+    "pos": "static",
+    "bg": "rgba(0, 0, 0, 0)"
+   },
+   {
+    "d": 2,
+    "el": "div..idebar-footer .idebar-footer--icon.",
+    "w": 311,
+    "x": 0,
+    "h": 51,
+    "flexDir": "row",
+    "pos": "static",
+    "bg": "rgba(0, 0, 0, 0)"
+   },
+   {
+    "d": 3,
+    "el": "button#board-open-btn.icon-btn",
+    "w": 34,
+    "x": 10,
+    "h": 34,
+    "flexDir": "row",
+    "pos": "static",
+    "bg": "rgb(250, 249, 245)"
+   },
+   {
+    "d": 3,
+    "el": "button#artifacts-open-btn.icon-btn",
+    "w": 34,
+    "x": 74,
+    "h": 34,
+    "flexDir": "row",
+    "pos": "static",
+    "bg": "rgb(250, 249, 245)"
+   },
+   {
+    "d": 3,
+    "el": "button#schedules-open-btn.icon-btn",
+    "w": 34,
+    "x": 139,
+    "h": 34,
+    "flexDir": "row",
+    "pos": "static",
+    "bg": "rgb(250, 249, 245)"
+   },
+   {
+    "d": 3,
+    "el": "button#memory-btn.icon-btn memory-btn",
+    "w": 34,
+    "x": 203,
+    "h": 34,
+    "flexDir": "row",
+    "pos": "static",
+    "bg": "rgb(250, 249, 245)"
+   },
+   {
+    "d": 3,
+    "el": "button#settings-open-btn.icon-btn",
+    "w": 34,
+    "x": 267,
+    "h": 34,
+    "flexDir": "row",
+    "pos": "static",
+    "bg": "rgb(250, 249, 245)"
+   },
+   {
+    "d": 1,
+    "el": "main#main-panel.main",
+    "w": 1288,
+    "x": 312,
+    "h": 900,
+    "flexDir": "column",
+    "pos": "relative",
+    "bg": "rgb(250, 249, 245)"
+   },
+   {
+    "d": 2,
+    "el": "div#center-row.center-row",
+    "w": 1288,
+    "x": 312,
+    "h": 760,
+    "flexDir": "row",
+    "pos": "static",
+    "bg": "rgba(0, 0, 0, 0)"
+   },
+   {
+    "d": 3,
+    "el": "div#main-area.content-area",
+    "w": 966,
+    "x": 312,
+    "h": 760,
+    "flexDir": "row",
+    "pos": "static",
+    "bg": "rgba(0, 0, 0, 0)"
+   },
+   {
+    "d": 3,
+    "el": "div#right-rail.right-rail",
+    "w": 322,
+    "x": 1278,
+    "h": 760,
+    "flexDir": "row",
+    "pos": "relative",
+    "bg": "rgb(240, 238, 230)"
+   },
+   {
+    "d": 2,
+    "el": "div#action-dock.action-dock",
+    "w": 1288,
+    "x": 312,
+    "h": 9,
+    "flexDir": "row",
+    "pos": "static",
+    "bg": "rgb(240, 238, 230)"
+   },
+   {
+    "d": 2,
+    "el": "form#submit-form..ubmit-bar",
+    "w": 1256,
+    "x": 328,
+    "h": 115,
+    "flexDir": "row",
+    "pos": "relative",
+    "bg": "rgb(240, 238, 230)"
+   }
+  ],
+  "runs": {
+   "total": 54,
+   "visible": 54,
+   "sbScrollH": 900,
+   "sbClientH": 900,
+   "sample": [
+    {
+     "w": 295,
+     "h": 35,
+     "kids": [
+      {
+       "el": "div.run-item-ta.k",
+       "text": "请参考Nord on的AGS2产品 做一个可交…",
+       "w": 255
+      },
+      {
+       "el": "button.run-item-delete",
+       "text": "",
+       "w": 26
+      },
+      {
+       "el": "i.ph ph-tra.h",
+       "text": "",
+       "w": 14
+      }
+     ]
+    },
+    {
+     "w": 295,
+     "h": 35,
+     "kids": [
+      {
+       "el": "div.run-item-ta.k",
+       "text": "关于合肥的特色建筑，做一个可交互的三维对象页：…",
+       "w": 255
+      },
+      {
+       "el": "button.run-item-delete",
+       "text": "",
+       "w": 26
+      },
+      {
+       "el": "i.ph ph-tra.h",
+       "text": "",
+       "w": 14
+      }
+     ]
+    },
+    {
+     "w": 295,
+     "h": 35,
+     "kids": [
+      {
+       "el": "div.run-item-ta.k",
+       "text": "做一个可交互的三维对象页：自包含 HTML， …",
+       "w": 255
+      },
+      {
+       "el": "button.run-item-delete",
+       "text": "",
+       "w": 26
+      },
+      {
+       "el": "i.ph ph-tra.h",
+       "text": "",
+       "w": 14
+      }
+     ]
+    }
+   ],
+   "groups": [
+    {
+     "el": "run-group",
+     "text": "liquid-demo6核查CLI未能结构化收口请参考Nord on的AGS2产品 做一个可交…我先",
+     "h": 264,
+     "expanded": null
+    },
+    {
+     "el": "run-group-label",
+     "text": "liquid-demo6",
+     "h": 28,
+     "expanded": null
+    },
+    {
+     "el": "run-group-identity",
+     "text": "liquid-demo",
+     "h": 19,
+     "expanded": "true"
+    },
+    {
+     "el": "run-group-items",
+     "text": "核查CLI未能结构化收口请参考Nord on的AGS2产品 做一个可交…我先确认几个会直接改变交付物",
+     "h": 224,
+     "expanded": null
+    },
+    {
+     "el": "run-group",
+     "text": "AGS-DataAnaly i 1核查CLI已完成帮我把数据更新，并且生成报告补回去了，并把下游全部",
+     "h": 75,
+     "expanded": null
+    },
+    {
+     "el": "run-group-label",
+     "text": "AGS-DataAnaly i 1",
+     "h": 28,
+     "expanded": null
+    },
+    {
+     "el": "run-group-identity",
+     "text": "AGS-DataAnaly i ",
+     "h": 19,
+     "expanded": "true"
+    },
+    {
+     "el": "run-group-items",
+     "text": "核查CLI已完成帮我把数据更新，并且生成报告补回去了，并把下游全部重算。5 轮11:2340m45 ",
+     "h": 35,
+     "expanded": null
+    }
+   ]
+  }
+ },
+ "home": {
+  "skeleton": [
+   {
+    "d": 0,
+    "el": "body",
+    "w": 1600,
+    "x": 0,
+    "h": 900,
+    "flexDir": "row",
+    "pos": "static",
+    "bg": "rgb(250, 249, 245)"
+   },
+   {
+    "d": 1,
+    "el": "aside#sidebar..idebar",
+    "w": 312,
+    "x": 0,
+    "h": 900,
+    "flexDir": "column",
+    "pos": "static",
+    "bg": "rgb(240, 238, 230)"
+   },
+   {
+    "d": 2,
+    "el": "div..idebar-header",
+    "w": 311,
+    "x": 0,
+    "h": 53,
+    "flexDir": "row",
+    "pos": "static",
+    "bg": "rgba(0, 0, 0, 0)"
+   },
+   {
+    "d": 3,
+    "el": "div..idebar-brand",
+    "w": 126,
+    "x": 12,
+    "h": 34,
+    "flexDir": "row",
+    "pos": "static",
+    "bg": "rgba(0, 0, 0, 0)"
+   },
+   {
+    "d": 3,
+    "el": "button#sidebar-collapse.icon-btn .idebar-collap.e-btn",
+    "w": 34,
+    "x": 265,
+    "h": 34,
+    "flexDir": "row",
+    "pos": "static",
+    "bg": "rgb(250, 249, 245)"
+   },
+   {
+    "d": 2,
+    "el": "div..idebar-top-tool.",
+    "w": 311,
+    "x": 0,
+    "h": 42,
+    "flexDir": "row",
+    "pos": "static",
+    "bg": "rgba(0, 0, 0, 0)"
+   },
+   {
+    "d": 3,
+    "el": "button#notifications-btn.icon-btn notification.-btn",
+    "w": 34,
+    "x": 12,
+    "h": 34,
+    "flexDir": "row",
+    "pos": "relative",
+    "bg": "rgb(250, 249, 245)"
+   },
+   {
+    "d": 3,
+    "el": "button#home-spend.home-.pend",
+    "w": 180,
+    "x": 79,
+    "h": 24,
+    "flexDir": "row",
+    "pos": "static",
+    "bg": "rgb(240, 238, 230)"
+   },
+   {
+    "d": 3,
+    "el": "div#theme-picker.theme-picker",
+    "w": 34,
+    "x": 265,
+    "h": 34,
+    "flexDir": "row",
+    "pos": "relative",
+    "bg": "rgba(0, 0, 0, 0)"
+   },
+   {
+    "d": 2,
+    "el": "div#workspace-face.work.pace-face",
+    "w": 287,
+    "x": 12,
+    "h": 38,
+    "flexDir": "row",
+    "pos": "static",
+    "bg": "rgb(250, 249, 245)"
+   },
+   {
+    "d": 2,
+    "el": "div..idebar-.earch",
+    "w": 311,
+    "x": 0,
+    "h": 86,
+    "flexDir": "column",
+    "pos": "static",
+    "bg": "rgb(240, 238, 230)"
+   },
+   {
+    "d": 3,
+    "el": "button#new-chat-btn.btn btn--primary new-chat-btn",
+    "w": 287,
+    "x": 12,
+    "h": 32,
+    "flexDir": "row",
+    "pos": "static",
+    "bg": "rgb(176, 82, 47)"
+   },
+   {
+    "d": 3,
+    "el": "div.run-.earch-row",
+    "w": 287,
+    "x": 12,
+    "h": 37,
+    "flexDir": "row",
+    "pos": "relative",
+    "bg": "rgba(0, 0, 0, 0)"
+   },
+   {
+    "d": 2,
+    "el": "div#run-list.run-li.t",
+    "w": 311,
+    "x": 0,
+    "h": 622,
+    "flexDir": "row",
+    "pos": "static",
+    "bg": "rgba(0, 0, 0, 0)"
+   },
+   {
+    "d": 2,
+    "el": "div..idebar-footer .idebar-footer--icon.",
+    "w": 311,
+    "x": 0,
+    "h": 51,
+    "flexDir": "row",
+    "pos": "static",
+    "bg": "rgba(0, 0, 0, 0)"
+   },
+   {
+    "d": 3,
+    "el": "button#board-open-btn.icon-btn",
+    "w": 34,
+    "x": 10,
+    "h": 34,
+    "flexDir": "row",
+    "pos": "static",
+    "bg": "rgb(250, 249, 245)"
+   },
+   {
+    "d": 3,
+    "el": "button#artifacts-open-btn.icon-btn",
+    "w": 34,
+    "x": 74,
+    "h": 34,
+    "flexDir": "row",
+    "pos": "static",
+    "bg": "rgb(250, 249, 245)"
+   },
+   {
+    "d": 3,
+    "el": "button#schedules-open-btn.icon-btn",
+    "w": 34,
+    "x": 139,
+    "h": 34,
+    "flexDir": "row",
+    "pos": "static",
+    "bg": "rgb(250, 249, 245)"
+   },
+   {
+    "d": 3,
+    "el": "button#memory-btn.icon-btn memory-btn",
+    "w": 34,
+    "x": 203,
+    "h": 34,
+    "flexDir": "row",
+    "pos": "static",
+    "bg": "rgb(250, 249, 245)"
+   },
+   {
+    "d": 3,
+    "el": "button#settings-open-btn.icon-btn",
+    "w": 34,
+    "x": 267,
+    "h": 34,
+    "flexDir": "row",
+    "pos": "static",
+    "bg": "rgb(250, 249, 245)"
+   },
+   {
+    "d": 1,
+    "el": "main#main-panel.main i.-welcome",
+    "w": 1288,
+    "x": 312,
+    "h": 900,
+    "flexDir": "column",
+    "pos": "relative",
+    "bg": "rgb(250, 249, 245)"
+   },
+   {
+    "d": 2,
+    "el": "div#center-row.center-row",
+    "w": 1288,
+    "x": 312,
+    "h": 2490,
+    "flexDir": "row",
+    "pos": "static",
+    "bg": "rgba(0, 0, 0, 0)"
+   },
+   {
+    "d": 3,
+    "el": "div#main-area.content-area",
+    "w": 1288,
+    "x": 312,
+    "h": 217,
+    "flexDir": "row",
+    "pos": "static",
+    "bg": "rgba(0, 0, 0, 0)"
+   },
+   {
+    "d": 3,
+    "el": "button#right-rail-handle.right-rail-handle",
+    "w": 30,
+    "x": 1570,
+    "h": 48,
+    "flexDir": "row",
+    "pos": "absolute",
+    "bg": "rgb(240, 238, 230)"
+   },
+   {
+    "d": 2,
+    "el": "div#action-dock.action-dock",
+    "w": 1288,
+    "x": 312,
+    "h": 9,
+    "flexDir": "row",
+    "pos": "static",
+    "bg": "rgb(240, 238, 230)"
+   },
+   {
+    "d": 2,
+    "el": "form#submit-form..ubmit-bar",
+    "w": 640,
+    "x": 636,
+    "h": 87,
+    "flexDir": "row",
+    "pos": "relative",
+    "bg": "rgb(240, 238, 230)"
+   }
+  ],
+  "runs": {
+   "total": 8,
+   "visible": 8,
+   "sbScrollH": 900,
+   "sbClientH": 900,
+   "sample": [
+    {
+     "w": 295,
+     "h": 35,
+     "kids": [
+      {
+       "el": "div.run-item-ta.k",
+       "text": "请参考Nord on的AGS2产品 做一个可交…",
+       "w": 255
+      },
+      {
+       "el": "button.run-item-delete",
+       "text": "",
+       "w": 26
+      },
+      {
+       "el": "i.ph ph-tra.h",
+       "text": "",
+       "w": 14
+      }
+     ]
+    },
+    {
+     "w": 295,
+     "h": 35,
+     "kids": [
+      {
+       "el": "div.run-item-ta.k",
+       "text": "关于合肥的特色建筑，做一个可交互的三维对象页：…",
+       "w": 255
+      },
+      {
+       "el": "button.run-item-delete",
+       "text": "",
+       "w": 26
+      },
+      {
+       "el": "i.ph ph-tra.h",
+       "text": "",
+       "w": 14
+      }
+     ]
+    },
+    {
+     "w": 295,
+     "h": 35,
+     "kids": [
+      {
+       "el": "div.run-item-ta.k",
+       "text": "做一个可交互的三维对象页：自包含 HTML， …",
+       "w": 255
+      },
+      {
+       "el": "button.run-item-delete",
+       "text": "",
+       "w": 26
+      },
+      {
+       "el": "i.ph ph-tra.h",
+       "text": "",
+       "w": 14
+      }
+     ]
+    }
+   ],
+   "groups": [
+    {
+     "el": "run-group",
+     "text": "liquid-demo6核查CLI未能结构化收口请参考Nord on的AGS2产品 做一个可交…我先",
+     "h": 264,
+     "expanded": null
+    },
+    {
+     "el": "run-group-label",
+     "text": "liquid-demo6",
+     "h": 28,
+     "expanded": null
+    },
+    {
+     "el": "run-group-identity",
+     "text": "liquid-demo",
+     "h": 19,
+     "expanded": "true"
+    },
+    {
+     "el": "run-group-items",
+     "text": "核查CLI未能结构化收口请参考Nord on的AGS2产品 做一个可交…我先确认几个会直接改变交付物",
+     "h": 224,
+     "expanded": null
+    },
+    {
+     "el": "run-group",
+     "text": "AGS-DataAnaly i 1核查CLI已完成帮我把数据更新，并且生成报告补回去了，并把下游全部",
+     "h": 75,
+     "expanded": null
+    },
+    {
+     "el": "run-group-label",
+     "text": "AGS-DataAnaly i 1",
+     "h": 28,
+     "expanded": null
+    },
+    {
+     "el": "run-group-identity",
+     "text": "AGS-DataAnaly i ",
+     "h": 19,
+     "expanded": "true"
+    },
+    {
+     "el": "run-group-items",
+     "text": "核查CLI已完成帮我把数据更新，并且生成报告补回去了，并把下游全部重算。5 轮11:2340m45 ",
+     "h": 35,
+     "expanded": null
+    }
+   ]
+  }
+ }
+}

@@ -4,7 +4,7 @@
  * 零依赖原生 ESM。把右栏「产物」文件列表升级为可预览的工作台：
  * 点产物卡的「预览/打开」后，默认在主区右侧拉出**停靠面板**（对话保持可见、
  * 可继续交互；外壳共用 features/preview-dock.js），顶条「放大」可扩到整个主区；
- * 按类型分派渲染器，hash 深链 `#/run/<id>/artifact/<index>`（放大态 `?full`）
+ * 按类型分派渲染器，hash 深链 `#/run/<id>/artifact/<路径>`（放大态 `?full`）
  * 可刷新恢复。运行中写盘工具再次触碰当前预览路径时，面板防抖自动刷新——
  * agent 流式改网站，用户在右侧直接看到效果。
  *
@@ -308,15 +308,26 @@ export function parseCsv(text, opts = {}) {
 }
 
 /**
- * 路由编码：`#/run/<id>/artifact/<index>`，放大态追加 `?full`。
- * index 是宿主产物清单里的 0 基序号。
+ * 路由编码：`#/run/<id>/artifact/<路径>`，放大态追加 `?full`。
+ *
+ * **为什么是路径不是下标**：那份清单是会话态派生的（这一场的产物 ∪ 点开过的
+ * − 关掉的），可增可减；越界还被 wrapIndex 取模兜住，于是同一个 URL 在不同
+ * 会话状态下**静静指到另一个文件**，不报错。路径不会动。
+ *
+ * 路径整段 encodeURIComponent（斜杠变 %2F），所以段里不会有裸斜杠——
+ * 正则的 `[^/?]+` 才切得开。数字形态仍然编得出来（兼容旧调用点）。
+ *
  * @param {string} runId
- * @param {number} index
+ * @param {number|{path:string}} ref
  * @param {{ full?:boolean }} [opts]
  * @returns {string}
  */
-export function encodeArtifactHash(runId, index, opts = {}) {
-  const base = `#/run/${encodeURIComponent(String(runId ?? ""))}/artifact/${Math.max(0, Math.trunc(index))}`;
+export function encodeArtifactHash(runId, ref, opts = {}) {
+  const id = encodeURIComponent(String(runId ?? ""));
+  const seg = ref && typeof ref === "object"
+    ? encodeURIComponent(String(ref.path ?? ""))
+    : String(Math.max(0, Math.trunc(Number(ref) || 0)));
+  const base = `#/run/${id}/artifact/${seg}`;
   return opts?.full ? `${base}?full` : base;
 }
 
@@ -330,22 +341,29 @@ export function artifactExitHash(runId, tab = "loop") {
   return `#/run/${encodeURIComponent(String(runId))}/${face}`;
 }
 
-const ARTIFACT_ROUTE_RE = /^#\/run\/([^/]+)\/artifact\/(\d+)(?:[/?].*)?$/;
+// 路径形态整段被 encodeURIComponent 过，所以段里不会出现裸 `/` 或 `?`
+const ARTIFACT_ROUTE_RE = /^#\/run\/([^/]+)\/artifact\/([^/?]+)(?:[/?].*)?$/;
 
 /**
- * 路由解码。不匹配返回 null；index 越界不归这里管（清单在宿主手里）。
- * full：hash 带 `?full` / `&full` 时为 true（放大态深链，刷新保持形态）。
+ * 路由解码。不匹配返回 null。
+ *
+ * **两种形态都认**：纯数字段 = 旧的下标形态（历史会话、别人发来的链接），
+ * 其余 = 路径形态。`path` 与 `index` **恰好一个非 null**。
+ * 越界不归这里管（清单在宿主手里）。
+ *
  * @param {string} hash location.hash
- * @returns {{ runId:string, index:number, full:boolean }|null}
+ * @returns {{ runId:string, path:string|null, index:number|null, full:boolean }|null}
  */
 export function parseArtifactRoute(hash) {
   const m = ARTIFACT_ROUTE_RE.exec(String(hash ?? ""));
   if (!m) return null;
-  let runId = m[1];
-  try { runId = decodeURIComponent(runId); } catch { /* 非法转义时保留原样 */ }
+  const dec = (s) => { try { return decodeURIComponent(s); } catch { return s; } };
+  const raw = m[2];
+  const isLegacyIndex = /^\d+$/.test(raw);
   return {
-    runId,
-    index: Number.parseInt(m[2], 10),
+    runId: dec(m[1]),
+    path: isLegacyIndex ? null : dec(raw),
+    index: isLegacyIndex ? Number.parseInt(raw, 10) : null,
     full: /[?&]full(?:&|=|$)/.test(String(hash ?? "")),
   };
 }

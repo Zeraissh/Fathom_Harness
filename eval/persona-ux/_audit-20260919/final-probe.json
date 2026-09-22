@@ -1,0 +1,218 @@
+{
+ "welcomeScroll": {
+  "before": 0,
+  "after": 982,
+  "maxScroll": 982
+ },
+ "detail": {
+  "cols": "562px 340px",
+  "rows": "8495.92px",
+  "gap": "16px",
+  "self": {
+   "w": 918,
+   "h": 8496,
+   "x": 336,
+   "y": -7804
+  },
+  "kids": [
+   {
+    "el": "div.conver.ation-.tack",
+    "w": 562,
+    "h": 8496,
+    "x": 336,
+    "y": -7804,
+    "display": "block",
+    "sticky": "relative"
+   },
+   {
+    "el": "aside#detail-rail.detail-rail",
+    "w": 340,
+    "h": 680,
+    "x": 914,
+    "y": 0,
+    "display": "block",
+    "sticky": "sticky"
+   }
+  ]
+ },
+ "entries": {
+  "hits": [
+   {
+    "t": "全部",
+    "id": "",
+    "cls": ""
+   },
+   {
+    "t": "全部",
+    "id": "",
+    "cls": "theme-select-trigger"
+   },
+   {
+    "t": "全部",
+    "id": "",
+    "cls": "theme-select-option is-selecte"
+   },
+   {
+    "t": "创建项目",
+    "id": "",
+    "cls": ""
+   },
+   {
+    "t": "＋ 新建项目…",
+    "id": "",
+    "cls": ""
+   },
+   {
+    "t": "创建项目",
+    "id": "",
+    "cls": "theme-select-trigger"
+   },
+   {
+    "t": "创建项目",
+    "id": "",
+    "cls": "theme-select-option is-selecte"
+   },
+   {
+    "t": "＋ 新建项目…",
+    "id": "",
+    "cls": "theme-select-option"
+   },
+   {
+    "t": "全部已读",
+    "id": "",
+    "cls": "notif-mark-all"
+   },
+   {
+    "t": "本项目",
+    "id": "",
+    "cls": "mem-scope-btn"
+   },
+   {
+    "t": "全部",
+    "id": "",
+    "cls": "mem-scope-btn"
+   }
+  ],
+  "selects": [
+   {
+    "id": "run-filter",
+    "opts": [
+     "全部",
+     "运行中",
+     "已完成",
+     "未通过"
+    ]
+   },
+   {
+    "id": "project-select",
+    "opts": [
+     "创建项目",
+     "网盘管理",
+     "T5-live-mu-chat",
+     "AGS-Pro",
+     "＋ 新建项目…"
+    ]
+   },
+   {
+    "id": "workdir-select",
+    "opts": [
+     "D:\\Work\\scratch\\agen…o_sites\\liquid-demo",
+     "D:\\Work\\RL-ALSR",
+     "C:\\Users\\rk302\\Fathom",
+     "D:\\Work\\scratch\\live-mu-20260914\\chat",
+     "D:\\Work\\scratch\\live-mu-20260914\\design",
+     "D:\\Work\\scratch\\live-mu-20260914\\py",
+     "D:\\Work\\scratch\\live-mu-20260914\\plan",
+     "D:\\Work\\scratch\\kimi-walk-b-20260914"
+    ]
+   },
+   {
+    "id": "executor-model-select",
+    "opts": [
+     "环境变量 · deepseek-flash（anthropic · deepseek-flash） · 窗口 1048k（登记）",
+     "环境变量 · deepseek-v4-flash-vision-exp（anthropic · deepseek-v4-flash-vision-exp） · 窗口 1048k（登记）",
+     "kimi-k3（anthropic · kimi-k3） · 窗口 1048k（登记）",
+     "kimi-k2.6（anthropic · kimi-k2.6） · 窗口 262k（登记）",
+     "kimi-k2.7-code（anthropic · kimi-k2.7-code） · 窗口 262k（登记）",
+     "kimi-k2.7-code-highspeed（anthropic · kimi-k2.7-code-highspeed） · 窗口未知",
+     "deepseek-v4-pro（anthropic · deepseek-v4-pro） · 窗口 1048k（登记）"
+    ]
+   },
+   {
+    "id": "pack-select",
+    "opts": [
+     "不用领域包",
+     "stm32-debug",
+     "stm32-coding",
+     "python-coding",
+     "ts-coding",
+     "consult · 查资料",
+     "kicad",
+     "design"
+    ]
+   },
+   {
+    "id": "permission-mode-select",
+    "opts": [
+     "自定义",
+     "逐次审批",
+     "计划确认门",
+     "自动放行 ask"
+    ]
+   },
+   {
+    "id": "effort-select",
+    "opts": [
+     "低",
+     "中",
+     "高",
+     "很高",
+     "最高"
+    ]
+   },
+   {
+    "id": "settings-model-provider",
+    "opts": [
+     "Anthropic / Claude 兼容",
+     "OpenAI 兼容（DeepSeek / Kimi / 本地网关）"
+    ]
+   },
+   {
+    "id": "settings-role-executor",
+    "opts": []
+   },
+   {
+    "id": "settings-role-planner",
+    "opts": []
+   },
+   {
+    "id": "settings-role-verifier",
+    "opts": []
+   },
+   {
+    "id": "settings-role-vision",
+    "opts": []
+   },
+   {
+    "id": "settings-role-image",
+    "opts": []
+   },
+   {
+    "id": "settings-mcp-kind",
+    "opts": [
+     "种类",
+     "MCP",
+     "Skill"
+    ]
+   },
+   {
+    "id": "settings-effort",
+    "opts": []
+   },
+   {
+    "id": "schedules-form-workdir",
+    "opts": []
+   }
+  ]
+ }
+}

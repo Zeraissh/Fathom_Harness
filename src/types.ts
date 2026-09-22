@@ -240,6 +240,12 @@ export interface SharedRunBudget {
   usedTokens: number;
 }
 
+/** 收尾时模型顺手给的一句「下一步」提议：问句 + 它的肯定回答（用户可编辑后直接发）。 */
+export interface TaskCompletionNextStep {
+  ask: string;
+  reply: string;
+}
+
 /** 主执行者的结构化交付。三态不能压成 completed：那会让界面再次说谎。 */
 export interface TaskCompletion {
   status: "completed" | "partial" | "blocked";
@@ -248,6 +254,16 @@ export interface TaskCompletion {
   verification: string[];
   assumptions: string[];
   blockers: string[];
+  /**
+   * 可选：下一步提议（三轮走查 A+B）。
+   *
+   * **缺席一律合法**——老 run、兼容端点、模型没答，都走这条路；界面那时退回
+   * 从 blockers 长一句。它和 blockers 的区别在于：blockers 只装"欠着的账"，
+   * 而好的下一步常常是**新主意**（H1 做完 → 要不要加夜景），那层只有模型给得出。
+   *
+   * 形状不对时**只丢这一项**，不许拖垮整条完成声明——落款不能被子句否决。
+   */
+  nextStep?: TaskCompletionNextStep;
 }
 
 /** 终结工具入参经角色自己的语义校验后，告诉 loop 应如何收尾。 */

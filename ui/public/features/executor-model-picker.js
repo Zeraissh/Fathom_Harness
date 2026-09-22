@@ -43,6 +43,27 @@ export function filterModels(models, query) {
 export { fillExecutorModelSelect, executorModelOptionLabel };
 
 /**
+ * 执行者看不看得见图（三轮走查 L2，2026-09-19）。
+ *
+ * 判据在服务端（`nameSuggestsVision`，随 `/api/models` 的 `suggestsVision` 下发）；
+ * 这里只负责**在换之前说出来**。委托方把执行者从 `deepseek-flash` 换成 `kimi-k3`
+ * 时 `view_image` 静默消失——那条 run 以 partial 收尾，收尾清单里写着
+ * 「篆字外皮在近景里未实测过、夜景外皮泛光未实测过」。
+ *
+ * 保守取舍本身站得住（宁可不认，也不要把只会回 `[Unsupported Image]` 的端点当成
+ * VL——09-16 有活探针对照）；站不住的是换的那一刻界面上什么也没说。
+ */
+export const VISION_TAG = "看不见图";
+export const VISION_CAVEAT =
+  "这个执行模型看不见图：`view_image` 不进工具面，要看像素得另配识图角色，或换个能看图的执行者。" +
+  "（判据是模型名，属保守取舍——宁可不认，也不要把只会回 [Unsupported Image] 的端点当成 VL。）";
+
+/** @param {{suggestsVision?:boolean}|null|undefined} m */
+export function visionTag(m) {
+  return m?.suggestsVision === false ? VISION_TAG : "";
+}
+
+/**
  * @param {{
  *   root?: Document|HTMLElement,
  *   select: HTMLSelectElement,
@@ -93,7 +114,11 @@ export function initExecutorModelPicker(opts) {
     }
     valueEl.textContent = m.label || m.model;
     const win = formatContextWindowLabel(m.contextWindow);
-    trigger.title = `${m.label || m.model}（${m.provider} · ${m.model}）· ${win.detail}。切换会按新窗口重算水位；进行中的这一轮不受影响。`;
+    // 当前执行者看不见图时，触发键自己就把话说出来——不必点开才知道
+    const tag = visionTag(m);
+    trigger.title =
+      `${m.label || m.model}（${m.provider} · ${m.model}）· ${win.detail}。切换会按新窗口重算水位；进行中的这一轮不受影响。` +
+      (tag ? ` ⚠ ${VISION_TAG}：${VISION_CAVEAT}` : "");
   }
 
   function paintDetail(m) {
@@ -116,6 +141,13 @@ export function initExecutorModelPicker(opts) {
       !m.contextWindow || m.contextWindow.windowSource === "unknown" || m.contextWindow.window == null
         ? win.detail
         : `切换后水位按 ${win.detail} 重算`;
+    const tag = visionTag(m);
+    if (tag) {
+      const caveat = doc.createElement("p");
+      caveat.className = "model-picker-detail-caveat";
+      caveat.textContent = `${VISION_TAG}：${VISION_CAVEAT}`;
+      detail.appendChild(caveat);
+    }
   }
 
   function visibleModels() {
@@ -150,10 +182,18 @@ export function initExecutorModelPicker(opts) {
         `<span class="model-picker-item-main">` +
         `<span class="model-picker-item-label"></span>` +
         `<span class="model-picker-item-sub"></span>` +
+        `<span class="model-picker-item-flag" hidden></span>` +
         `</span>` +
         `<i class="ph ph-check model-picker-check" aria-hidden="true"></i>`;
       li.querySelector(".model-picker-item-label").textContent = m.label || m.model;
       li.querySelector(".model-picker-item-sub").textContent = `${m.model} · ${win.short}`;
+      // 一眼看出这个候选换过去会丢什么——不必逐个悬停读详情
+      const tag = visionTag(m);
+      if (tag) {
+        const flag = li.querySelector(".model-picker-item-flag");
+        flag.textContent = tag;
+        flag.hidden = false;
+      }
       if (m.id !== selectedId) li.querySelector(".model-picker-check").hidden = true;
       li.addEventListener("pointerenter", () => {
         if (activeIndex === i) {

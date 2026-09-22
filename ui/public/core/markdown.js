@@ -32,6 +32,11 @@ import {
 const ESC = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
 const escapeHtml = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ESC[c]);
 
+/** 超过这么多行的代码块默认折起来。正文里铺 300 行会把后面的对话全推到屏外。 */
+const MD_CODE_FOLD_LINES = 24;
+/** 表格同理。折起来的是**显示**，行仍然全在 DOM 里——复制要读到全部。 */
+const MD_TABLE_FOLD_ROWS = 20;
+
 const LOCAL_PATH_EXT =
   "html?|css|scss|sass|less|m?js|cjs|jsx|tsx?|json|mdx?|txt|csv|log|ya?ml|toml|ini|env|" +
   "py|c|h|cc|cpp|cxx|hpp|cs|java|go|rs|sh|ps1|bat|cmd|sln|csproj|vcxproj|xml|" +
@@ -298,10 +303,31 @@ export function renderMarkdown(src) {
        */
       const raw = fence[1] ?? "";
       const key = normalizeLang(raw);
-      const langAttr = raw ? ` data-lang="${escapeHtml(raw)}"` : "";
+      // raw 来自入口已整体转义的文本（围栏行在 escapeHtml 之后才到这里），
+      // 里面不可能再有裸的 < > & " ' —— 再转义一次会把 &lt; 打成 &amp;lt;，
+      // 头部条里显示的语言名就变成了字面的 "&lt;script&gt;"。
+      const langAttr = raw ? ` data-lang="${raw}"` : "";
+      const cls = `md-code${key ? ` md-code--${key}` : ""}`;
+      // 长的折起来：正文里铺 300 行会把后面对话全推到屏外。
+      // 折出来的那截进 <details>，**不需要一行 JS**；
+      // 但"复制"要拿到两段，所以 codeTextFromNode 是求和的（见 app.js）。
+      const head = body.length > MD_CODE_FOLD_LINES ? body.slice(0, MD_CODE_FOLD_LINES) : body;
+      const rest = body.length > MD_CODE_FOLD_LINES ? body.slice(MD_CODE_FOLD_LINES) : [];
       out.push(
-        `<pre class="md-code${key ? ` md-code--${key}` : ""}"${langAttr}>` +
-          `<code>${highlight(body.join("\n"), raw)}</code></pre>`,
+        `<div class="md-block md-code-block">` +
+          `<div class="md-block-head">` +
+          // 语言名是用户可控的（围栏后那一串）——但入口已整体转义，
+          // raw 是死文本，直接插入即是转义后形态（见上方 langAttr 注释）
+          `<span class="md-block-lang">${raw || "text"}</span>` +
+          `<span class="md-block-count">${body.length} 行</span>` +
+          `<button type="button" class="md-block-act" data-chat-action="copy-code" title="复制代码">复制</button>` +
+          `</div>` +
+          `<pre class="${cls}"${langAttr}><code>${highlight(head.join("\n"), raw)}</code></pre>` +
+          (rest.length
+            ? `<details class="md-code-rest"><summary>再展 ${rest.length} 行</summary>` +
+              `<pre class="${cls}"><code>${highlight(rest.join("\n"), raw)}</code></pre></details>`
+            : "") +
+          `</div>`,
       );
       continue;
     }
@@ -368,12 +394,27 @@ export function renderMarkdown(src) {
       const styleOf = (n) => (aligns[n] ? ` style="text-align:${aligns[n]}"` : "");
       const cell = (tag, text, n) => `<${tag}${styleOf(n)}>${inline(text ?? "")}</${tag}>`;
       const head = `<tr>${header.map((h, n) => cell("th", h, n)).join("")}</tr>`;
-      const body = rows
-        .map((r) => `<tr>${header.map((_, n) => cell("td", r[n], n)).join("")}</tr>`)
-        .join("");
-      // 宽表自己横滚，不撑破布局（与代码块同款纪律）
+      // 长表折行：一张表两个 <tbody>（HTML 允许多个），第二个默认由 CSS 隐藏。
+      // 折的是**显示**不是渲染——行一直在 DOM 里，"复制为 TSV"要读到全部。
+      // 变量名避开 `body`：上面围栏分支用过这名字，同名会让人以为是一回事。
+      const headRows = rows.length > MD_TABLE_FOLD_ROWS ? rows.slice(0, MD_TABLE_FOLD_ROWS) : rows;
+      const restRows = rows.length > MD_TABLE_FOLD_ROWS ? rows.slice(MD_TABLE_FOLD_ROWS) : [];
+      const rowsHtml = (list) =>
+        list.map((r) => `<tr>${header.map((_, n) => cell("td", r[n], n)).join("")}</tr>`).join("");
       out.push(
-        `<div class="md-table-wrap"><table class="md-table"><thead>${head}</thead><tbody>${body}</tbody></table></div>`,
+        `<div class="md-block md-table-block">` +
+          `<div class="md-block-head">` +
+          `<span class="md-block-count">${rows.length} 行</span>` +
+          (restRows.length
+            ? `<button type="button" class="md-block-act" data-chat-action="table-more" data-more="再展 ${restRows.length} 行">再展 ${restRows.length} 行</button>`
+            : "") +
+          `<button type="button" class="md-block-act" data-chat-action="copy-table" title="复制为 TSV（可直接粘进 Excel）">复制</button>` +
+          `</div>` +
+          // 宽表自己横滚，不撑破布局（与代码块同款纪律）
+          `<div class="md-table-wrap"><table class="md-table"><thead>${head}</thead>` +
+          `<tbody>${rowsHtml(headRows)}</tbody>` +
+          (restRows.length ? `<tbody class="md-table-rest">${rowsHtml(restRows)}</tbody>` : "") +
+          `</table></div></div>`,
       );
       continue;
     }

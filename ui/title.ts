@@ -6,8 +6,10 @@
  */
 
 const NEWLINE_RE = /\r?\n/;
-const ATTACH_RE = /^附件[：:]/;
-const ATTACH_CAPTURE_RE = /^附件[：:]\s*(.+)$/;
+/** 附件行判据：新格式带编号（`附件 #3：`），旧格式没有——两种都认（与 app.js 同口径）。 */
+const ATTACH_RE = /^附件(?:\s*#\d+)?[：:]/;
+/** 附件行捕获：① 编号（旧格式为 undefined）② 路径。 */
+const ATTACH_CAPTURE_RE = /^附件(?:\s*#(\d+))?[：:]\s*(.+)$/;
 const PATH_SEP_RE = /[\\/]/;
 const HEADING_RE = /^#{1,6}\s+/;
 const BULLET_RE = /^[-*+]\s+/;
@@ -76,7 +78,7 @@ export function summarizeTitle(task: string, max = TITLE_MAX): string {
   const meaningful = titleSourceText(raw);
   if (!meaningful) {
     const m = ATTACH_CAPTURE_RE.exec(lines[0] ?? "");
-    const file = (m?.[1] ?? "").split(PATH_SEP_RE).pop() ?? "";
+    const file = (m?.[2] ?? "").split(PATH_SEP_RE).pop() ?? "";
     return file ? `附件 ${clipTitle(file, max)}` : "附件";
   }
 

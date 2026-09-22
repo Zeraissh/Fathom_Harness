@@ -1,0 +1,3042 @@
+[
+ {
+  "tag": "h1",
+  "cls": "",
+  "text": "FATHOM",
+  "title": null,
+  "aria": null,
+  "w": 1,
+  "h": 38,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "icon-btn .idebar-collap",
+  "text": "",
+  "title": "隐藏侧栏（Ctrl+B）",
+  "aria": "隐藏侧栏",
+  "w": 34,
+  "h": 34,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "icon-btn notification.-btn",
+  "text": "0",
+  "title": null,
+  "aria": "通知中心",
+  "w": 34,
+  "h": 34,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "home-.pend",
+  "text": "本机今日 $6.93",
+  "title": "本机今日 $6.93 · 今日已用 1 次 · 本机全部工作目录",
+  "aria": "本机今日 $6.93（全部工作目录） · 今日已用 1 次",
+  "w": 115,
+  "h": 24,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "theme-toggle icon-btn",
+  "text": "",
+  "title": null,
+  "aria": "选择配色主题（当前：跟随系统）",
+  "w": 34,
+  "h": 34,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "work.pace-face",
+  "text": "Work\n    Code",
+  "title": null,
+  "aria": "工作区",
+  "w": 287,
+  "h": 38,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "work.pace-face-tab i",
+  "text": "Work",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 30,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "work.pace-face-tab",
+  "text": "Code",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 30,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "btn btn--primary new-chat-btn",
+  "text": "新建对话",
+  "title": null,
+  "aria": null,
+  "w": 287,
+  "h": 32,
+  "disabled": false
+ },
+ {
+  "tag": "label",
+  "cls": "r-only",
+  "text": "筛选对话列表，回车按正文全局搜索",
+  "title": null,
+  "aria": null,
+  "w": 1,
+  "h": 1,
+  "disabled": false
+ },
+ {
+  "tag": "input",
+  "cls": "run-.earch",
+  "text": "",
+  "title": null,
+  "aria": null,
+  "w": 247,
+  "h": 37,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "g.-trigger",
+  "text": "Enter",
+  "title": "按正文全局搜索（Enter）",
+  "aria": "按正文全局搜索",
+  "w": 57,
+  "h": 26,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "icon-btn .idebar-filter-btn",
+  "text": "",
+  "title": null,
+  "aria": "筛选对话",
+  "w": 34,
+  "h": 34,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "run-group",
+  "text": "liquid-demo6核查CLI未能结构化收口请参考Nord on的AGS2产品 做一个可交…我先确认几个会直接改变交",
+  "title": null,
+  "aria": "liquid-demo",
+  "w": 295,
+  "h": 264,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "run-group-label",
+  "text": "liquid-demo6",
+  "title": "D:\\Work\\scratch\\agent-design-local-20260908\\demos\\demo_sites\\liquid-demo",
+  "aria": null,
+  "w": 295,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "run-group-identity",
+  "text": "liquid-demo",
+  "title": null,
+  "aria": null,
+  "w": 106,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "run-group-item",
+  "text": "核查CLI未能结构化收口请参考Nord on的AGS2产品 做一个可交…我先确认几个会直接改变交付物的岔路口——Nord",
+  "title": null,
+  "aria": "liquid-demo的对话",
+  "w": 295,
+  "h": 224,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "run-item-ta.k",
+  "text": "请参考Nord on的AGS2产品 做一个可交…",
+  "title": "请参考Nordson的AGS2产品 做一个可交互的三维对象页：自包含 HTML，shader 或 WebGL 场景，相对资源。",
+  "aria": null,
+  "w": 255,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "run-item-ta.k",
+  "text": "关于合肥的特色建筑，做一个可交互的三维对象页：…",
+  "title": "关于合肥的特色建筑，做一个可交互的三维对象页：自包含 HTML，shader 或 WebGL 场景，相对资源。",
+  "aria": null,
+  "w": 255,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "run-item-ta.k",
+  "text": "做一个可交互的三维对象页：自包含 HTML， …",
+  "title": "做一个可交互的三维对象页：自包含 HTML，shader 或 WebGL 场景，相对资源。做一个KLA的双层foup看看https://fccid.io/m/dd218df80b0c932dcd9a124ac927973d11ba11ad43ea0a958d49fc806d3abc0b.pdf这是相关资料",
+  "aria": null,
+  "w": 255,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "run-item-ta.k",
+  "text": "做一个可交互的三维对象页：自包含 HTML， …",
+  "title": "做一个可交互的三维对象页：自包含 HTML，shader 或 WebGL 场景，相对资源。我想看看雷峰塔",
+  "aria": null,
+  "w": 255,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "run-item-ta.k",
+  "text": "帮我做多个动态效果，我想要通过这些动态效果直观…",
+  "title": "帮我做多个动态效果，我想要通过这些动态效果直观的看到半导体行业中一片完整的芯片的产出过程",
+  "aria": null,
+  "w": 255,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "run-item-ta.k",
+  "text": "请你做一个鹈鹕骑自行车的动态画面",
+  "title": "请你做一个鹈鹕骑自行车的动态画面",
+  "aria": null,
+  "w": 255,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "run-group",
+  "text": "AGS-DataAnaly i 1核查CLI已完成帮我把数据更新，并且生成报告补回去了，并把下游全部重算。5 轮11:2",
+  "title": null,
+  "aria": "AGS-DataAnalysis",
+  "w": 295,
+  "h": 75,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "run-group-label",
+  "text": "AGS-DataAnaly i 1",
+  "title": "D:\\Work\\RL-AGS\\AGS-DataAnalysis",
+  "aria": null,
+  "w": 295,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "run-group-identity",
+  "text": "AGS-DataAnaly i ",
+  "title": null,
+  "aria": null,
+  "w": 136,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "run-group-item",
+  "text": "核查CLI已完成帮我把数据更新，并且生成报告补回去了，并把下游全部重算。5 轮11:2340m45 ",
+  "title": null,
+  "aria": "AGS-DataAnalysis的对话",
+  "w": 295,
+  "h": 35,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "run-item-ta.k",
+  "text": "帮我把数据更新，并且生成报告",
+  "title": "附件：uploads/每日测试数据(1).zip\n帮我把数据更新，并且生成报告",
+  "aria": null,
+  "w": 255,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "run-group",
+  "text": "网盘管理1核查CLI已停止水在 1 个标准大气压下的沸点是多少摄氏度？请…**答案：100 °C（日常与教科书口径）。*",
+  "title": null,
+  "aria": "网盘管理",
+  "w": 295,
+  "h": 75,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "run-group-label",
+  "text": "网盘管理1",
+  "title": "project:06e76a26-c34c-40e1-ac88-83bc7ef2799b",
+  "aria": null,
+  "w": 295,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "run-group-identity",
+  "text": "网盘管理",
+  "title": null,
+  "aria": null,
+  "w": 87,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "run-group-artifact",
+  "text": "",
+  "title": null,
+  "aria": "查看产物",
+  "w": 18,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "run-group-item",
+  "text": "核查CLI已停止水在 1 个标准大气压下的沸点是多少摄氏度？请…**答案：100 °C（日常与教科书口径）。** 严格按",
+  "title": null,
+  "aria": "网盘管理的对话",
+  "w": 295,
+  "h": 35,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "run-item-ta.k",
+  "text": "水在 1 个标准大气压下的沸点是多少摄氏度？请…",
+  "title": "水在 1 个标准大气压下的沸点是多少摄氏度？请列出可点击的来源链接，不要只给一段没有出处的总结。",
+  "aria": null,
+  "w": 255,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "icon-btn",
+  "text": "",
+  "title": null,
+  "aria": "打开指挥中心",
+  "w": 34,
+  "h": 34,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "icon-btn",
+  "text": "",
+  "title": null,
+  "aria": "打开产物",
+  "w": 34,
+  "h": 34,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "icon-btn",
+  "text": "",
+  "title": null,
+  "aria": "打开定时任务",
+  "w": 34,
+  "h": 34,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "icon-btn memory-btn",
+  "text": "",
+  "title": null,
+  "aria": "记忆",
+  "w": 34,
+  "h": 34,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "icon-btn",
+  "text": "",
+  "title": null,
+  "aria": "打开设置",
+  "w": 34,
+  "h": 34,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "right-rail-collap.e",
+  "text": "",
+  "title": "展开右列",
+  "aria": "展开右列",
+  "w": 23,
+  "h": 26,
+  "disabled": false
+ },
+ {
+  "tag": "aside",
+  "cls": "file.-rail work",
+  "text": "文件文件 ⟩_ag @_cdp-pix-9700@_cdp-pix-9712@_cdp-profile-9423@_cd",
+  "title": null,
+  "aria": "工作区文件",
+  "w": 1,
+  "h": 2490,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "work.pace-file-tree-body",
+  "text": "_ag @_cdp-pix-9700@_cdp-pix-9712@_cdp-profile-9423@_cdp-prof",
+  "title": null,
+  "aria": "工作区文件",
+  "w": 12,
+  "h": 2478,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _ags",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_ag ",
+  "title": "_ags",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _ags",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _cdp-pix-9700",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_cdp-pix-9700",
+  "title": "_cdp-pix-9700",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _cdp-pix-9700",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _cdp-pix-9712",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_cdp-pix-9712",
+  "title": "_cdp-pix-9712",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _cdp-pix-9712",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _cdp-profile-9423",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_cdp-profile-9423",
+  "title": "_cdp-profile-9423",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _cdp-profile-9423",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _cdp-profile-9435",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_cdp-profile-9435",
+  "title": "_cdp-profile-9435",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _cdp-profile-9435",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _lfchk",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_lfchk",
+  "title": "_lfchk",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _lfchk",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _probe-profile-9924",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_probe-profile-9924",
+  "title": "_probe-profile-9924",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _probe-profile-9924",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _probe2-profile-9982",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_probe2-profile-9982",
+  "title": "_probe2-profile-9982",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _probe2-profile-9982",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _probe3-profile-9973",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_probe3-profile-9973",
+  "title": "_probe3-profile-9973",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _probe3-profile-9973",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _probe3-profile-9976",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_probe3-profile-9976",
+  "title": "_probe3-profile-9976",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _probe3-profile-9976",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _probe4-profile-9962",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_probe4-profile-9962",
+  "title": "_probe4-profile-9962",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _probe4-profile-9962",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _probe5-profile-9943",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_probe5-profile-9943",
+  "title": "_probe5-profile-9943",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _probe5-profile-9943",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _probe6-profile-9929",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_probe6-profile-9929",
+  "title": "_probe6-profile-9929",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _probe6-profile-9929",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _probe7-profile-9937",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_probe7-profile-9937",
+  "title": "_probe7-profile-9937",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _probe7-profile-9937",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _probe8-profile-9945",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_probe8-profile-9945",
+  "title": "_probe8-profile-9945",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _probe8-profile-9945",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _probe8-profile-9957",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_probe8-profile-9957",
+  "title": "_probe8-profile-9957",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _probe8-profile-9957",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _probe9-profile-9946",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_probe9-profile-9946",
+  "title": "_probe9-profile-9946",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _probe9-profile-9946",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _probeA-profile-9964",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_probeA-profile-9964",
+  "title": "_probeA-profile-9964",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _probeA-profile-9964",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _probeA-profile-9965",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_probeA-profile-9965",
+  "title": "_probeA-profile-9965",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _probeA-profile-9965",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _probeB-profile-9969",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_probeB-profile-9969",
+  "title": "_probeB-profile-9969",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _probeB-profile-9969",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _probeC-profile-9976",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_probeC-profile-9976",
+  "title": "_probeC-profile-9976",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _probeC-profile-9976",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _probeD-profile-9983",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_probeD-profile-9983",
+  "title": "_probeD-profile-9983",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _probeD-profile-9983",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _probeE-profile-9948",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_probeE-profile-9948",
+  "title": "_probeE-profile-9948",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _probeE-profile-9948",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _probeF-profile-9956",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_probeF-profile-9956",
+  "title": "_probeF-profile-9956",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _probeF-profile-9956",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _probeG-profile-9944",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_probeG-profile-9944",
+  "title": "_probeG-profile-9944",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _probeG-profile-9944",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _probeG-profile-9953",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_probeG-profile-9953",
+  "title": "_probeG-profile-9953",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _probeG-profile-9953",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _probeH-profile-9938",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_probeH-profile-9938",
+  "title": "_probeH-profile-9938",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _probeH-profile-9938",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _probeH-profile-9942",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_probeH-profile-9942",
+  "title": "_probeH-profile-9942",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _probeH-profile-9942",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _research",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_re earch",
+  "title": "_research",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _research",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _shoot-profile-10002",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_ hoot-profile-10002",
+  "title": "_shoot-profile-10002",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _shoot-profile-10002",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _shoot-profile-10006",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_ hoot-profile-10006",
+  "title": "_shoot-profile-10006",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _shoot-profile-10006",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _shoot-profile-9990",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_ hoot-profile-9990",
+  "title": "_shoot-profile-9990",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _shoot-profile-9990",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _shoot-profile-9994",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_ hoot-profile-9994",
+  "title": "_shoot-profile-9994",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _shoot-profile-9994",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _shoot-profile-9998",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_ hoot-profile-9998",
+  "title": "_shoot-profile-9998",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _shoot-profile-9998",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _verify",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_verify",
+  "title": "_verify",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _verify",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _verify-profile-9812",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_verify-profile-9812",
+  "title": "_verify-profile-9812",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _verify-profile-9812",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _verify-profile-9824",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_verify-profile-9824",
+  "title": "_verify-profile-9824",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _verify-profile-9824",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _verify-profile-9836",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_verify-profile-9836",
+  "title": "_verify-profile-9836",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _verify-profile-9836",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 ags2",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "ag 2",
+  "title": "ags2",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 ags2",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 anhui-tv-center",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "anhui-tv-center",
+  "title": "anhui-tv-center",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 anhui-tv-center",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 chip-flow",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "chip-flow",
+  "title": "chip-flow",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 chip-flow",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 deck-basic",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "deck-ba ic",
+  "title": "deck-basic",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 deck-basic",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 deck-hqu",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "deck-hqu",
+  "title": "deck-hqu",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 deck-hqu",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 deck-intro",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "deck-intro",
+  "title": "deck-intro",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 deck-intro",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 deck-q3",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "deck-q3",
+  "title": "deck-q3",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 deck-q3",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 foup",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "foup",
+  "title": "foup",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 foup",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 landing-basic",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "landing-ba ic",
+  "title": "landing-basic",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 landing-basic",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 leifeng-pagoda",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "leifeng-pagoda",
+  "title": "leifeng-pagoda",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 leifeng-pagoda",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 pelican-bike",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "pelican-bike",
+  "title": "pelican-bike",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 pelican-bike",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 ref",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "ref",
+  "title": "ref",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 ref",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 uploads",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "upload ",
+  "title": "uploads",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 uploads",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_analyze.py",
+  "title": "_analyze.py",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _analyze.py",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_lf_a.png",
+  "title": "_lf_a.png",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _lf_a.png",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_lf_b.png",
+  "title": "_lf_b.png",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _lf_b.png",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_lf_c.png",
+  "title": "_lf_c.png",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _lf_c.png",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_lf_crop_full.png",
+  "title": "_lf_crop_full.png",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _lf_crop_full.png",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_lf_crop_tower.png",
+  "title": "_lf_crop_tower.png",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _lf_crop_tower.png",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_lf_d.png",
+  "title": "_lf_d.png",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _lf_d.png",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_lf_dbg.png",
+  "title": "_lf_dbg.png",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _lf_dbg.png",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_lf_e.png",
+  "title": "_lf_e.png",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _lf_e.png",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_lf_edge.png",
+  "title": "_lf_edge.png",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _lf_edge.png",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_lf_edge2.png",
+  "title": "_lf_edge2.png",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _lf_edge2.png",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_lf_en.html",
+  "title": "_lf_en.html",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _lf_en.html",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_lf_f.png",
+  "title": "_lf_f.png",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _lf_f.png",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_lf_g.png",
+  "title": "_lf_g.png",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _lf_g.png",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_lf_g2.png",
+  "title": "_lf_g2.png",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _lf_g2.png",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_lf_ hot1.png",
+  "title": "_lf_shot1.png",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _lf_shot1.png",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_lf_ hot2.png",
+  "title": "_lf_shot2.png",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _lf_shot2.png",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_lf_ hot3.png",
+  "title": "_lf_shot3.png",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _lf_shot3.png",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_lf_water.png",
+  "title": "_lf_water.png",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _lf_water.png",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_lf_zh.html",
+  "title": "_lf_zh.html",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _lf_zh.html",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_pix.mj ",
+  "title": "_pix.mjs",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _pix.mjs",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_ cene_backup.j ",
+  "title": "_scene_backup.js",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _scene_backup.js",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_ hot.mj ",
+  "title": "_shot.mjs",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _shot.mjs",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "check_full_0.62.jpg",
+  "title": "check_full_0.62.jpg",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 check_full_0.62.jpg",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "check_full_0.jpg",
+  "title": "check_full_0.jpg",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 check_full_0.jpg",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "check_full_1.24.jpg",
+  "title": "check_full_1.24.jpg",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 check_full_1.24.jpg",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "check_full_1.86.jpg",
+  "title": "check_full_1.86.jpg",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 check_full_1.86.jpg",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "check_leg _0.62.jpg",
+  "title": "check_legs_0.62.jpg",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 check_legs_0.62.jpg",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "check_leg _0.jpg",
+  "title": "check_legs_0.jpg",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 check_legs_0.jpg",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "check_leg _1.24.jpg",
+  "title": "check_legs_1.24.jpg",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 check_legs_1.24.jpg",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "check_leg _1.86.jpg",
+  "title": "check_legs_1.86.jpg",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 check_legs_1.86.jpg",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "check_upper_0.62.jpg",
+  "title": "check_upper_0.62.jpg",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 check_upper_0.62.jpg",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "check_upper_0.jpg",
+  "title": "check_upper_0.jpg",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 check_upper_0.jpg",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "check_upper_1.24.jpg",
+  "title": "check_upper_1.24.jpg",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 check_upper_1.24.jpg",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "check_upper_1.86.jpg",
+  "title": "check_upper_1.86.jpg",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 check_upper_1.86.jpg",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "chip-flow.zip",
+  "title": "chip-flow.zip",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 chip-flow.zip",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "index.html",
+  "title": "index.html",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 index.html",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "pb_0.62.png",
+  "title": "pb_0.62.png",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 pb_0.62.png",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "pb_0.png",
+  "title": "pb_0.png",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 pb_0.png",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "pb_1.24.png",
+  "title": "pb_1.24.png",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 pb_1.24.png",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "pb_1.86.png",
+  "title": "pb_1.86.png",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 pb_1.86.png",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "probe_46745a.bin",
+  "title": "probe_46745a.bin",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 probe_46745a.bin",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": " cript.j ",
+  "title": "script.js",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 script.js",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": " tyle.c ",
+  "title": "style.css",
+  "aria": null,
+  "w": 8,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 style.css",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "right-rail-handle",
+  "text": "",
+  "title": "打开右列",
+  "aria": "打开右列",
+  "w": 30,
+  "h": 48,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "compo.er-",
+  "text": "D:\\Work\\ cratc… \\liquid-demo · kimi-k3",
+  "title": "项目 / 工作目录 / 模型",
+  "aria": null,
+  "w": 618,
+  "h": 27,
+  "disabled": false
+ },
+ {
+  "tag": "label",
+  "cls": "r-only",
+  "text": "项目",
+  "title": null,
+  "aria": null,
+  "w": 1,
+  "h": 1,
+  "disabled": false
+ },
+ {
+  "tag": "select",
+  "cls": "wd-trigger .r-only",
+  "text": "创建项目网盘管理T5-live-mu-chatAGS-Pro＋ 新建项目…",
+  "title": null,
+  "aria": null,
+  "w": 1,
+  "h": 1,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "theme-.elect-trigger",
+  "text": "创建项目",
+  "title": "创建项目",
+  "aria": "项目",
+  "w": 72,
+  "h": 24,
+  "disabled": false
+ },
+ {
+  "tag": "label",
+  "cls": "r-only",
+  "text": "工作目录",
+  "title": null,
+  "aria": null,
+  "w": 1,
+  "h": 1,
+  "disabled": false
+ },
+ {
+  "tag": "select",
+  "cls": "r-only",
+  "text": "D:\\Work\\ cratch\\agen…o_ ite \\liquid-demoD:\\Work\\RL-ALSRC:\\U ",
+  "title": "D:\\Work\\scratch\\agent-design-local-20260908\\demos\\demo_sites\\liquid-demo",
+  "aria": null,
+  "w": 1,
+  "h": 1,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "wd-trigger",
+  "text": "D:\\Work\\ cratc… \\liquid-demo",
+  "title": "D:\\Work\\scratch\\agent-design-local-20260908\\demos\\demo_sites\\liquid-demo",
+  "aria": null,
+  "w": 139,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "model-picker-trigger",
+  "text": "kimi-k3",
+  "title": "kimi-k3（anthropic · kimi-k3）· 1048k tokens（来源：登记表）。切换会按新窗口重算水位；进行中的这一轮不受影响。",
+  "aria": null,
+  "w": 77,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "select",
+  "cls": "r-only",
+  "text": "环境变量 · deep eek-fla h（anthropic · deep eek-fla h） · 窗口 1048k",
+  "title": null,
+  "aria": null,
+  "w": 1,
+  "h": 1,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "btn btn--gho.t knob",
+  "text": "运行设置",
+  "title": null,
+  "aria": "运行设置",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "label",
+  "cls": "ta.k-label",
+  "text": "发送",
+  "title": null,
+  "aria": null,
+  "w": 1,
+  "h": 1,
+  "disabled": false
+ },
+ {
+  "tag": "textarea",
+  "cls": "",
+  "text": "",
+  "title": "Enter 发送，Shift+Enter 换行",
+  "aria": null,
+  "w": 484,
+  "h": 36,
+  "disabled": false
+ },
+ {
+  "tag": "input",
+  "cls": "r-only",
+  "text": "",
+  "title": null,
+  "aria": null,
+  "w": 1,
+  "h": 1,
+  "disabled": false
+ },
+ {
+  "tag": "label",
+  "cls": "btn btn--gho.t upload-label",
+  "text": "附件",
+  "title": "添加图片或文件",
+  "aria": null,
+  "w": 36,
+  "h": 36,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "btn btn--gho.t cite-",
+  "text": "引用会话",
+  "title": "引用会话（不是文献出处）",
+  "aria": "引用会话",
+  "w": 44,
+  "h": 30,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "btn btn--primary .ubmit-btn",
+  "text": "发送",
+  "title": null,
+  "aria": null,
+  "w": 36,
+  "h": 36,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "tarter-tile",
+  "text": "做纪要把材料收成可转发的短纪要",
+  "title": "把材料收成可转发的短纪要",
+  "aria": null,
+  "w": 352,
+  "h": 58,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "tarter-tile",
+  "text": "做一页一页介绍，浏览器里预览",
+  "title": "一页介绍，浏览器里预览",
+  "aria": null,
+  "w": 352,
+  "h": 58,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "tarter-tile",
+  "text": "带出处问答回答时列出来说 / 该页说的 / 链接",
+  "title": "回答时列出来说 / 该页说的 / 链接",
+  "aria": null,
+  "w": 352,
+  "h": 58,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "tarter-tile",
+  "text": "更多稿件原型、看板、邮件和其他样子",
+  "title": "原型、看板、邮件和其他样子",
+  "aria": null,
+  "w": 352,
+  "h": 58,
+  "disabled": false
+ }
+]

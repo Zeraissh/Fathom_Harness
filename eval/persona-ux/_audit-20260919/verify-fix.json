@@ -1,0 +1,41 @@
+{
+ "capability": {
+  "hidden": false,
+  "labels": [
+   "识图 未配",
+   "核查关"
+  ],
+  "inSummary": true,
+  "onScreen": true,
+  "rightOfText": true,
+  "box": {
+   "w": 118,
+   "h": 19,
+   "x": 1059,
+   "y": 455
+  },
+  "summaryText": "D:\\Work\\scratc…0260918\\web-a · kimi-k3",
+  "detailsOpen": false
+ },
+ "why": {
+  "hidden": false,
+  "w": 547,
+  "h": 77,
+  "onScreen": true,
+  "text": "识图 未配 没配视觉模型（AGENT_VISION_MODEL），所以 describe_image 根本不进工具面——而不是摆一个一调用就报错的工具。给模型一个用不了的工具，它会反复尝试并把失败归咎于自己；工具面必须与真实能力一致，这是工具运行时地板那条纪律。"
+ },
+ "whyClosedAgain": true,
+ "picker": {
+  "items": [
+   {
+    "id": "env:executor",
+    "sub": "kimi-k3 · 1048k 上下文窗口",
+    "flag": "看不见图"
+   }
+  ],
+  "triggerTitleHasCaveat": true,
+  "detailOnScreen": true,
+  "detailHasCaveat": true
+ },
+ "consoleErrors": []
+}

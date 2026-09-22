@@ -1,0 +1,130 @@
+{
+ "homeBefore": {
+  "centerRow": {
+   "w": 1288,
+   "h": 2490,
+   "y": -982
+  },
+  "mainArea": {
+   "w": 1288,
+   "h": 217,
+   "y": 155
+  },
+  "rail": {
+   "w": 0,
+   "h": 2490,
+   "y": -982
+  },
+  "railKids": [
+   {
+    "el": "right-rail-tabs",
+    "w": 0,
+    "h": 0,
+    "y": 0,
+    "display": "none"
+   },
+   {
+    "el": "right-rail-collapse",
+    "w": 23,
+    "h": 26,
+    "y": -976,
+    "display": "block"
+   },
+   {
+    "el": "right-rail-drag",
+    "w": 0,
+    "h": 0,
+    "y": 0,
+    "display": "none"
+   },
+   {
+    "el": "files-rail workspace-file-",
+    "w": 1,
+    "h": 2490,
+    "y": -982,
+    "display": "flex"
+   },
+   {
+    "el": "right-rail-preview",
+    "w": 0,
+    "h": 0,
+    "y": 0,
+    "display": "none"
+   }
+  ],
+  "panelScrollH": 1882
+ },
+ "homeAfter": {
+  "centerRow": {
+   "w": 1288,
+   "h": 217,
+   "y": 155
+  },
+  "mainArea": {
+   "w": 1288,
+   "h": 217,
+   "y": 155
+  }
+ },
+ "progress": {
+  "mainAreaKids": [
+   {
+    "el": "div.back-bar",
+    "w": 1240,
+    "h": 38,
+    "x": 336,
+    "display": "flex"
+   },
+   {
+    "el": "h2..r-only",
+    "w": 1,
+    "h": 1,
+    "x": 335,
+    "display": "block"
+   },
+   {
+    "el": "button.ctx-gauge",
+    "w": 0,
+    "h": 0,
+    "x": 0,
+    "display": "none"
+   },
+   {
+    "el": "div.live-.trip",
+    "w": 0,
+    "h": 0,
+    "x": 0,
+    "display": "none"
+   },
+   {
+    "el": "div.detail-layout",
+    "w": 1240,
+    "h": 7876,
+    "x": 336,
+    "display": "grid"
+   },
+   {
+    "el": "div.outcome-card outcome-card--.lim outcome-card--warn",
+    "w": 1240,
+    "h": 32,
+    "x": 336,
+    "display": "flex"
+   },
+   {
+    "el": "div.u.age-footer",
+    "w": 0,
+    "h": 0,
+    "x": 0,
+    "display": "none"
+   }
+  ],
+  "progress": {
+   "el": "detail-rail",
+   "w": 340,
+   "x": 1236,
+   "h": 680,
+   "label": "会话侧栏"
+  },
+  "headText": ""
+ }
+}

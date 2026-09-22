@@ -1,0 +1,11282 @@
+[
+ {
+  "tag": "h1",
+  "cls": "",
+  "text": "FATHOM · 对话",
+  "title": null,
+  "aria": null,
+  "w": 1,
+  "h": 38,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "icon-btn .idebar-collap",
+  "text": "",
+  "title": "隐藏侧栏（Ctrl+B）",
+  "aria": "隐藏侧栏",
+  "w": 34,
+  "h": 34,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "icon-btn notification.-btn",
+  "text": "0",
+  "title": null,
+  "aria": "通知中心",
+  "w": 34,
+  "h": 34,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "home-.pend",
+  "text": "这次 $6.93 · 本机今日 $6.93",
+  "title": "这次 $6.93 · 本机今日 $6.93 · 今日已用 1 次 · 本机全部工作目录",
+  "aria": "本机今日 $6.93（全部工作目录） · 今日已用 1 次",
+  "w": 180,
+  "h": 24,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "theme-toggle icon-btn",
+  "text": "",
+  "title": null,
+  "aria": "选择配色主题（当前：跟随系统）",
+  "w": 34,
+  "h": 34,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "work.pace-face",
+  "text": "Work\n    Code",
+  "title": null,
+  "aria": "工作区",
+  "w": 287,
+  "h": 38,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "work.pace-face-tab i",
+  "text": "Work",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 30,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "work.pace-face-tab",
+  "text": "Code",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 30,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "btn btn--primary new-chat-btn",
+  "text": "新建对话",
+  "title": null,
+  "aria": null,
+  "w": 287,
+  "h": 32,
+  "disabled": false
+ },
+ {
+  "tag": "label",
+  "cls": "r-only",
+  "text": "筛选对话列表，回车按正文全局搜索",
+  "title": null,
+  "aria": null,
+  "w": 1,
+  "h": 1,
+  "disabled": false
+ },
+ {
+  "tag": "input",
+  "cls": "run-.earch",
+  "text": "",
+  "title": null,
+  "aria": null,
+  "w": 247,
+  "h": 37,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "g.-trigger",
+  "text": "Enter",
+  "title": "按正文全局搜索（Enter）",
+  "aria": "按正文全局搜索",
+  "w": 57,
+  "h": 26,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "icon-btn .idebar-filter-btn",
+  "text": "",
+  "title": null,
+  "aria": "筛选对话",
+  "w": 34,
+  "h": 34,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "run-group",
+  "text": "liquid-demo6核查CLI未能结构化收口请参考Nord on的AGS2产品 做一个可交…我先确认几个会直接改变交",
+  "title": null,
+  "aria": "liquid-demo",
+  "w": 295,
+  "h": 264,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "run-group-label",
+  "text": "liquid-demo6",
+  "title": "D:\\Work\\scratch\\agent-design-local-20260908\\demos\\demo_sites\\liquid-demo",
+  "aria": null,
+  "w": 295,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "run-group-identity",
+  "text": "liquid-demo",
+  "title": null,
+  "aria": null,
+  "w": 106,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "run-group-item",
+  "text": "核查CLI未能结构化收口请参考Nord on的AGS2产品 做一个可交…我先确认几个会直接改变交付物的岔路口——Nord",
+  "title": null,
+  "aria": "liquid-demo的对话",
+  "w": 295,
+  "h": 224,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "run-item-ta.k",
+  "text": "请参考Nord on的AGS2产品 做一个可交…",
+  "title": "请参考Nordson的AGS2产品 做一个可交互的三维对象页：自包含 HTML，shader 或 WebGL 场景，相对资源。",
+  "aria": null,
+  "w": 255,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "run-item-ta.k",
+  "text": "关于合肥的特色建筑，做一个可交互的三维对象页：…",
+  "title": "关于合肥的特色建筑，做一个可交互的三维对象页：自包含 HTML，shader 或 WebGL 场景，相对资源。",
+  "aria": null,
+  "w": 255,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "run-item-ta.k",
+  "text": "做一个可交互的三维对象页：自包含 HTML， …",
+  "title": "做一个可交互的三维对象页：自包含 HTML，shader 或 WebGL 场景，相对资源。做一个KLA的双层foup看看https://fccid.io/m/dd218df80b0c932dcd9a124ac927973d11ba11ad43ea0a958d49fc806d3abc0b.pdf这是相关资料",
+  "aria": null,
+  "w": 255,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "run-item-ta.k",
+  "text": "做一个可交互的三维对象页：自包含 HTML， …",
+  "title": "做一个可交互的三维对象页：自包含 HTML，shader 或 WebGL 场景，相对资源。我想看看雷峰塔",
+  "aria": null,
+  "w": 255,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "run-item-ta.k",
+  "text": "帮我做多个动态效果，我想要通过这些动态效果直观…",
+  "title": "帮我做多个动态效果，我想要通过这些动态效果直观的看到半导体行业中一片完整的芯片的产出过程",
+  "aria": null,
+  "w": 255,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "run-item-ta.k",
+  "text": "请你做一个鹈鹕骑自行车的动态画面",
+  "title": "请你做一个鹈鹕骑自行车的动态画面",
+  "aria": null,
+  "w": 255,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "run-group",
+  "text": "AGS-DataAnaly i 1核查CLI已完成帮我把数据更新，并且生成报告补回去了，并把下游全部重算。5 轮11:2",
+  "title": null,
+  "aria": "AGS-DataAnalysis",
+  "w": 295,
+  "h": 75,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "run-group-label",
+  "text": "AGS-DataAnaly i 1",
+  "title": "D:\\Work\\RL-AGS\\AGS-DataAnalysis",
+  "aria": null,
+  "w": 295,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "run-group-identity",
+  "text": "AGS-DataAnaly i ",
+  "title": null,
+  "aria": null,
+  "w": 136,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "run-group-item",
+  "text": "核查CLI已完成帮我把数据更新，并且生成报告补回去了，并把下游全部重算。5 轮11:2340m45 ",
+  "title": null,
+  "aria": "AGS-DataAnalysis的对话",
+  "w": 295,
+  "h": 35,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "run-item-ta.k",
+  "text": "帮我把数据更新，并且生成报告",
+  "title": "附件：uploads/每日测试数据(1).zip\n帮我把数据更新，并且生成报告",
+  "aria": null,
+  "w": 255,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "run-group",
+  "text": "网盘管理1核查CLI已停止水在 1 个标准大气压下的沸点是多少摄氏度？请…**答案：100 °C（日常与教科书口径）。*",
+  "title": null,
+  "aria": "网盘管理",
+  "w": 295,
+  "h": 75,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "run-group-label",
+  "text": "网盘管理1",
+  "title": "project:06e76a26-c34c-40e1-ac88-83bc7ef2799b",
+  "aria": null,
+  "w": 295,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "run-group-identity",
+  "text": "网盘管理",
+  "title": null,
+  "aria": null,
+  "w": 87,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "run-group-artifact",
+  "text": "",
+  "title": null,
+  "aria": "查看产物",
+  "w": 18,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "run-group-item",
+  "text": "核查CLI已停止水在 1 个标准大气压下的沸点是多少摄氏度？请…**答案：100 °C（日常与教科书口径）。** 严格按",
+  "title": null,
+  "aria": "网盘管理的对话",
+  "w": 295,
+  "h": 35,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "run-item-ta.k",
+  "text": "水在 1 个标准大气压下的沸点是多少摄氏度？请…",
+  "title": "水在 1 个标准大气压下的沸点是多少摄氏度？请列出可点击的来源链接，不要只给一段没有出处的总结。",
+  "aria": null,
+  "w": 255,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "icon-btn",
+  "text": "",
+  "title": null,
+  "aria": "打开指挥中心",
+  "w": 34,
+  "h": 34,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "icon-btn",
+  "text": "",
+  "title": null,
+  "aria": "打开产物",
+  "w": 34,
+  "h": 34,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "icon-btn",
+  "text": "",
+  "title": null,
+  "aria": "打开定时任务",
+  "w": 34,
+  "h": 34,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "icon-btn memory-btn",
+  "text": "",
+  "title": null,
+  "aria": "记忆",
+  "w": 34,
+  "h": 34,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "icon-btn",
+  "text": "",
+  "title": null,
+  "aria": "打开设置",
+  "w": 34,
+  "h": 34,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "rm-.witch",
+  "text": "聚焦完整",
+  "title": null,
+  "aria": "对话阅读模式",
+  "w": 104,
+  "h": 30,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "rm-.witch-btn",
+  "text": "聚焦",
+  "title": "只留正文与决策痕迹，过程收成摘要行",
+  "aria": null,
+  "w": 48,
+  "h": 24,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "rm-.witch-btn",
+  "text": "完整",
+  "title": "思考、工具与结论全部按时间展开",
+  "aria": null,
+  "w": 48,
+  "h": 24,
+  "disabled": false
+ },
+ {
+  "tag": "h2",
+  "cls": "r-only",
+  "text": "本次对话",
+  "title": null,
+  "aria": null,
+  "w": 1,
+  "h": 1,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "chat-m.g-action",
+  "text": "2d ago",
+  "title": null,
+  "aria": "消息操作",
+  "w": 133,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-action",
+  "text": "",
+  "title": "复制",
+  "aria": "复制",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-action",
+  "text": "",
+  "title": "回到这里",
+  "aria": "回到这里",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-action",
+  "text": "",
+  "title": "分叉对话",
+  "aria": "分叉对话",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "编排计划 · 3 步",
+  "title": null,
+  "aria": null,
+  "w": 466,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "chat-plan",
+  "text": "编排计划3 步 · 层宽 1 · 并行度 1第 1 层✘ 1 取证：安徽广播电视中心事实卡（建成年代/设计要点/形体特征",
+  "title": null,
+  "aria": "编排计划",
+  "w": 450,
+  "h": 4339,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "plan-node-head",
+  "text": "✘ 1 取证：安徽广播电视中心事实卡（建成年代/设计要点/形体特征）+ 参考图",
+  "title": null,
+  "aria": null,
+  "w": 396,
+  "h": 42,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "验收 6 条",
+  "title": null,
+  "aria": null,
+  "w": 396,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "plan-node-head",
+  "text": "－ 2 构建单文件 WebGL2 页面：安徽广播电视中心三维对象页",
+  "title": null,
+  "aria": null,
+  "w": 396,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "验收 8 条",
+  "title": null,
+  "aria": null,
+  "w": 396,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "plan-node-head",
+  "text": "－ 3 独立核验：无头 Chrome 多机位截图 + 交互/降级/离线探针",
+  "title": null,
+  "aria": null,
+  "w": 396,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "验收 9 条",
+  "title": null,
+  "aria": null,
+  "w": 396,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "子代理 · 1",
+  "title": null,
+  "aria": null,
+  "w": 466,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "chat-agent",
+  "text": "子代理取证：安徽广播电视中心事实卡（建成年代/设计要点/形体特征）+ 参考图未完成Both are genuine ph",
+  "title": null,
+  "aria": "子代理",
+  "w": 466,
+  "h": 141,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-agent chat-agent--error",
+  "text": "取证：安徽广播电视中心事实卡（建成年代/设计要点/形体特征）+ 参考图未完成Both are genuine photo",
+  "title": null,
+  "aria": null,
+  "w": 440,
+  "h": 86,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "Thought Proce ",
+  "title": null,
+  "aria": null,
+  "w": 88,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "local-path-link local-path-link--directory",
+  "text": "D:\\Work\\ cratch\\agent-de ign-local-20260908\\demo \\demo_ ite ",
+  "title": "打开文件夹：.",
+  "aria": "打开文件夹 .",
+  "w": 88,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "chat-m.g-action",
+  "text": "2d ago",
+  "title": null,
+  "aria": "消息操作",
+  "w": 193,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-action",
+  "text": "",
+  "title": "有用，告诉模型继续保持",
+  "aria": "有用，告诉模型继续保持",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-action",
+  "text": "",
+  "title": "不理想，告诉模型重新调整",
+  "aria": "不理想，告诉模型重新调整",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-action",
+  "text": "",
+  "title": "复制",
+  "aria": "复制",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-action",
+  "text": "",
+  "title": "回到这里",
+  "aria": "回到这里",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-action",
+  "text": "",
+  "title": "分叉对话",
+  "aria": "分叉对话",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "chat-m.g-action",
+  "text": "2d ago",
+  "title": null,
+  "aria": "消息操作",
+  "w": 133,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-action",
+  "text": "",
+  "title": "复制",
+  "aria": "复制",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-action",
+  "text": "",
+  "title": "回到这里",
+  "aria": "回到这里",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-action",
+  "text": "",
+  "title": "分叉对话",
+  "aria": "分叉对话",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "Thought Proce ",
+  "title": null,
+  "aria": null,
+  "w": 88,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "local-path-link local-path-link--directory",
+  "text": "_re earch/ref /",
+  "title": "打开文件夹：_research/refs",
+  "aria": "打开文件夹 _research/refs",
+  "w": 68,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "local-path-link local-path-link--directory",
+  "text": "_verify/",
+  "title": "打开文件夹：_verify",
+  "aria": "打开文件夹 _verify",
+  "w": 68,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "local-path-link",
+  "text": "leifeng-pagoda/index.html",
+  "title": "在右侧预览：leifeng-pagoda/index.html",
+  "aria": null,
+  "w": 57,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "local-path-preview",
+  "text": "",
+  "title": "在右侧预览",
+  "aria": "预览 leifeng-pagoda/index.html",
+  "w": 15,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "local-path-folder",
+  "text": "",
+  "title": "在文件夹中显示",
+  "aria": "在文件夹中显示 leifeng-pagoda/index.html",
+  "w": 15,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "local-path-link",
+  "text": "./ tyle.c ",
+  "title": "在右侧预览：style.css",
+  "aria": null,
+  "w": 57,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "local-path-preview",
+  "text": "",
+  "title": "在右侧预览",
+  "aria": "预览 style.css",
+  "w": 15,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "local-path-folder",
+  "text": "",
+  "title": "在文件夹中显示",
+  "aria": "在文件夹中显示 style.css",
+  "w": 15,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "local-path-link",
+  "text": "anhui-tv-center/index.html",
+  "title": "在右侧预览：anhui-tv-center/index.html",
+  "aria": null,
+  "w": 57,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "local-path-preview",
+  "text": "",
+  "title": "在右侧预览",
+  "aria": "预览 anhui-tv-center/index.html",
+  "w": 15,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "local-path-folder",
+  "text": "",
+  "title": "在文件夹中显示",
+  "aria": "在文件夹中显示 anhui-tv-center/index.html",
+  "w": 15,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "local-path-link local-path-link--directory",
+  "text": "leifeng-pagoda/",
+  "title": "打开文件夹：leifeng-pagoda",
+  "aria": "打开文件夹 leifeng-pagoda",
+  "w": 88,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "local-path-link",
+  "text": "anhui-tv-center/index.html",
+  "title": "在右侧预览：anhui-tv-center/index.html",
+  "aria": null,
+  "w": 57,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "local-path-preview",
+  "text": "",
+  "title": "在右侧预览",
+  "aria": "预览 anhui-tv-center/index.html",
+  "w": 15,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "local-path-folder",
+  "text": "",
+  "title": "在文件夹中显示",
+  "aria": "在文件夹中显示 anhui-tv-center/index.html",
+  "w": 15,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.bing.com/ earch?q=",
+  "title": null,
+  "aria": null,
+  "w": 85,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://duckduckgo.com/html/?q=",
+  "title": null,
+  "aria": null,
+  "w": 66,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.bing.com/ earch?q=",
+  "title": null,
+  "aria": null,
+  "w": 66,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ky crapercenter.com/building/anhui-radio-and-tv",
+  "title": null,
+  "aria": null,
+  "w": 68,
+  "h": 142,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "local-path-link local-path-link--directory",
+  "text": "_re earch/ref /",
+  "title": "打开文件夹：_research/refs",
+  "aria": "打开文件夹 _research/refs",
+  "w": 88,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ky crapercenter.com/building ?q=anhui",
+  "title": null,
+  "aria": null,
+  "w": 68,
+  "h": 100,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.bing.com/ earch?q=",
+  "title": null,
+  "aria": null,
+  "w": 66,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://html.duckduckgo.com/html/?q=",
+  "title": null,
+  "aria": null,
+  "w": 65,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http :// earch.marcia",
+  "title": null,
+  "aria": null,
+  "w": 66,
+  "h": 38,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.baidu.com/ ?wd=",
+  "title": null,
+  "aria": null,
+  "w": 61,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ogou.com/web?query=",
+  "title": null,
+  "aria": null,
+  "w": 64,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.bing.com/ earch?q=",
+  "title": null,
+  "aria": null,
+  "w": 85,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://baike.baidu.com/item/",
+  "title": null,
+  "aria": null,
+  "w": 83,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://zh.wikipedia.org/wiki/",
+  "title": null,
+  "aria": null,
+  "w": 87,
+  "h": 38,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ky crapercenter.com/building ?q=Anhui",
+  "title": null,
+  "aria": null,
+  "w": 87,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://zh.wikipedia.org/w/index.php? earch=",
+  "title": null,
+  "aria": null,
+  "w": 68,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://zh.m.wikipedia.org/wiki/",
+  "title": null,
+  "aria": null,
+  "w": 68,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://zh.wikipedia.org/w/api.php?action=query&li t= earch&",
+  "title": null,
+  "aria": null,
+  "w": 88,
+  "h": 121,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://baike.baidu.com/item/%E5%AE%89%E5%BE%BD%E5%B9%BF%E6%",
+  "title": null,
+  "aria": null,
+  "w": 68,
+  "h": 246,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://zh.wikipedia.org/wiki/",
+  "title": null,
+  "aria": null,
+  "w": 87,
+  "h": 38,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.bing.com/ earch?q=...&format=r ",
+  "title": null,
+  "aria": null,
+  "w": 87,
+  "h": 100,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.bing.com/ earch?q=te t&format=r ",
+  "title": null,
+  "aria": null,
+  "w": 87,
+  "h": 100,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.bing.com/ earch?q=%22",
+  "title": null,
+  "aria": null,
+  "w": 85,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http :// earch.marcia",
+  "title": null,
+  "aria": null,
+  "w": 66,
+  "h": 38,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://lite.duckduckgo.com/lite/?q=",
+  "title": null,
+  "aria": null,
+  "w": 63,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.mojeek.com/ earch?q=",
+  "title": null,
+  "aria": null,
+  "w": 67,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http :// earch.brave.com/ earch?q=",
+  "title": null,
+  "aria": null,
+  "w": 66,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.eco ia.org/ earch?q=",
+  "title": null,
+  "aria": null,
+  "w": 63,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. tartpage.com/",
+  "title": null,
+  "aria": null,
+  "w": 66,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.qwant.com/?q=",
+  "title": null,
+  "aria": null,
+  "w": 64,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http :// earx.be/ earch?q=...&format=j on",
+  "title": null,
+  "aria": null,
+  "w": 66,
+  "h": 100,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http :// earch.marcia",
+  "title": null,
+  "aria": null,
+  "w": 66,
+  "h": 38,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.eco ia.org/ earch?q=",
+  "title": null,
+  "aria": null,
+  "w": 63,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://lite.duckduckgo.com/lite/?q=",
+  "title": null,
+  "aria": null,
+  "w": 63,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http :// earch.brave.com/ earch?q=",
+  "title": null,
+  "aria": null,
+  "w": 66,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. tartpage.com/ p/ earch?query=",
+  "title": null,
+  "aria": null,
+  "w": 66,
+  "h": 100,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http :// earx.be/ earch?q=...&format=j on",
+  "title": null,
+  "aria": null,
+  "w": 66,
+  "h": 100,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.qwant.com/?q=...&t=web",
+  "title": null,
+  "aria": null,
+  "w": 65,
+  "h": 100,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://yandex.com/ earch/?text=",
+  "title": null,
+  "aria": null,
+  "w": 65,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ky crapercenter.com/building ? earch=anhui",
+  "title": null,
+  "aria": null,
+  "w": 87,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ky crapercenter.com/building/anhui-broadca ting",
+  "title": null,
+  "aria": null,
+  "w": 87,
+  "h": 142,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ky crapercenter.com/city/hefei",
+  "title": null,
+  "aria": null,
+  "w": 87,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ky crapercenter.com/city/hefei",
+  "title": null,
+  "aria": null,
+  "w": 68,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://lite.duckduckgo.com/lite/?q=",
+  "title": null,
+  "aria": null,
+  "w": 63,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http :// earch.brave.com/ earch?q=",
+  "title": null,
+  "aria": null,
+  "w": 66,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ky crapercenter.com/city/hefei",
+  "title": null,
+  "aria": null,
+  "w": 87,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.bing.com/ earch?q= ite%3A ky crapercenter.com+an",
+  "title": null,
+  "aria": null,
+  "w": 86,
+  "h": 142,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ky crapercenter.com/building/",
+  "title": null,
+  "aria": null,
+  "w": 86,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ky crapercenter.com/ earch?q=anhui",
+  "title": null,
+  "aria": null,
+  "w": 87,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ky crapercenter.com/building ?height=245",
+  "title": null,
+  "aria": null,
+  "w": 87,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ky crapercenter.com/api/",
+  "title": null,
+  "aria": null,
+  "w": 87,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ky crapercenter.com/ itemap.xml",
+  "title": null,
+  "aria": null,
+  "w": 87,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http :// o.toutiao.com/ earch?keyword=",
+  "title": null,
+  "aria": null,
+  "w": 64,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ogou.com/web?query=",
+  "title": null,
+  "aria": null,
+  "w": 64,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.china o.com/ earch",
+  "title": null,
+  "aria": null,
+  "w": 65,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ky crapercenter.com/building/anhui-new-broadca ",
+  "title": null,
+  "aria": null,
+  "w": 87,
+  "h": 142,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://baike.baidu.com/item/",
+  "title": null,
+  "aria": null,
+  "w": 66,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://baike.baidu.com/item/",
+  "title": null,
+  "aria": null,
+  "w": 66,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://baike. ogou.com/v",
+  "title": null,
+  "aria": null,
+  "w": 81,
+  "h": 38,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http://www.anhuinew .com/",
+  "title": null,
+  "aria": null,
+  "w": 68,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.ahnew .com.cn/",
+  "title": null,
+  "aria": null,
+  "w": 64,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http :// earch.marcia",
+  "title": null,
+  "aria": null,
+  "w": 66,
+  "h": 38,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. tartpage.com/do/ earch?query=",
+  "title": null,
+  "aria": null,
+  "w": 66,
+  "h": 100,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.eco ia.org/ earch?q=",
+  "title": null,
+  "aria": null,
+  "w": 63,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.qwant.com/?q=",
+  "title": null,
+  "aria": null,
+  "w": 64,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http :// earx.be/ earch?q=&format=j on",
+  "title": null,
+  "aria": null,
+  "w": 66,
+  "h": 100,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http :// earch.di root.org/ earch?q=",
+  "title": null,
+  "aria": null,
+  "w": 67,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://priv.au/ earch?q=",
+  "title": null,
+  "aria": null,
+  "w": 67,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://bare earch.org/ earch?q=",
+  "title": null,
+  "aria": null,
+  "w": 68,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://yandex.com/ earch/?text=",
+  "title": null,
+  "aria": null,
+  "w": 66,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.baidu.com/ ?wd=",
+  "title": null,
+  "aria": null,
+  "w": 61,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://zh.wikipedia.org",
+  "title": null,
+  "aria": null,
+  "w": 80,
+  "h": 38,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://zh.m.wikipedia.org/wiki/",
+  "title": null,
+  "aria": null,
+  "w": 85,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://zh.wikipedia.org/wiki/Special:Search? earch=",
+  "title": null,
+  "aria": null,
+  "w": 87,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.baidu.com/ ?wd=",
+  "title": null,
+  "aria": null,
+  "w": 61,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ogou.com/web?query=",
+  "title": null,
+  "aria": null,
+  "w": 64,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. o.com/ ?q=",
+  "title": null,
+  "aria": null,
+  "w": 64,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.bing.com/ earch?q=...&en earch=1",
+  "title": null,
+  "aria": null,
+  "w": 86,
+  "h": 100,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.bing.com/ earch?q=%E5%AE%89%E5%BE%BD%E5%B9%BF%E7",
+  "title": null,
+  "aria": null,
+  "w": 68,
+  "h": 329,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ogou.com/web?query=",
+  "title": null,
+  "aria": null,
+  "w": 64,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http :// earx.be/ earch?q=",
+  "title": null,
+  "aria": null,
+  "w": 66,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.alwindoor.com/",
+  "title": null,
+  "aria": null,
+  "w": 65,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://baike. ogou.com/v",
+  "title": null,
+  "aria": null,
+  "w": 66,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://baike. ogou.com/v1021014.htm",
+  "title": null,
+  "aria": null,
+  "w": 66,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://baike. ogou.com/Search.e? p=S%E5%AE%89%E5%BE%BD%E5%B",
+  "title": null,
+  "aria": null,
+  "w": 68,
+  "h": 308,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ohu.com/a",
+  "title": null,
+  "aria": null,
+  "w": 84,
+  "h": 38,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.cbi360.net/",
+  "title": null,
+  "aria": null,
+  "w": 67,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.cbi360.net/hyxw/ earch",
+  "title": null,
+  "aria": null,
+  "w": 67,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.cbi360.net/h",
+  "title": null,
+  "aria": null,
+  "w": 67,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ohu.com/a",
+  "title": null,
+  "aria": null,
+  "w": 84,
+  "h": 38,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http :// earch. ohu.com/?keyword=",
+  "title": null,
+  "aria": null,
+  "w": 66,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.baidu.com/ ?wd=",
+  "title": null,
+  "aria": null,
+  "w": 88,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. o.com/ ?q=",
+  "title": null,
+  "aria": null,
+  "w": 86,
+  "h": 38,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.alwindoor.com/",
+  "title": null,
+  "aria": null,
+  "w": 65,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.cbi360.net/h",
+  "title": null,
+  "aria": null,
+  "w": 87,
+  "h": 38,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.alwindoor.com/ earch/?q=",
+  "title": null,
+  "aria": null,
+  "w": 67,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ky crapercenter.com/city/hefei",
+  "title": null,
+  "aria": null,
+  "w": 68,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://baike. ogou.com/vXXXXX.htm?lid=",
+  "title": null,
+  "aria": null,
+  "w": 85,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://baike. ogou.com/Search.e? p=S",
+  "title": null,
+  "aria": null,
+  "w": 88,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://baike. ogou.com/v",
+  "title": null,
+  "aria": null,
+  "w": 86,
+  "h": 38,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http :// earch. ohu.com/?keyword=",
+  "title": null,
+  "aria": null,
+  "w": 87,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://api.duckduckgo.com/?q=...&format=j on",
+  "title": null,
+  "aria": null,
+  "w": 63,
+  "h": 100,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http :// earch.marginalia.nu/ earch?query=",
+  "title": null,
+  "aria": null,
+  "w": 66,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http :// earch.marginalia.nu/",
+  "title": null,
+  "aria": null,
+  "w": 68,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.alwindoor.com/plu / earch.php?kwtype=0&keyword=",
+  "title": null,
+  "aria": null,
+  "w": 67,
+  "h": 142,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.alwindoor.com/",
+  "title": null,
+  "aria": null,
+  "w": 83,
+  "h": 38,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.cbda.cn/",
+  "title": null,
+  "aria": null,
+  "w": 87,
+  "h": 38,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://baike. ogou.com/Search.e? p=S%E5%AE%89%E5%BE%BD%E5%B",
+  "title": null,
+  "aria": null,
+  "w": 68,
+  "h": 287,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.alwindoor.com/",
+  "title": null,
+  "aria": null,
+  "w": 65,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.cbda.cn/",
+  "title": null,
+  "aria": null,
+  "w": 61,
+  "h": 38,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ky crapercenter.com/building/anhui-new-broadca ",
+  "title": null,
+  "aria": null,
+  "w": 68,
+  "h": 163,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ky crapercenter.com/building ?name=anhui",
+  "title": null,
+  "aria": null,
+  "w": 87,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ky crapercenter.com/building ? earch=anhui",
+  "title": null,
+  "aria": null,
+  "w": 87,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ky crapercenter.com/city/hefei",
+  "title": null,
+  "aria": null,
+  "w": 87,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://zh.wikipedia.org/wiki/",
+  "title": null,
+  "aria": null,
+  "w": 87,
+  "h": 38,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://zh.wikipedia.org/api/re t_v1/page/ ummary/",
+  "title": null,
+  "aria": null,
+  "w": 87,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.wikiwand.com/zh/article /",
+  "title": null,
+  "aria": null,
+  "w": 87,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.wikiwand.com/zh/article /",
+  "title": null,
+  "aria": null,
+  "w": 67,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://baike. ogou.com/Search.e? p=",
+  "title": null,
+  "aria": null,
+  "w": 66,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://",
+  "title": null,
+  "aria": null,
+  "w": 42,
+  "h": 17,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.cbi360.net/",
+  "title": null,
+  "aria": null,
+  "w": 67,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.cbda.cn/",
+  "title": null,
+  "aria": null,
+  "w": 61,
+  "h": 38,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.cbi360.net/h",
+  "title": null,
+  "aria": null,
+  "w": 87,
+  "h": 38,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.cbi360.net/ earch?q=",
+  "title": null,
+  "aria": null,
+  "w": 87,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.cbi360.net/",
+  "title": null,
+  "aria": null,
+  "w": 87,
+  "h": 38,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.cbi360.net/www/",
+  "title": null,
+  "aria": null,
+  "w": 67,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.cbi360.net/",
+  "title": null,
+  "aria": null,
+  "w": 67,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://baike. ogou.com/v1021014.htm",
+  "title": null,
+  "aria": null,
+  "w": 66,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://baike. ogou.com/m/fullLemma?lid=38563",
+  "title": null,
+  "aria": null,
+  "w": 66,
+  "h": 100,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://baike. ogou.com/v295147.htm",
+  "title": null,
+  "aria": null,
+  "w": 83,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://baike. o.com/doc/",
+  "title": null,
+  "aria": null,
+  "w": 81,
+  "h": 38,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://baike. o.com/ earch/?q=",
+  "title": null,
+  "aria": null,
+  "w": 88,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://baike. ogou.com/Search.e? p=",
+  "title": null,
+  "aria": null,
+  "w": 88,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://",
+  "title": null,
+  "aria": null,
+  "w": 42,
+  "h": 17,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.cbi360.net/",
+  "title": null,
+  "aria": null,
+  "w": 67,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://baike. o.com/ earch/?q=%E5%AE%89%E5%BE%BD%E5%B9%BF%E",
+  "title": null,
+  "aria": null,
+  "w": 68,
+  "h": 267,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://baike. ogou.com/Search.e? p=",
+  "title": null,
+  "aria": null,
+  "w": 66,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.alwindoor.com/",
+  "title": null,
+  "aria": null,
+  "w": 65,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http://baike. o.com/doc/6197276-6410538.html",
+  "title": null,
+  "aria": null,
+  "w": 67,
+  "h": 100,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://baike. o.com/doc/24681110-25578736.html",
+  "title": null,
+  "aria": null,
+  "w": 68,
+  "h": 121,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://baike. o.com/doc/6911715-7133572.html",
+  "title": null,
+  "aria": null,
+  "w": 68,
+  "h": 100,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.alwindoor.com/Item/Show.a p",
+  "title": null,
+  "aria": null,
+  "w": 88,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http :// earch. ohu.com/?keyword=",
+  "title": null,
+  "aria": null,
+  "w": 87,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://baike. o.com/doc/",
+  "title": null,
+  "aria": null,
+  "w": 81,
+  "h": 38,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://baike. o.com/doc/6197276-6410538.html",
+  "title": null,
+  "aria": null,
+  "w": 88,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.china o.com/ earch/page earch.htm?q=",
+  "title": null,
+  "aria": null,
+  "w": 66,
+  "h": 100,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http :// o.toutiao.com/ earch?keyword=",
+  "title": null,
+  "aria": null,
+  "w": 64,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.zhihu.com/ earch?q=",
+  "title": null,
+  "aria": null,
+  "w": 61,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://weixin. ogou.com/weixin?type=2&query=",
+  "title": null,
+  "aria": null,
+  "w": 68,
+  "h": 100,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http :// earch. ina.com.cn/?q=",
+  "title": null,
+  "aria": null,
+  "w": 66,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http :// earch. ohu.com/?keyword=",
+  "title": null,
+  "aria": null,
+  "w": 66,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.alwindoor.com/info/",
+  "title": null,
+  "aria": null,
+  "w": 83,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://zh.wikipedia.org",
+  "title": null,
+  "aria": null,
+  "w": 64,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://zh.moegirl.org.cn",
+  "title": null,
+  "aria": null,
+  "w": 67,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.hefei.gov.cn/",
+  "title": null,
+  "aria": null,
+  "w": 68,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. o.com/ ?q=",
+  "title": null,
+  "aria": null,
+  "w": 86,
+  "h": 38,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.163.com/dy/article/XXXX.html",
+  "title": null,
+  "aria": null,
+  "w": 87,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.baidu.com",
+  "title": null,
+  "aria": null,
+  "w": 88,
+  "h": 38,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. o.com",
+  "title": null,
+  "aria": null,
+  "w": 86,
+  "h": 38,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. o.com/ ?q=",
+  "title": null,
+  "aria": null,
+  "w": 86,
+  "h": 38,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http://www.alwindoor.com/info/2013-5-2/34189-1.htm",
+  "title": null,
+  "aria": null,
+  "w": 87,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http://",
+  "title": null,
+  "aria": null,
+  "w": 37,
+  "h": 17,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://",
+  "title": null,
+  "aria": null,
+  "w": 42,
+  "h": 17,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.alwindoor.com/info/2013-5-2/34189-1.htm",
+  "title": null,
+  "aria": null,
+  "w": 85,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ohu.com/a/86400609_413721",
+  "title": null,
+  "aria": null,
+  "w": 68,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ohu.com/a/194838900_222758",
+  "title": null,
+  "aria": null,
+  "w": 68,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ohu.com/a/259884473_739728",
+  "title": null,
+  "aria": null,
+  "w": 68,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ohu.com/a/334817313_222758",
+  "title": null,
+  "aria": null,
+  "w": 68,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ohu.com/a/933774015_100112020",
+  "title": null,
+  "aria": null,
+  "w": 68,
+  "h": 100,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http://www.alwindoor.com/info/2013-5-2/34189-1.htm",
+  "title": null,
+  "aria": null,
+  "w": 68,
+  "h": 121,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http://www.alwindoor.com/gck/ how.a p?id=7087",
+  "title": null,
+  "aria": null,
+  "w": 68,
+  "h": 100,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://mall.cnki.net/magazine/Article/GXKE201821036.htm",
+  "title": null,
+  "aria": null,
+  "w": 66,
+  "h": 121,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.doc88.com/p-6961784095107.html",
+  "title": null,
+  "aria": null,
+  "w": 64,
+  "h": 100,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http://mt. ohu.com/20170926/n514667373. html",
+  "title": null,
+  "aria": null,
+  "w": 66,
+  "h": 100,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http://www.alwindoor.com/info/2013-5-2/34189-1.htm",
+  "title": null,
+  "aria": null,
+  "w": 68,
+  "h": 121,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http://www.alwindoor.com/gck/ how.a p?id=7087",
+  "title": null,
+  "aria": null,
+  "w": 68,
+  "h": 100,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ohu.com/a/86400609_413721",
+  "title": null,
+  "aria": null,
+  "w": 68,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ohu.com/a/334817313_222758",
+  "title": null,
+  "aria": null,
+  "w": 68,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ohu.com/a/259884473_739728",
+  "title": null,
+  "aria": null,
+  "w": 68,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ohu.com/a/933774015_100112020",
+  "title": null,
+  "aria": null,
+  "w": 68,
+  "h": 100,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.alwindoor.com/info/2013-5-2/34189-1.htm",
+  "title": null,
+  "aria": null,
+  "w": 85,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ohu.com/a/86400609_413721",
+  "title": null,
+  "aria": null,
+  "w": 88,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ohu.com/a/334817313_222758",
+  "title": null,
+  "aria": null,
+  "w": 88,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ohu.com/a/259884473_739728",
+  "title": null,
+  "aria": null,
+  "w": 88,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ohu.com/a/933774015_100112020",
+  "title": null,
+  "aria": null,
+  "w": 88,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ky crapercenter.com/building/",
+  "title": null,
+  "aria": null,
+  "w": 87,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ky crapercenter.com/api/building ?q=anhui",
+  "title": null,
+  "aria": null,
+  "w": 87,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://duckduckgo.com/html/?q=",
+  "title": null,
+  "aria": null,
+  "w": 83,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ky crapercenter.com/city/hefei",
+  "title": null,
+  "aria": null,
+  "w": 87,
+  "h": 59,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ky crapercenter.com/building/anhui-new-broadca ",
+  "title": null,
+  "aria": null,
+  "w": 87,
+  "h": 142,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "local-path-link",
+  "text": "anhui-tv-center/index.html",
+  "title": "在右侧预览：anhui-tv-center/index.html",
+  "aria": null,
+  "w": 57,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "local-path-preview",
+  "text": "",
+  "title": "在右侧预览",
+  "aria": "预览 anhui-tv-center/index.html",
+  "w": 15,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "local-path-folder",
+  "text": "",
+  "title": "在文件夹中显示",
+  "aria": "在文件夹中显示 anhui-tv-center/index.html",
+  "w": 15,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "local-path-link",
+  "text": "anhui-tv-center/index.html",
+  "title": "在右侧预览：anhui-tv-center/index.html",
+  "aria": null,
+  "w": 57,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "local-path-preview",
+  "text": "",
+  "title": "在右侧预览",
+  "aria": "预览 anhui-tv-center/index.html",
+  "w": 15,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "local-path-folder",
+  "text": "",
+  "title": "在文件夹中显示",
+  "aria": "在文件夹中显示 anhui-tv-center/index.html",
+  "w": 15,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "local-path-link",
+  "text": "anhui-tv-center/index.html",
+  "title": "在右侧预览：anhui-tv-center/index.html",
+  "aria": null,
+  "w": 57,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "local-path-preview",
+  "text": "",
+  "title": "在右侧预览",
+  "aria": "预览 anhui-tv-center/index.html",
+  "w": 15,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "local-path-folder",
+  "text": "",
+  "title": "在文件夹中显示",
+  "aria": "在文件夹中显示 anhui-tv-center/index.html",
+  "w": 15,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "local-path-link local-path-link--directory",
+  "text": "_re earch/ref /",
+  "title": "打开文件夹：_research/refs",
+  "aria": "打开文件夹 _research/refs",
+  "w": 88,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "local-path-link",
+  "text": "index.html",
+  "title": "在右侧预览：leifeng-pagoda/index.html",
+  "aria": null,
+  "w": 57,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "local-path-preview",
+  "text": "",
+  "title": "在右侧预览",
+  "aria": "预览 leifeng-pagoda/index.html",
+  "w": 15,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "local-path-folder",
+  "text": "",
+  "title": "在文件夹中显示",
+  "aria": "在文件夹中显示 leifeng-pagoda/index.html",
+  "w": 15,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "local-path-link",
+  "text": "anhui-tv-center/index.html",
+  "title": "在右侧预览：anhui-tv-center/index.html",
+  "aria": null,
+  "w": 57,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "local-path-preview",
+  "text": "",
+  "title": "在右侧预览",
+  "aria": "预览 anhui-tv-center/index.html",
+  "w": 15,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "local-path-folder",
+  "text": "",
+  "title": "在文件夹中显示",
+  "aria": "在文件夹中显示 anhui-tv-center/index.html",
+  "w": 15,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "local-path-link",
+  "text": "index.html",
+  "title": "在右侧预览：leifeng-pagoda/index.html",
+  "aria": null,
+  "w": 37,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "local-path-preview",
+  "text": "",
+  "title": "在右侧预览",
+  "aria": "预览 leifeng-pagoda/index.html",
+  "w": 15,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "local-path-folder",
+  "text": "",
+  "title": "在文件夹中显示",
+  "aria": "在文件夹中显示 leifeng-pagoda/index.html",
+  "w": 15,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://baike. o.com/doc/6197276-6410538.html",
+  "title": null,
+  "aria": null,
+  "w": 68,
+  "h": 100,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ohu.com/a/933774015_100112020",
+  "title": null,
+  "aria": null,
+  "w": 68,
+  "h": 100,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ky crapercenter.com/building/anhui-new-broadca ",
+  "title": null,
+  "aria": null,
+  "w": 68,
+  "h": 183,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ohu.com/a/86400609_413721",
+  "title": null,
+  "aria": null,
+  "w": 68,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://baike. o.com/doc/6911715-7133572.html",
+  "title": null,
+  "aria": null,
+  "w": 68,
+  "h": 100,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ohu.com/a/259884473_739728",
+  "title": null,
+  "aria": null,
+  "w": 68,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ohu.com/a/86400609_413721",
+  "title": null,
+  "aria": null,
+  "w": 68,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ohu.com/a/334817313_222758",
+  "title": null,
+  "aria": null,
+  "w": 68,
+  "h": 79,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "local-path-link local-path-link--directory",
+  "text": "_verify/",
+  "title": "打开文件夹：_verify",
+  "aria": "打开文件夹 _verify",
+  "w": 88,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "local-path-link local-path-link--directory",
+  "text": "_verify/",
+  "title": "打开文件夹：_verify",
+  "aria": "打开文件夹 _verify",
+  "w": 88,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "chat-m.g-action",
+  "text": "2d ago",
+  "title": null,
+  "aria": "消息操作",
+  "w": 193,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-action",
+  "text": "",
+  "title": "有用，告诉模型继续保持",
+  "aria": "有用，告诉模型继续保持",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-action",
+  "text": "",
+  "title": "不理想，告诉模型重新调整",
+  "aria": "不理想，告诉模型重新调整",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-action",
+  "text": "",
+  "title": "复制",
+  "aria": "复制",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-action",
+  "text": "",
+  "title": "回到这里",
+  "aria": "回到这里",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-action",
+  "text": "",
+  "title": "分叉对话",
+  "aria": "分叉对话",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "chat-m.g-action",
+  "text": "2d ago",
+  "title": null,
+  "aria": "消息操作",
+  "w": 133,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-action",
+  "text": "",
+  "title": "复制",
+  "aria": "复制",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-action",
+  "text": "",
+  "title": "回到这里",
+  "aria": "回到这里",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-action",
+  "text": "",
+  "title": "分叉对话",
+  "aria": "分叉对话",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "Thought Proce ",
+  "title": null,
+  "aria": null,
+  "w": 88,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "chat-m.g-action",
+  "text": "1d ago",
+  "title": null,
+  "aria": "消息操作",
+  "w": 133,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-action",
+  "text": "",
+  "title": "复制",
+  "aria": "复制",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-action",
+  "text": "",
+  "title": "回到这里",
+  "aria": "回到这里",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-action",
+  "text": "",
+  "title": "分叉对话",
+  "aria": "分叉对话",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "Thought Proce ",
+  "title": null,
+  "aria": null,
+  "w": 88,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "验证 · 6",
+  "title": null,
+  "aria": null,
+  "w": 466,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "假设与前提 · 4",
+  "title": null,
+  "aria": null,
+  "w": 466,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "chat-m.g-action",
+  "text": "",
+  "title": null,
+  "aria": "消息操作",
+  "w": 148,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-action",
+  "text": "",
+  "title": "有用，告诉模型继续保持",
+  "aria": "有用，告诉模型继续保持",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-action",
+  "text": "",
+  "title": "不理想，告诉模型重新调整",
+  "aria": "不理想，告诉模型重新调整",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-action",
+  "text": "",
+  "title": "复制",
+  "aria": "复制",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-action",
+  "text": "",
+  "title": "回到这里",
+  "aria": "回到这里",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-action",
+  "text": "",
+  "title": "分叉对话",
+  "aria": "分叉对话",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "chat-artifact",
+  "text": "anhui-tv-center/index.html网站打开下载在文件夹中显示_ rc/ cene_a.j 代码在文件夹",
+  "title": null,
+  "aria": "本次产物",
+  "w": 562,
+  "h": 369,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "chat-artifact-name",
+  "text": "anhui-tv-center/index.html",
+  "title": "anhui-tv-center/index.html",
+  "aria": null,
+  "w": 403,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-artifact-primary",
+  "text": "打开",
+  "title": null,
+  "aria": null,
+  "w": 45,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "",
+  "title": null,
+  "aria": "更多操作",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "chat-artifact-name",
+  "text": "_ rc/ cene_a.j ",
+  "title": "anhui-tv-center/_src/scene_a.js",
+  "aria": null,
+  "w": 343,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-artifact-primary",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 105,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "",
+  "title": null,
+  "aria": "更多操作",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "",
+  "text": "打开",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "chat-artifact-name",
+  "text": "_ rc/ cene_b.j ",
+  "title": "anhui-tv-center/_src/scene_b.js",
+  "aria": null,
+  "w": 343,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-artifact-primary",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 105,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "",
+  "title": null,
+  "aria": "更多操作",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "",
+  "text": "打开",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "chat-artifact-name",
+  "text": "_ rc/ cene_c.j ",
+  "title": "anhui-tv-center/_src/scene_c.js",
+  "aria": null,
+  "w": 343,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-artifact-primary",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 105,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "",
+  "title": null,
+  "aria": "更多操作",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "",
+  "text": "打开",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "chat-artifact-name",
+  "text": "_ rc/ cene_d.j ",
+  "title": "anhui-tv-center/_src/scene_d.js",
+  "aria": null,
+  "w": 343,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-artifact-primary",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 105,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "",
+  "title": null,
+  "aria": "更多操作",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "",
+  "text": "打开",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "显示全部（还有 19 个）",
+  "title": null,
+  "aria": null,
+  "w": 562,
+  "h": 27,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "chat-artifact-name",
+  "text": "anhui-tv/probeC.mj ",
+  "title": "_verify/anhui-tv/probeC.mjs",
+  "aria": null,
+  "w": 343,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-artifact-primary",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 105,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "",
+  "title": null,
+  "aria": "更多操作",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "",
+  "text": "打开",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "chat-artifact-name",
+  "text": "anhui-tv/probeB.mj ",
+  "title": "_verify/anhui-tv/probeB.mjs",
+  "aria": null,
+  "w": 343,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-artifact-primary",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 105,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "",
+  "title": null,
+  "aria": "更多操作",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "",
+  "text": "打开",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "chat-artifact-name",
+  "text": "anhui-tv/probeA.mj ",
+  "title": "_verify/anhui-tv/probeA.mjs",
+  "aria": null,
+  "w": 343,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-artifact-primary",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 105,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "",
+  "title": null,
+  "aria": "更多操作",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "",
+  "text": "打开",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "chat-artifact-name",
+  "text": "anhui-tv/probe9.mj ",
+  "title": "_verify/anhui-tv/probe9.mjs",
+  "aria": null,
+  "w": 343,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-artifact-primary",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 105,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "",
+  "title": null,
+  "aria": "更多操作",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "",
+  "text": "打开",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "chat-artifact-name",
+  "text": "anhui-tv/probe7.mj ",
+  "title": "_verify/anhui-tv/probe7.mjs",
+  "aria": null,
+  "w": 343,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-artifact-primary",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 105,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "",
+  "title": null,
+  "aria": "更多操作",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "",
+  "text": "打开",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "chat-artifact-name",
+  "text": "anhui-tv/ hoot.mj ",
+  "title": "_verify/anhui-tv/shoot.mjs",
+  "aria": null,
+  "w": 343,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-artifact-primary",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 105,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "",
+  "title": null,
+  "aria": "更多操作",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "",
+  "text": "打开",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "chat-artifact-thumb",
+  "text": "",
+  "title": null,
+  "aria": null,
+  "w": 40,
+  "h": 40,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "chat-artifact-name",
+  "text": " hot /fix6- kin.png",
+  "title": "_verify/anhui-tv/shots/fix6-skin.png",
+  "aria": null,
+  "w": 399,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-artifact-primary",
+  "text": "打开",
+  "title": null,
+  "aria": null,
+  "w": 45,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "",
+  "title": null,
+  "aria": "更多操作",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "chat-artifact-name",
+  "text": "anhui-tv-center/FACTS.md",
+  "title": "anhui-tv-center/FACTS.md",
+  "aria": null,
+  "w": 343,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-artifact-primary",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 105,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "",
+  "title": null,
+  "aria": "更多操作",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "",
+  "text": "打开",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "chat-artifact-name",
+  "text": "_ rc/build.py",
+  "title": "anhui-tv-center/_src/build.py",
+  "aria": null,
+  "w": 343,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-artifact-primary",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 105,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "",
+  "title": null,
+  "aria": "更多操作",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "",
+  "text": "打开",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "chat-artifact-name",
+  "text": "_ rc/head.html",
+  "title": "anhui-tv-center/_src/head.html",
+  "aria": null,
+  "w": 403,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-artifact-primary",
+  "text": "打开",
+  "title": null,
+  "aria": null,
+  "w": 45,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "",
+  "title": null,
+  "aria": "更多操作",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "chat-artifact-name",
+  "text": "anhui-tv/probe.mj ",
+  "title": "_verify/anhui-tv/probe.mjs",
+  "aria": null,
+  "w": 343,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-artifact-primary",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 105,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "",
+  "title": null,
+  "aria": "更多操作",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "",
+  "text": "打开",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "chat-artifact-name",
+  "text": "anhui-tv/probe2.mj ",
+  "title": "_verify/anhui-tv/probe2.mjs",
+  "aria": null,
+  "w": 343,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-artifact-primary",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 105,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "",
+  "title": null,
+  "aria": "更多操作",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "",
+  "text": "打开",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "chat-artifact-name",
+  "text": "anhui-tv/probe3.mj ",
+  "title": "_verify/anhui-tv/probe3.mjs",
+  "aria": null,
+  "w": 343,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-artifact-primary",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 105,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "",
+  "title": null,
+  "aria": "更多操作",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "",
+  "text": "打开",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "chat-artifact-name",
+  "text": "anhui-tv/probe4.mj ",
+  "title": "_verify/anhui-tv/probe4.mjs",
+  "aria": null,
+  "w": 343,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-artifact-primary",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 105,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "",
+  "title": null,
+  "aria": "更多操作",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "",
+  "text": "打开",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "chat-artifact-name",
+  "text": "anhui-tv/probe5.mj ",
+  "title": "_verify/anhui-tv/probe5.mjs",
+  "aria": null,
+  "w": 343,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-artifact-primary",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 105,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "",
+  "title": null,
+  "aria": "更多操作",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "",
+  "text": "打开",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "chat-artifact-name",
+  "text": "anhui-tv/probe6.mj ",
+  "title": "_verify/anhui-tv/probe6.mjs",
+  "aria": null,
+  "w": 343,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-artifact-primary",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 105,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "",
+  "title": null,
+  "aria": "更多操作",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "",
+  "text": "打开",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "chat-artifact-name",
+  "text": "anhui-tv/probe8.mj ",
+  "title": "_verify/anhui-tv/probe8.mjs",
+  "aria": null,
+  "w": 343,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-artifact-primary",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 105,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "",
+  "title": null,
+  "aria": "更多操作",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "",
+  "text": "打开",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "chat-artifact-name",
+  "text": "anhui-tv/verify.mj ",
+  "title": "_verify/anhui-tv/verify.mjs",
+  "aria": null,
+  "w": 343,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-artifact-primary",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 105,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "",
+  "title": null,
+  "aria": "更多操作",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "",
+  "text": "打开",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "chat-artifact-name",
+  "text": "_ rc/ tyle.c ",
+  "title": "anhui-tv-center/_src/style.css",
+  "aria": null,
+  "w": 343,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-artifact-primary",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 105,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "",
+  "title": null,
+  "aria": "更多操作",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "",
+  "text": "打开",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "aside",
+  "cls": "chat-.ource",
+  "text": "来源来源该页说的链接链接http ://zh.wikipedia.org/wiki/%E5%AE%89%E5%BE%BD",
+  "title": null,
+  "aria": "来源",
+  "w": 562,
+  "h": 3125,
+  "disabled": false
+ },
+ {
+  "tag": "th",
+  "cls": "",
+  "text": "来源",
+  "title": null,
+  "aria": null,
+  "w": 14,
+  "h": 90,
+  "disabled": false
+ },
+ {
+  "tag": "th",
+  "cls": "",
+  "text": "该页说的",
+  "title": null,
+  "aria": null,
+  "w": 14,
+  "h": 90,
+  "disabled": false
+ },
+ {
+  "tag": "th",
+  "cls": "",
+  "text": "链接",
+  "title": null,
+  "aria": null,
+  "w": 1259,
+  "h": 90,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://zh.wikipedia.org/wiki/%E5%AE%89%E5%BE%BD%E5%B9%BF%E6",
+  "title": null,
+  "aria": null,
+  "w": 827,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://en.wikipedia.org/wiki/Anhui_Broadca ting_and_Televi ",
+  "title": null,
+  "aria": null,
+  "w": 445,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ky crapercenter.com/building/anhui-broadca ting",
+  "title": null,
+  "aria": null,
+  "w": 574,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://common .wikimedia.org/wiki/Category:Anhui_Radio_and_",
+  "title": null,
+  "aria": null,
+  "w": 465,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://zh.wikipedia.org/wiki/%E5%AE%89%E5%BE%BD%E5%AE%BD%E6",
+  "title": null,
+  "aria": null,
+  "w": 831,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://en.wikipedia.org/wiki/Anhui_Radio_and_TV_Center",
+  "title": null,
+  "aria": null,
+  "w": 356,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ky crapercenter.com/ earch?q=anhui",
+  "title": null,
+  "aria": null,
+  "w": 315,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://common .wikimedia.org/wiki/Category:Anhui_Broadca ti",
+  "title": null,
+  "aria": null,
+  "w": 553,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://en.wikipedia.org/wiki/Hefei",
+  "title": null,
+  "aria": null,
+  "w": 213,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http :// ky craperpage.com/citie /?buildingID=1",
+  "title": null,
+  "aria": null,
+  "w": 301,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.archdaily.cn/cn/ earch/project ?q=%E5%AE%89%E5%B",
+  "title": null,
+  "aria": null,
+  "w": 943,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://baike.baidu.com/item/%E5%AE%89%E5%BE%BD%E5%B9%BF%E6%",
+  "title": null,
+  "aria": null,
+  "w": 832,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ky crapercenter.com/city/hefei",
+  "title": null,
+  "aria": null,
+  "w": 274,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http :// ky craperpage.com/citie /?cityID=1967",
+  "title": null,
+  "aria": null,
+  "w": 294,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.gooood.cn/? =%E5%AE%89%E5%BE%BD%E5%B9%BF%E6%92%A",
+  "title": null,
+  "aria": null,
+  "w": 658,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.archdaily.com/ earch/project ?q=anhui%20broadca ",
+  "title": null,
+  "aria": null,
+  "w": 429,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ky crapercenter.com/building/anhui-new-broadca ",
+  "title": null,
+  "aria": null,
+  "w": 529,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.cnki.com.cn/Article/CJFDTotal-JCJG201003026.htm",
+  "title": null,
+  "aria": null,
+  "w": 390,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ohu.com/a/194838900_222758",
+  "title": null,
+  "aria": null,
+  "w": 276,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.cabrtech.com/cabrtech/ywzx/gh j/xzbg/ahg xw/A022",
+  "title": null,
+  "aria": null,
+  "w": 572,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://new . ina.com.cn/c/2009-08-01/115616050439 . html",
+  "title": null,
+  "aria": null,
+  "w": 379,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://lmtw.com/mzw/content/detail/id/90983",
+  "title": null,
+  "aria": null,
+  "w": 292,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.cnki.com.cn/Article/CJFDTotal-GCDS201302002.htm",
+  "title": null,
+  "aria": null,
+  "w": 397,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ohu.com/a/129038508_461929",
+  "title": null,
+  "aria": null,
+  "w": 276,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ky crapercenter.com/building/anhui-radio-and-te",
+  "title": null,
+  "aria": null,
+  "w": 518,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.bing.com/ earch?q=%E5%AE%89%E5%BE%BD%E5%B9%BF%E6",
+  "title": null,
+  "aria": null,
+  "w": 1259,
+  "h": 41,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://html.duckduckgo.com/html/?q=%E5%AE%89%E5%BE%BD%E5%B9",
+  "title": null,
+  "aria": null,
+  "w": 1125,
+  "h": 41,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.bing.com/ earch?q=%22%E5%AE%89%E5%BE%BD%E5%B9%BF",
+  "title": null,
+  "aria": null,
+  "w": 1079,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://zh.wikipedia.org/w/api.php?action=query&li t= earch&",
+  "title": null,
+  "aria": null,
+  "w": 1259,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.bing.com/ earch?q=%22%E5%AE%89%E5%BE%BD%E5%B9%BF",
+  "title": null,
+  "aria": null,
+  "w": 1056,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.mojeek.com/ earch?q=%E5%AE%89%E5%BE%BD%E5%B9%BF%",
+  "title": null,
+  "aria": null,
+  "w": 870,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://lite.duckduckgo.com/lite/?q=%E5%AE%89%E5%BE%BD%E5%B9",
+  "title": null,
+  "aria": null,
+  "w": 1125,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http :// earch.brave.com/ earch?q=%E5%AE%89%E5%BE%BD%E5%B9%B",
+  "title": null,
+  "aria": null,
+  "w": 869,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.bing.com/ earch?q= ite%3A ky crapercenter.com+%2",
+  "title": null,
+  "aria": null,
+  "w": 693,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ky crapercenter.com/ itemap.xml",
+  "title": null,
+  "aria": null,
+  "w": 291,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.eco ia.org/ earch?q=%22%E5%AE%89%E5%BE%BD%E5%B9%",
+  "title": null,
+  "aria": null,
+  "w": 911,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http :// earch.marcia.cc/ earch?q=%E5%AE%89%E5%BE%BD%E5%B9%B",
+  "title": null,
+  "aria": null,
+  "w": 862,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://yandex.com/ earch/?text=%22%E5%AE%89%E5%BE%BD%E5%B9%",
+  "title": null,
+  "aria": null,
+  "w": 909,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://en.wikipedia.org/wiki/Anhui_Radio_and_Televi ion_Cen",
+  "title": null,
+  "aria": null,
+  "w": 400,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.bing.com/ earch?q=%E5%AE%89%E5%BE%BD%E5%B9%BF%E7",
+  "title": null,
+  "aria": null,
+  "w": 1195,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ogou.com/web?query=%E5%AE%89%E5%BE%BD%E5%B9%BF%",
+  "title": null,
+  "aria": null,
+  "w": 877,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http :// earx.be/ earch?q=%E5%AE%89%E5%BE%BD%E5%B9%BF%E6%92%",
+  "title": null,
+  "aria": null,
+  "w": 900,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.alwindoor.com/",
+  "title": null,
+  "aria": null,
+  "w": 176,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.bing.com/ earch?q=%22Anhui+Radio+and+Televi ion+",
+  "title": null,
+  "aria": null,
+  "w": 767,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.baidu.com/ ?wd=%E5%AE%89%E5%BE%BD%E5%B9%BF%E6%92",
+  "title": null,
+  "aria": null,
+  "w": 1211,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. o.com/ ?q=%E5%AE%89%E5%BE%BD%E5%B9%BF%E6%92%AD%",
+  "title": null,
+  "aria": null,
+  "w": 992,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://baike. ogou.com/Search.e? p=S%E5%AE%89%E5%BE%BD%E5%B",
+  "title": null,
+  "aria": null,
+  "w": 892,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. ky crapercenter.com/building ?name=anhui",
+  "title": null,
+  "aria": null,
+  "w": 359,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.wikiwand.com/zh/article /%E5%AE%89%E5%BE%BD%E5%B",
+  "title": null,
+  "aria": null,
+  "w": 887,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://baike. ogou.com/Search.e? p=S%25E5%25AE%2589%25E5%25",
+  "title": null,
+  "aria": null,
+  "w": 1254,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.cbda.cn/",
+  "title": null,
+  "aria": null,
+  "w": 132,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.cbi360.net/hyxw/",
+  "title": null,
+  "aria": null,
+  "w": 185,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www.cbi360.net/",
+  "title": null,
+  "aria": null,
+  "w": 148,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://baike. o.com/ earch/?q=%E5%AE%89%E5%BE%BD%E5%B9%BF%E",
+  "title": null,
+  "aria": null,
+  "w": 847,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://baike. ogou.com/Search.e? p=安徽广播电视中心",
+  "title": null,
+  "aria": null,
+  "w": 349,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://baike. o.com/doc/6197276-6410538.html",
+  "title": null,
+  "aria": null,
+  "w": 302,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://baike. o.com/doc/24681110-25578736.html",
+  "title": null,
+  "aria": null,
+  "w": 317,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://baike. o.com/doc/6911715-7133572.html",
+  "title": null,
+  "aria": null,
+  "w": 302,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http :// earch. ohu.com/?keyword=%E5%AE%89%E5%BE%BD%E5%B9%BF",
+  "title": null,
+  "aria": null,
+  "w": 1055,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://weixin. ogou.com/weixin?type=2&query=%E5%AE%89%E5%BE",
+  "title": null,
+  "aria": null,
+  "w": 979,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http :// earch. ina.com.cn/?q=%E5%AE%89%E5%BE%BD%E5%B9%BF%E7",
+  "title": null,
+  "aria": null,
+  "w": 1161,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. o.com/ ?q=%E5%AE%89%E5%BE%BD%E5%B9%BF%E7%94%B5%",
+  "title": null,
+  "aria": null,
+  "w": 1196,
+  "h": 41,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "http ://www. o.com/ ?q= ite%3A ohu.com%20%E5%AE%89%E5%BE%BD%",
+  "title": null,
+  "aria": null,
+  "w": 965,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "btn btn--gho.t chat-",
+  "text": "导出链接列表",
+  "title": null,
+  "aria": null,
+  "w": 108,
+  "h": 31,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "chat-m.g-action",
+  "text": "1d ago",
+  "title": null,
+  "aria": "消息操作",
+  "w": 133,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-action",
+  "text": "",
+  "title": "复制",
+  "aria": "复制",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-action",
+  "text": "",
+  "title": "回到这里",
+  "aria": "回到这里",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-action",
+  "text": "",
+  "title": "分叉对话",
+  "aria": "分叉对话",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "Thought Proce ",
+  "title": null,
+  "aria": null,
+  "w": 88,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "chat-m.g-action",
+  "text": "1d ago",
+  "title": null,
+  "aria": "消息操作",
+  "w": 133,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-action",
+  "text": "",
+  "title": "复制",
+  "aria": "复制",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-action",
+  "text": "",
+  "title": "回到这里",
+  "aria": "回到这里",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-action",
+  "text": "",
+  "title": "分叉对话",
+  "aria": "分叉对话",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "Thought Proce ",
+  "title": null,
+  "aria": null,
+  "w": 88,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "验证 · 5",
+  "title": null,
+  "aria": null,
+  "w": 466,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "假设与前提 · 4",
+  "title": null,
+  "aria": null,
+  "w": 466,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "chat-m.g-action",
+  "text": "1d ago",
+  "title": null,
+  "aria": "消息操作",
+  "w": 193,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-action",
+  "text": "",
+  "title": "有用，告诉模型继续保持",
+  "aria": "有用，告诉模型继续保持",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-action",
+  "text": "",
+  "title": "不理想，告诉模型重新调整",
+  "aria": "不理想，告诉模型重新调整",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-action",
+  "text": "",
+  "title": "复制",
+  "aria": "复制",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-action",
+  "text": "",
+  "title": "回到这里",
+  "aria": "回到这里",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-action",
+  "text": "",
+  "title": "分叉对话",
+  "aria": "分叉对话",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "chat-artifact",
+  "text": "anhui-tv-center/index.html网站打开下载在文件夹中显示_ rc/ cene_d.j 代码在文件夹",
+  "title": null,
+  "aria": "本次产物",
+  "w": 562,
+  "h": 369,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "chat-artifact-name",
+  "text": "anhui-tv-center/index.html",
+  "title": "anhui-tv-center/index.html",
+  "aria": null,
+  "w": 403,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-artifact-primary",
+  "text": "打开",
+  "title": null,
+  "aria": null,
+  "w": 45,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "",
+  "title": null,
+  "aria": "更多操作",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "chat-artifact-name",
+  "text": "_ rc/ cene_d.j ",
+  "title": "anhui-tv-center/_src/scene_d.js",
+  "aria": null,
+  "w": 343,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-artifact-primary",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 105,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "",
+  "title": null,
+  "aria": "更多操作",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "",
+  "text": "打开",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "chat-artifact-name",
+  "text": "_ rc/ cene_c.j ",
+  "title": "anhui-tv-center/_src/scene_c.js",
+  "aria": null,
+  "w": 343,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-artifact-primary",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 105,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "",
+  "title": null,
+  "aria": "更多操作",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "",
+  "text": "打开",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "chat-artifact-name",
+  "text": "anhui-tv/probeG.mj ",
+  "title": "_verify/anhui-tv/probeG.mjs",
+  "aria": null,
+  "w": 343,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-artifact-primary",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 105,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "",
+  "title": null,
+  "aria": "更多操作",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "",
+  "text": "打开",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "chat-artifact-name",
+  "text": "anhui-tv/probeH.mj ",
+  "title": "_verify/anhui-tv/probeH.mjs",
+  "aria": null,
+  "w": 343,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-artifact-primary",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 105,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "",
+  "title": null,
+  "aria": "更多操作",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "",
+  "text": "打开",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "显示全部（还有 5 个）",
+  "title": null,
+  "aria": null,
+  "w": 562,
+  "h": 27,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "chat-artifact-thumb",
+  "text": "",
+  "title": null,
+  "aria": null,
+  "w": 40,
+  "h": 40,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "chat-artifact-name",
+  "text": " hot /f2- kin.png",
+  "title": "_verify/anhui-tv/shots/f2-skin.png",
+  "aria": null,
+  "w": 399,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-artifact-primary",
+  "text": "打开",
+  "title": null,
+  "aria": null,
+  "w": 45,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "",
+  "title": null,
+  "aria": "更多操作",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "chat-artifact-name",
+  "text": "anhui-tv-center/FACTS.md",
+  "title": "anhui-tv-center/FACTS.md",
+  "aria": null,
+  "w": 343,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-artifact-primary",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 105,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "",
+  "title": null,
+  "aria": "更多操作",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "",
+  "text": "打开",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "chat-artifact-name",
+  "text": "anhui-tv/probeD.mj ",
+  "title": "_verify/anhui-tv/probeD.mjs",
+  "aria": null,
+  "w": 343,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-artifact-primary",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 105,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "",
+  "title": null,
+  "aria": "更多操作",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "",
+  "text": "打开",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "chat-artifact-name",
+  "text": "anhui-tv/probeE.mj ",
+  "title": "_verify/anhui-tv/probeE.mjs",
+  "aria": null,
+  "w": 343,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-artifact-primary",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 105,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "",
+  "title": null,
+  "aria": "更多操作",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "",
+  "text": "打开",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "chat-artifact-name",
+  "text": "anhui-tv/probeF.mj ",
+  "title": "_verify/anhui-tv/probeF.mjs",
+  "aria": null,
+  "w": 343,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-artifact-primary",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 105,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "",
+  "title": null,
+  "aria": "更多操作",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "",
+  "text": "打开",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "chat-m.g-action",
+  "text": "34m ago",
+  "title": null,
+  "aria": "消息操作",
+  "w": 143,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-action",
+  "text": "",
+  "title": "复制",
+  "aria": "复制",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-action",
+  "text": "",
+  "title": "回到这里",
+  "aria": "回到这里",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-action",
+  "text": "",
+  "title": "分叉对话",
+  "aria": "分叉对话",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "Thought Proce ",
+  "title": null,
+  "aria": null,
+  "w": 88,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "local-path-link",
+  "text": "_verify/anhui-tv/ hot /h1-wide.png",
+  "title": "在右侧预览：_verify/anhui-tv/shots/h1-wide.png",
+  "aria": null,
+  "w": 57,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "local-path-preview",
+  "text": "",
+  "title": "在右侧预览",
+  "aria": "预览 _verify/anhui-tv/shots/h1-wide.png",
+  "w": 15,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "local-path-folder",
+  "text": "",
+  "title": "在文件夹中显示",
+  "aria": "在文件夹中显示 _verify/anhui-tv/shots/h1-wide.png",
+  "w": 15,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "local-path-link",
+  "text": "_verify/anhui-tv/ hot /h1-wide.png",
+  "title": "在右侧预览：_verify/anhui-tv/shots/h1-wide.png",
+  "aria": null,
+  "w": 308,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "local-path-preview",
+  "text": "",
+  "title": "在右侧预览",
+  "aria": "预览 _verify/anhui-tv/shots/h1-wide.png",
+  "w": 26,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "local-path-folder",
+  "text": "",
+  "title": "在文件夹中显示",
+  "aria": "在文件夹中显示 _verify/anhui-tv/shots/h1-wide.png",
+  "w": 26,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "验证 · 6",
+  "title": null,
+  "aria": null,
+  "w": 466,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "假设与前提 · 4",
+  "title": null,
+  "aria": null,
+  "w": 466,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "chat-m.g-action",
+  "text": "10m ago",
+  "title": null,
+  "aria": "消息操作",
+  "w": 203,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-action",
+  "text": "",
+  "title": "有用，告诉模型继续保持",
+  "aria": "有用，告诉模型继续保持",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-action",
+  "text": "",
+  "title": "不理想，告诉模型重新调整",
+  "aria": "不理想，告诉模型重新调整",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-action",
+  "text": "",
+  "title": "复制",
+  "aria": "复制",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-action",
+  "text": "",
+  "title": "回到这里",
+  "aria": "回到这里",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-action",
+  "text": "",
+  "title": "分叉对话",
+  "aria": "分叉对话",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "chat-artifact",
+  "text": "anhui-tv-center/index.html网站打开下载在文件夹中显示_ rc/ cene_a.j 代码在文件夹",
+  "title": null,
+  "aria": "本次产物",
+  "w": 562,
+  "h": 369,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "chat-artifact-name",
+  "text": "anhui-tv-center/index.html",
+  "title": "anhui-tv-center/index.html",
+  "aria": null,
+  "w": 403,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-artifact-primary",
+  "text": "打开",
+  "title": null,
+  "aria": null,
+  "w": 45,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "",
+  "title": null,
+  "aria": "更多操作",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "chat-artifact-name",
+  "text": "_ rc/ cene_a.j ",
+  "title": "anhui-tv-center/_src/scene_a.js",
+  "aria": null,
+  "w": 343,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-artifact-primary",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 105,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "",
+  "title": null,
+  "aria": "更多操作",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "",
+  "text": "打开",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "chat-artifact-name",
+  "text": "_ rc/ cene_b.j ",
+  "title": "anhui-tv-center/_src/scene_b.js",
+  "aria": null,
+  "w": 343,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-artifact-primary",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 105,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "",
+  "title": null,
+  "aria": "更多操作",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "",
+  "text": "打开",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "chat-artifact-name",
+  "text": "_ rc/ cene_c.j ",
+  "title": "anhui-tv-center/_src/scene_c.js",
+  "aria": null,
+  "w": 343,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-artifact-primary",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 105,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "",
+  "title": null,
+  "aria": "更多操作",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "",
+  "text": "打开",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "chat-artifact-name",
+  "text": "_ rc/ cene_d.j ",
+  "title": "anhui-tv-center/_src/scene_d.js",
+  "aria": null,
+  "w": 343,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-artifact-primary",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 105,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "",
+  "title": null,
+  "aria": "更多操作",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "",
+  "text": "打开",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "显示全部（还有 8 个）",
+  "title": null,
+  "aria": null,
+  "w": 562,
+  "h": 27,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "chat-artifact-name",
+  "text": "anhui-tv/probeG.mj ",
+  "title": "_verify/anhui-tv/probeG.mjs",
+  "aria": null,
+  "w": 343,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-artifact-primary",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 105,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "",
+  "title": null,
+  "aria": "更多操作",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "",
+  "text": "打开",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "chat-artifact-name",
+  "text": "anhui-tv/probeH.mj ",
+  "title": "_verify/anhui-tv/probeH.mjs",
+  "aria": null,
+  "w": 343,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-artifact-primary",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 105,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "",
+  "title": null,
+  "aria": "更多操作",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "",
+  "text": "打开",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "chat-artifact-name",
+  "text": "anhui-tv/ hoot.mj ",
+  "title": "_verify/anhui-tv/shoot.mjs",
+  "aria": null,
+  "w": 343,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-artifact-primary",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 105,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "",
+  "title": null,
+  "aria": "更多操作",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "",
+  "text": "打开",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "chat-artifact-thumb",
+  "text": "",
+  "title": null,
+  "aria": null,
+  "w": 40,
+  "h": 40,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "chat-artifact-name",
+  "text": " hot /h1-wide.png",
+  "title": "_verify/anhui-tv/shots/h1-wide.png",
+  "aria": null,
+  "w": 399,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-artifact-primary",
+  "text": "打开",
+  "title": null,
+  "aria": null,
+  "w": 45,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "",
+  "title": null,
+  "aria": "更多操作",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "chat-artifact-thumb",
+  "text": "",
+  "title": null,
+  "aria": null,
+  "w": 40,
+  "h": 40,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "chat-artifact-name",
+  "text": " hot /h1- kin.png",
+  "title": "_verify/anhui-tv/shots/h1-skin.png",
+  "aria": null,
+  "w": 399,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-artifact-primary",
+  "text": "打开",
+  "title": null,
+  "aria": null,
+  "w": 45,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "",
+  "title": null,
+  "aria": "更多操作",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "chat-artifact-thumb",
+  "text": "",
+  "title": null,
+  "aria": null,
+  "w": 40,
+  "h": 40,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "chat-artifact-name",
+  "text": " hot /h1-night.png",
+  "title": "_verify/anhui-tv/shots/h1-night.png",
+  "aria": null,
+  "w": 399,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-artifact-primary",
+  "text": "打开",
+  "title": null,
+  "aria": null,
+  "w": 45,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "",
+  "title": null,
+  "aria": "更多操作",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "chat-artifact-name",
+  "text": "anhui-tv-center/FACTS.md",
+  "title": "anhui-tv-center/FACTS.md",
+  "aria": null,
+  "w": 343,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-artifact-primary",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 105,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "",
+  "title": null,
+  "aria": "更多操作",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "",
+  "text": "打开",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "chat-artifact-name",
+  "text": "_ rc/build.py",
+  "title": "anhui-tv-center/_src/build.py",
+  "aria": null,
+  "w": 343,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chat-artifact-primary",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 105,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "",
+  "text": "",
+  "title": null,
+  "aria": "更多操作",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "",
+  "text": "打开",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 138,
+  "h": 33,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "next-action-chip",
+  "text": "接着说",
+  "title": "在下面继续写下一句",
+  "aria": null,
+  "w": 62,
+  "h": 30,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "next-action-chip",
+  "text": "预览刚才那页",
+  "title": "在预览坞打开已写出的文件",
+  "aria": null,
+  "w": 98,
+  "h": 30,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "next-action-chip",
+  "text": "点评这一页",
+  "title": "打开预览并进入点评",
+  "aria": null,
+  "w": 86,
+  "h": 30,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "next-action-chip",
+  "text": "先对齐做法",
+  "title": "先列出改什么、怎么验收，等你同意再动手",
+  "aria": null,
+  "w": 86,
+  "h": 30,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "next-action-chip",
+  "text": "点名一个文件",
+  "title": "输入 @ 按文件名找这个文件夹里的文件",
+  "aria": null,
+  "w": 98,
+  "h": 30,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "next-action-chip",
+  "text": "看右边的文件",
+  "title": "展开右侧文件栏",
+  "aria": null,
+  "w": 98,
+  "h": 30,
+  "disabled": false
+ },
+ {
+  "tag": "aside",
+  "cls": "detail-rail",
+  "text": "Progre  ⟩ 网站 25anhui-tv/probeD.mj 产物预览下载在文件夹中显示_ rc/ cene_c.",
+  "title": null,
+  "aria": "会话侧栏",
+  "w": 340,
+  "h": 680,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "rail-toggle",
+  "text": "Progre  ⟩",
+  "title": null,
+  "aria": null,
+  "w": 58,
+  "h": 29,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "rail-.ection-title",
+  "text": "网站 25",
+  "title": null,
+  "aria": null,
+  "w": 327,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-name",
+  "text": "anhui-tv/probeD.mj ",
+  "title": "_verify/anhui-tv/probeD.mjs",
+  "aria": null,
+  "w": 311,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "预览",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-btn",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 84,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-name",
+  "text": "_ rc/ cene_c.j ",
+  "title": "anhui-tv-center/_src/scene_c.js",
+  "aria": null,
+  "w": 311,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "预览",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-btn",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 84,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-name",
+  "text": "anhui-tv/probeE.mj ",
+  "title": "_verify/anhui-tv/probeE.mjs",
+  "aria": null,
+  "w": 311,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "预览",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-btn",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 84,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-name",
+  "text": "anhui-tv/probeF.mj ",
+  "title": "_verify/anhui-tv/probeF.mjs",
+  "aria": null,
+  "w": 311,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "预览",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-btn",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 84,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-name",
+  "text": "anhui-tv/probeG.mj ",
+  "title": "_verify/anhui-tv/probeG.mjs",
+  "aria": null,
+  "w": 311,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "预览",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-btn",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 84,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-name",
+  "text": "anhui-tv/probeH.mj ",
+  "title": "_verify/anhui-tv/probeH.mjs",
+  "aria": null,
+  "w": 311,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "预览",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-btn",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 84,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-name",
+  "text": "_ rc/head.html",
+  "title": "anhui-tv-center/_src/head.html",
+  "aria": null,
+  "w": 311,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "预览",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-btn",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 84,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-name",
+  "text": "_ rc/ tyle.c ",
+  "title": "anhui-tv-center/_src/style.css",
+  "aria": null,
+  "w": 311,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "预览",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-btn",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 84,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-name",
+  "text": "_ rc/ cene_a.j ",
+  "title": "anhui-tv-center/_src/scene_a.js",
+  "aria": null,
+  "w": 311,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "预览",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-btn",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 84,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-name",
+  "text": "_ rc/ cene_b.j ",
+  "title": "anhui-tv-center/_src/scene_b.js",
+  "aria": null,
+  "w": 311,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "预览",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-btn",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 84,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-name",
+  "text": "_ rc/ cene_d.j ",
+  "title": "anhui-tv-center/_src/scene_d.js",
+  "aria": null,
+  "w": 311,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "预览",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-btn",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 84,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-name",
+  "text": "anhui-tv/verify.mj ",
+  "title": "_verify/anhui-tv/verify.mjs",
+  "aria": null,
+  "w": 311,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "预览",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-btn",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 84,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-name",
+  "text": "anhui-tv/probe.mj ",
+  "title": "_verify/anhui-tv/probe.mjs",
+  "aria": null,
+  "w": 311,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "预览",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-btn",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 84,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-name",
+  "text": "anhui-tv/probe2.mj ",
+  "title": "_verify/anhui-tv/probe2.mjs",
+  "aria": null,
+  "w": 311,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "预览",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-btn",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 84,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-name",
+  "text": "anhui-tv/probe3.mj ",
+  "title": "_verify/anhui-tv/probe3.mjs",
+  "aria": null,
+  "w": 311,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "预览",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-btn",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 84,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-name",
+  "text": "anhui-tv/ hoot.mj ",
+  "title": "_verify/anhui-tv/shoot.mjs",
+  "aria": null,
+  "w": 311,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "预览",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-btn",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 84,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-name",
+  "text": "anhui-tv/probe4.mj ",
+  "title": "_verify/anhui-tv/probe4.mjs",
+  "aria": null,
+  "w": 311,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "预览",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-btn",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 84,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-name",
+  "text": "anhui-tv/probe5.mj ",
+  "title": "_verify/anhui-tv/probe5.mjs",
+  "aria": null,
+  "w": 311,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "预览",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-btn",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 84,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-name",
+  "text": "anhui-tv/probe6.mj ",
+  "title": "_verify/anhui-tv/probe6.mjs",
+  "aria": null,
+  "w": 311,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "预览",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-btn",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 84,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-name",
+  "text": "anhui-tv/probe7.mj ",
+  "title": "_verify/anhui-tv/probe7.mjs",
+  "aria": null,
+  "w": 311,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "预览",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-btn",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 84,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-name",
+  "text": "anhui-tv/probe8.mj ",
+  "title": "_verify/anhui-tv/probe8.mjs",
+  "aria": null,
+  "w": 311,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "预览",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-btn",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 84,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-name",
+  "text": "anhui-tv/probe9.mj ",
+  "title": "_verify/anhui-tv/probe9.mjs",
+  "aria": null,
+  "w": 311,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "预览",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-btn",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 84,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-name",
+  "text": "anhui-tv/probeA.mj ",
+  "title": "_verify/anhui-tv/probeA.mjs",
+  "aria": null,
+  "w": 311,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "预览",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-btn",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 84,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-name",
+  "text": "anhui-tv/probeB.mj ",
+  "title": "_verify/anhui-tv/probeB.mjs",
+  "aria": null,
+  "w": 311,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "预览",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-btn",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 84,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-name",
+  "text": "anhui-tv/probeC.mj ",
+  "title": "_verify/anhui-tv/probeC.mjs",
+  "aria": null,
+  "w": 311,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "预览",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-btn",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 84,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "rail-.ection-title",
+  "text": "文档 1",
+  "title": null,
+  "aria": null,
+  "w": 327,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-name",
+  "text": "anhui-tv-center/FACTS.md",
+  "title": "anhui-tv-center/FACTS.md",
+  "aria": null,
+  "w": 311,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "预览",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-btn",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 84,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "rail-.ection-title",
+  "text": "其他 1",
+  "title": null,
+  "aria": null,
+  "w": 327,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-name",
+  "text": "_ rc/build.py",
+  "title": "anhui-tv-center/_src/build.py",
+  "aria": null,
+  "w": 311,
+  "h": 21,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "预览",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "a",
+  "cls": "artifact-btn",
+  "text": "下载",
+  "title": null,
+  "aria": null,
+  "w": 24,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "artifact-btn",
+  "text": "在文件夹中显示",
+  "title": null,
+  "aria": null,
+  "w": 84,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "rail-.ection-title",
+  "text": "变更 35",
+  "title": null,
+  "aria": null,
+  "w": 327,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chg-row-head",
+  "text": "anhui-tv-center/index.html写入",
+  "title": null,
+  "aria": null,
+  "w": 293,
+  "h": 18,
+  "disabled": false
+ },
+ {
+  "tag": "span",
+  "cls": "chg-path",
+  "text": "anhui-tv-center/index.html",
+  "title": "anhui-tv-center/index.html",
+  "aria": null,
+  "w": 249,
+  "h": 14,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chg-row-head",
+  "text": "anhui-tv-center/FACTS.md写入",
+  "title": null,
+  "aria": null,
+  "w": 293,
+  "h": 18,
+  "disabled": false
+ },
+ {
+  "tag": "span",
+  "cls": "chg-path",
+  "text": "anhui-tv-center/FACTS.md",
+  "title": "anhui-tv-center/FACTS.md",
+  "aria": null,
+  "w": 249,
+  "h": 14,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chg-row-head",
+  "text": "anhui-tv-center/_ rc/ cene_a.j 写入",
+  "title": null,
+  "aria": null,
+  "w": 293,
+  "h": 18,
+  "disabled": false
+ },
+ {
+  "tag": "span",
+  "cls": "chg-path",
+  "text": "anhui-tv-center/_ rc/ cene_a.j ",
+  "title": "anhui-tv-center/_src/scene_a.js",
+  "aria": null,
+  "w": 249,
+  "h": 14,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chg-row-head",
+  "text": "anhui-tv-center/_ rc/ cene_b.j 写入",
+  "title": null,
+  "aria": null,
+  "w": 293,
+  "h": 18,
+  "disabled": false
+ },
+ {
+  "tag": "span",
+  "cls": "chg-path",
+  "text": "anhui-tv-center/_ rc/ cene_b.j ",
+  "title": "anhui-tv-center/_src/scene_b.js",
+  "aria": null,
+  "w": 249,
+  "h": 14,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chg-row-head",
+  "text": "anhui-tv-center/_ rc/ cene_c.j 写入",
+  "title": null,
+  "aria": null,
+  "w": 293,
+  "h": 18,
+  "disabled": false
+ },
+ {
+  "tag": "span",
+  "cls": "chg-path",
+  "text": "anhui-tv-center/_ rc/ cene_c.j ",
+  "title": "anhui-tv-center/_src/scene_c.js",
+  "aria": null,
+  "w": 249,
+  "h": 14,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chg-row-head",
+  "text": "anhui-tv-center/_ rc/ cene_d.j 写入",
+  "title": null,
+  "aria": null,
+  "w": 293,
+  "h": 18,
+  "disabled": false
+ },
+ {
+  "tag": "span",
+  "cls": "chg-path",
+  "text": "anhui-tv-center/_ rc/ cene_d.j ",
+  "title": "anhui-tv-center/_src/scene_d.js",
+  "aria": null,
+  "w": 249,
+  "h": 14,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chg-row-head",
+  "text": "anhui-tv-center/_ rc/build.py写入",
+  "title": null,
+  "aria": null,
+  "w": 293,
+  "h": 18,
+  "disabled": false
+ },
+ {
+  "tag": "span",
+  "cls": "chg-path",
+  "text": "anhui-tv-center/_ rc/build.py",
+  "title": "anhui-tv-center/_src/build.py",
+  "aria": null,
+  "w": 249,
+  "h": 14,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chg-row-head",
+  "text": "_verify/anhui-tv/probeC.mj 写入",
+  "title": null,
+  "aria": null,
+  "w": 293,
+  "h": 18,
+  "disabled": false
+ },
+ {
+  "tag": "span",
+  "cls": "chg-path",
+  "text": "_verify/anhui-tv/probeC.mj ",
+  "title": "_verify/anhui-tv/probeC.mjs",
+  "aria": null,
+  "w": 249,
+  "h": 14,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chg-row-head",
+  "text": "_verify/anhui-tv/probeB.mj 写入",
+  "title": null,
+  "aria": null,
+  "w": 293,
+  "h": 18,
+  "disabled": false
+ },
+ {
+  "tag": "span",
+  "cls": "chg-path",
+  "text": "_verify/anhui-tv/probeB.mj ",
+  "title": "_verify/anhui-tv/probeB.mjs",
+  "aria": null,
+  "w": 249,
+  "h": 14,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chg-row-head",
+  "text": "_verify/anhui-tv/probeA.mj 写入",
+  "title": null,
+  "aria": null,
+  "w": 293,
+  "h": 18,
+  "disabled": false
+ },
+ {
+  "tag": "span",
+  "cls": "chg-path",
+  "text": "_verify/anhui-tv/probeA.mj ",
+  "title": "_verify/anhui-tv/probeA.mjs",
+  "aria": null,
+  "w": 249,
+  "h": 14,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chg-row-head",
+  "text": "_verify/anhui-tv/probe9.mj 写入",
+  "title": null,
+  "aria": null,
+  "w": 293,
+  "h": 18,
+  "disabled": false
+ },
+ {
+  "tag": "span",
+  "cls": "chg-path",
+  "text": "_verify/anhui-tv/probe9.mj ",
+  "title": "_verify/anhui-tv/probe9.mjs",
+  "aria": null,
+  "w": 249,
+  "h": 14,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chg-row-head",
+  "text": "_verify/anhui-tv/probe7.mj 写入",
+  "title": null,
+  "aria": null,
+  "w": 293,
+  "h": 18,
+  "disabled": false
+ },
+ {
+  "tag": "span",
+  "cls": "chg-path",
+  "text": "_verify/anhui-tv/probe7.mj ",
+  "title": "_verify/anhui-tv/probe7.mjs",
+  "aria": null,
+  "w": 249,
+  "h": 14,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chg-row-head",
+  "text": "_verify/anhui-tv/ hoot.mj 写入",
+  "title": null,
+  "aria": null,
+  "w": 293,
+  "h": 18,
+  "disabled": false
+ },
+ {
+  "tag": "span",
+  "cls": "chg-path",
+  "text": "_verify/anhui-tv/ hoot.mj ",
+  "title": "_verify/anhui-tv/shoot.mjs",
+  "aria": null,
+  "w": 249,
+  "h": 14,
+  "disabled": false
+ },
+ {
+  "tag": "span",
+  "cls": "chg-path",
+  "text": "_verify/anhui-tv/ hot /fix6- kin.png",
+  "title": "_verify/anhui-tv/shots/fix6-skin.png",
+  "aria": null,
+  "w": 249,
+  "h": 38,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chg-row-head",
+  "text": "anhui-tv-center/index.html写入",
+  "title": null,
+  "aria": null,
+  "w": 293,
+  "h": 18,
+  "disabled": false
+ },
+ {
+  "tag": "span",
+  "cls": "chg-path",
+  "text": "anhui-tv-center/index.html",
+  "title": "anhui-tv-center/index.html",
+  "aria": null,
+  "w": 249,
+  "h": 14,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chg-row-head",
+  "text": "_verify/anhui-tv/probeG.mj 写入",
+  "title": null,
+  "aria": null,
+  "w": 293,
+  "h": 18,
+  "disabled": false
+ },
+ {
+  "tag": "span",
+  "cls": "chg-path",
+  "text": "_verify/anhui-tv/probeG.mj ",
+  "title": "_verify/anhui-tv/probeG.mjs",
+  "aria": null,
+  "w": 249,
+  "h": 14,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chg-row-head",
+  "text": "_verify/anhui-tv/probeH.mj 写入",
+  "title": null,
+  "aria": null,
+  "w": 293,
+  "h": 18,
+  "disabled": false
+ },
+ {
+  "tag": "span",
+  "cls": "chg-path",
+  "text": "_verify/anhui-tv/probeH.mj ",
+  "title": "_verify/anhui-tv/probeH.mjs",
+  "aria": null,
+  "w": 249,
+  "h": 14,
+  "disabled": false
+ },
+ {
+  "tag": "span",
+  "cls": "chg-path",
+  "text": "_verify/anhui-tv/ hot /f2- kin.png",
+  "title": "_verify/anhui-tv/shots/f2-skin.png",
+  "aria": null,
+  "w": 249,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chg-row-head",
+  "text": "anhui-tv-center/index.html写入",
+  "title": null,
+  "aria": null,
+  "w": 293,
+  "h": 18,
+  "disabled": false
+ },
+ {
+  "tag": "span",
+  "cls": "chg-path",
+  "text": "anhui-tv-center/index.html",
+  "title": "anhui-tv-center/index.html",
+  "aria": null,
+  "w": 249,
+  "h": 14,
+  "disabled": false
+ },
+ {
+  "tag": "span",
+  "cls": "chg-path",
+  "text": "_verify/anhui-tv/ hot /h1-wide.png",
+  "title": "_verify/anhui-tv/shots/h1-wide.png",
+  "aria": null,
+  "w": 249,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "span",
+  "cls": "chg-path",
+  "text": "_verify/anhui-tv/ hot /h1- kin.png",
+  "title": "_verify/anhui-tv/shots/h1-skin.png",
+  "aria": null,
+  "w": 249,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "span",
+  "cls": "chg-path",
+  "text": "_verify/anhui-tv/ hot /h1-night.png",
+  "title": "_verify/anhui-tv/shots/h1-night.png",
+  "aria": null,
+  "w": 249,
+  "h": 19,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chg-row-head",
+  "text": "_verify/anhui-tv/probeD.mj 写入",
+  "title": null,
+  "aria": null,
+  "w": 293,
+  "h": 18,
+  "disabled": false
+ },
+ {
+  "tag": "span",
+  "cls": "chg-path",
+  "text": "_verify/anhui-tv/probeD.mj ",
+  "title": "_verify/anhui-tv/probeD.mjs",
+  "aria": null,
+  "w": 249,
+  "h": 14,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chg-row-head",
+  "text": "_verify/anhui-tv/probeE.mj 写入",
+  "title": null,
+  "aria": null,
+  "w": 293,
+  "h": 18,
+  "disabled": false
+ },
+ {
+  "tag": "span",
+  "cls": "chg-path",
+  "text": "_verify/anhui-tv/probeE.mj ",
+  "title": "_verify/anhui-tv/probeE.mjs",
+  "aria": null,
+  "w": 249,
+  "h": 14,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chg-row-head",
+  "text": "_verify/anhui-tv/probeF.mj 写入",
+  "title": null,
+  "aria": null,
+  "w": 293,
+  "h": 18,
+  "disabled": false
+ },
+ {
+  "tag": "span",
+  "cls": "chg-path",
+  "text": "_verify/anhui-tv/probeF.mj ",
+  "title": "_verify/anhui-tv/probeF.mjs",
+  "aria": null,
+  "w": 249,
+  "h": 14,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chg-row-head",
+  "text": "anhui-tv-center/_ rc/head.html写入",
+  "title": null,
+  "aria": null,
+  "w": 293,
+  "h": 18,
+  "disabled": false
+ },
+ {
+  "tag": "span",
+  "cls": "chg-path",
+  "text": "anhui-tv-center/_ rc/head.html",
+  "title": "anhui-tv-center/_src/head.html",
+  "aria": null,
+  "w": 249,
+  "h": 14,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chg-row-head",
+  "text": "anhui-tv-center/_ rc/ tyle.c 写入",
+  "title": null,
+  "aria": null,
+  "w": 293,
+  "h": 18,
+  "disabled": false
+ },
+ {
+  "tag": "span",
+  "cls": "chg-path",
+  "text": "anhui-tv-center/_ rc/ tyle.c ",
+  "title": "anhui-tv-center/_src/style.css",
+  "aria": null,
+  "w": 249,
+  "h": 14,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chg-row-head",
+  "text": "_verify/anhui-tv/verify.mj 写入",
+  "title": null,
+  "aria": null,
+  "w": 293,
+  "h": 18,
+  "disabled": false
+ },
+ {
+  "tag": "span",
+  "cls": "chg-path",
+  "text": "_verify/anhui-tv/verify.mj ",
+  "title": "_verify/anhui-tv/verify.mjs",
+  "aria": null,
+  "w": 249,
+  "h": 14,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chg-row-head",
+  "text": "_verify/anhui-tv/probe.mj 写入",
+  "title": null,
+  "aria": null,
+  "w": 293,
+  "h": 18,
+  "disabled": false
+ },
+ {
+  "tag": "span",
+  "cls": "chg-path",
+  "text": "_verify/anhui-tv/probe.mj ",
+  "title": "_verify/anhui-tv/probe.mjs",
+  "aria": null,
+  "w": 249,
+  "h": 14,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chg-row-head",
+  "text": "_verify/anhui-tv/probe2.mj 写入",
+  "title": null,
+  "aria": null,
+  "w": 293,
+  "h": 18,
+  "disabled": false
+ },
+ {
+  "tag": "span",
+  "cls": "chg-path",
+  "text": "_verify/anhui-tv/probe2.mj ",
+  "title": "_verify/anhui-tv/probe2.mjs",
+  "aria": null,
+  "w": 249,
+  "h": 14,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chg-row-head",
+  "text": "_verify/anhui-tv/probe3.mj 写入",
+  "title": null,
+  "aria": null,
+  "w": 293,
+  "h": 18,
+  "disabled": false
+ },
+ {
+  "tag": "span",
+  "cls": "chg-path",
+  "text": "_verify/anhui-tv/probe3.mj ",
+  "title": "_verify/anhui-tv/probe3.mjs",
+  "aria": null,
+  "w": 249,
+  "h": 14,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chg-row-head",
+  "text": "_verify/anhui-tv/probe4.mj 写入",
+  "title": null,
+  "aria": null,
+  "w": 293,
+  "h": 18,
+  "disabled": false
+ },
+ {
+  "tag": "span",
+  "cls": "chg-path",
+  "text": "_verify/anhui-tv/probe4.mj ",
+  "title": "_verify/anhui-tv/probe4.mjs",
+  "aria": null,
+  "w": 249,
+  "h": 14,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chg-row-head",
+  "text": "_verify/anhui-tv/probe5.mj 写入",
+  "title": null,
+  "aria": null,
+  "w": 293,
+  "h": 18,
+  "disabled": false
+ },
+ {
+  "tag": "span",
+  "cls": "chg-path",
+  "text": "_verify/anhui-tv/probe5.mj ",
+  "title": "_verify/anhui-tv/probe5.mjs",
+  "aria": null,
+  "w": 249,
+  "h": 14,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chg-row-head",
+  "text": "_verify/anhui-tv/probe6.mj 写入",
+  "title": null,
+  "aria": null,
+  "w": 293,
+  "h": 18,
+  "disabled": false
+ },
+ {
+  "tag": "span",
+  "cls": "chg-path",
+  "text": "_verify/anhui-tv/probe6.mj ",
+  "title": "_verify/anhui-tv/probe6.mjs",
+  "aria": null,
+  "w": 249,
+  "h": 14,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "chg-row-head",
+  "text": "_verify/anhui-tv/probe8.mj 写入",
+  "title": null,
+  "aria": null,
+  "w": 293,
+  "h": 18,
+  "disabled": false
+ },
+ {
+  "tag": "span",
+  "cls": "chg-path",
+  "text": "_verify/anhui-tv/probe8.mj ",
+  "title": "_verify/anhui-tv/probe8.mjs",
+  "aria": null,
+  "w": 249,
+  "h": 14,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "outcome-continue",
+  "text": "",
+  "title": "继续对话",
+  "aria": "继续对话",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "right-rail-collap.e",
+  "text": "",
+  "title": "收起右列",
+  "aria": "收起右列",
+  "w": 23,
+  "h": 26,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "right-rail-drag",
+  "text": "",
+  "title": null,
+  "aria": "拖动调整右列宽度",
+  "w": 7,
+  "h": 760,
+  "disabled": false
+ },
+ {
+  "tag": "aside",
+  "cls": "file.-rail work",
+  "text": "文件文件 ⟩_ag @_cdp-pix-9700@_cdp-pix-9712@_cdp-profile-9423@_cd",
+  "title": null,
+  "aria": "工作区文件",
+  "w": 161,
+  "h": 760,
+  "disabled": false
+ },
+ {
+  "tag": "div",
+  "cls": "work.pace-file-tree-body",
+  "text": "_ag @_cdp-pix-9700@_cdp-pix-9712@_cdp-profile-9423@_cdp-prof",
+  "title": null,
+  "aria": "工作区文件",
+  "w": 160,
+  "h": 748,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _ags",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_ag ",
+  "title": "_ags",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _ags",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _cdp-pix-9700",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_cdp-pix-9700",
+  "title": "_cdp-pix-9700",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _cdp-pix-9700",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _cdp-pix-9712",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_cdp-pix-9712",
+  "title": "_cdp-pix-9712",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _cdp-pix-9712",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _cdp-profile-9423",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_cdp-profile-9423",
+  "title": "_cdp-profile-9423",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _cdp-profile-9423",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _cdp-profile-9435",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_cdp-profile-9435",
+  "title": "_cdp-profile-9435",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _cdp-profile-9435",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _lfchk",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_lfchk",
+  "title": "_lfchk",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _lfchk",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _probe-profile-9924",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_probe-profile-9924",
+  "title": "_probe-profile-9924",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _probe-profile-9924",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _probe2-profile-9982",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_probe2-profile-9982",
+  "title": "_probe2-profile-9982",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _probe2-profile-9982",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _probe3-profile-9973",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_probe3-profile-9973",
+  "title": "_probe3-profile-9973",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _probe3-profile-9973",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _probe3-profile-9976",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_probe3-profile-9976",
+  "title": "_probe3-profile-9976",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _probe3-profile-9976",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _probe4-profile-9962",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_probe4-profile-9962",
+  "title": "_probe4-profile-9962",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _probe4-profile-9962",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _probe5-profile-9943",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_probe5-profile-9943",
+  "title": "_probe5-profile-9943",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _probe5-profile-9943",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _probe6-profile-9929",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_probe6-profile-9929",
+  "title": "_probe6-profile-9929",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _probe6-profile-9929",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _probe7-profile-9937",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_probe7-profile-9937",
+  "title": "_probe7-profile-9937",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _probe7-profile-9937",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _probe8-profile-9945",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_probe8-profile-9945",
+  "title": "_probe8-profile-9945",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _probe8-profile-9945",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _probe8-profile-9957",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_probe8-profile-9957",
+  "title": "_probe8-profile-9957",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _probe8-profile-9957",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _probe9-profile-9946",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_probe9-profile-9946",
+  "title": "_probe9-profile-9946",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _probe9-profile-9946",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _probeA-profile-9964",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_probeA-profile-9964",
+  "title": "_probeA-profile-9964",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _probeA-profile-9964",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _probeA-profile-9965",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_probeA-profile-9965",
+  "title": "_probeA-profile-9965",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _probeA-profile-9965",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _probeB-profile-9969",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_probeB-profile-9969",
+  "title": "_probeB-profile-9969",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _probeB-profile-9969",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _probeC-profile-9976",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_probeC-profile-9976",
+  "title": "_probeC-profile-9976",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _probeC-profile-9976",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _probeD-profile-9983",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_probeD-profile-9983",
+  "title": "_probeD-profile-9983",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _probeD-profile-9983",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _probeE-profile-9948",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_probeE-profile-9948",
+  "title": "_probeE-profile-9948",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _probeE-profile-9948",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _probeF-profile-9956",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_probeF-profile-9956",
+  "title": "_probeF-profile-9956",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _probeF-profile-9956",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _probeG-profile-9944",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_probeG-profile-9944",
+  "title": "_probeG-profile-9944",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _probeG-profile-9944",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _probeG-profile-9953",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_probeG-profile-9953",
+  "title": "_probeG-profile-9953",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _probeG-profile-9953",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _probeH-profile-9938",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_probeH-profile-9938",
+  "title": "_probeH-profile-9938",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _probeH-profile-9938",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _probeH-profile-9942",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_probeH-profile-9942",
+  "title": "_probeH-profile-9942",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _probeH-profile-9942",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _research",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_re earch",
+  "title": "_research",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _research",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _shoot-profile-10002",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_ hoot-profile-10002",
+  "title": "_shoot-profile-10002",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _shoot-profile-10002",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _shoot-profile-10006",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_ hoot-profile-10006",
+  "title": "_shoot-profile-10006",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _shoot-profile-10006",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _shoot-profile-9990",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_ hoot-profile-9990",
+  "title": "_shoot-profile-9990",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _shoot-profile-9990",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _shoot-profile-9994",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_ hoot-profile-9994",
+  "title": "_shoot-profile-9994",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _shoot-profile-9994",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _shoot-profile-9998",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_ hoot-profile-9998",
+  "title": "_shoot-profile-9998",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _shoot-profile-9998",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _verify",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_verify",
+  "title": "_verify",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _verify",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _verify-profile-9812",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_verify-profile-9812",
+  "title": "_verify-profile-9812",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _verify-profile-9812",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _verify-profile-9824",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_verify-profile-9824",
+  "title": "_verify-profile-9824",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _verify-profile-9824",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 _verify-profile-9836",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_verify-profile-9836",
+  "title": "_verify-profile-9836",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _verify-profile-9836",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 ags2",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "ag 2",
+  "title": "ags2",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 ags2",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 anhui-tv-center",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "anhui-tv-center",
+  "title": "anhui-tv-center",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 anhui-tv-center",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 chip-flow",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "chip-flow",
+  "title": "chip-flow",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 chip-flow",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 deck-basic",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "deck-ba ic",
+  "title": "deck-basic",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 deck-basic",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 deck-hqu",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "deck-hqu",
+  "title": "deck-hqu",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 deck-hqu",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 deck-intro",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "deck-intro",
+  "title": "deck-intro",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 deck-intro",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 deck-q3",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "deck-q3",
+  "title": "deck-q3",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 deck-q3",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 foup",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "foup",
+  "title": "foup",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 foup",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 landing-basic",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "landing-ba ic",
+  "title": "landing-basic",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 landing-basic",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 leifeng-pagoda",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "leifeng-pagoda",
+  "title": "leifeng-pagoda",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 leifeng-pagoda",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 pelican-bike",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "pelican-bike",
+  "title": "pelican-bike",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 pelican-bike",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 ref",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "ref",
+  "title": "ref",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 ref",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-twi.t",
+  "text": "",
+  "title": null,
+  "aria": "展开 uploads",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "upload ",
+  "title": "uploads",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 uploads",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_analyze.py",
+  "title": "_analyze.py",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _analyze.py",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_lf_a.png",
+  "title": "_lf_a.png",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _lf_a.png",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_lf_b.png",
+  "title": "_lf_b.png",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _lf_b.png",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_lf_c.png",
+  "title": "_lf_c.png",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _lf_c.png",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_lf_crop_full.png",
+  "title": "_lf_crop_full.png",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _lf_crop_full.png",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_lf_crop_tower.png",
+  "title": "_lf_crop_tower.png",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _lf_crop_tower.png",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_lf_d.png",
+  "title": "_lf_d.png",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _lf_d.png",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_lf_dbg.png",
+  "title": "_lf_dbg.png",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _lf_dbg.png",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_lf_e.png",
+  "title": "_lf_e.png",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _lf_e.png",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_lf_edge.png",
+  "title": "_lf_edge.png",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _lf_edge.png",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_lf_edge2.png",
+  "title": "_lf_edge2.png",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _lf_edge2.png",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_lf_en.html",
+  "title": "_lf_en.html",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _lf_en.html",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_lf_f.png",
+  "title": "_lf_f.png",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _lf_f.png",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_lf_g.png",
+  "title": "_lf_g.png",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _lf_g.png",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_lf_g2.png",
+  "title": "_lf_g2.png",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _lf_g2.png",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_lf_ hot1.png",
+  "title": "_lf_shot1.png",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _lf_shot1.png",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_lf_ hot2.png",
+  "title": "_lf_shot2.png",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _lf_shot2.png",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_lf_ hot3.png",
+  "title": "_lf_shot3.png",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _lf_shot3.png",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_lf_water.png",
+  "title": "_lf_water.png",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _lf_water.png",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_lf_zh.html",
+  "title": "_lf_zh.html",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _lf_zh.html",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_pix.mj ",
+  "title": "_pix.mjs",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _pix.mjs",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_ cene_backup.j ",
+  "title": "_scene_backup.js",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _scene_backup.js",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "_ hot.mj ",
+  "title": "_shot.mjs",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 _shot.mjs",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "check_full_0.62.jpg",
+  "title": "check_full_0.62.jpg",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 check_full_0.62.jpg",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "check_full_0.jpg",
+  "title": "check_full_0.jpg",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 check_full_0.jpg",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "check_full_1.24.jpg",
+  "title": "check_full_1.24.jpg",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 check_full_1.24.jpg",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "check_full_1.86.jpg",
+  "title": "check_full_1.86.jpg",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 check_full_1.86.jpg",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "check_leg _0.62.jpg",
+  "title": "check_legs_0.62.jpg",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 check_legs_0.62.jpg",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "check_leg _0.jpg",
+  "title": "check_legs_0.jpg",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 check_legs_0.jpg",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "check_leg _1.24.jpg",
+  "title": "check_legs_1.24.jpg",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 check_legs_1.24.jpg",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "check_leg _1.86.jpg",
+  "title": "check_legs_1.86.jpg",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 check_legs_1.86.jpg",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "check_upper_0.62.jpg",
+  "title": "check_upper_0.62.jpg",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 check_upper_0.62.jpg",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "check_upper_0.jpg",
+  "title": "check_upper_0.jpg",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 check_upper_0.jpg",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "check_upper_1.24.jpg",
+  "title": "check_upper_1.24.jpg",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 check_upper_1.24.jpg",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "check_upper_1.86.jpg",
+  "title": "check_upper_1.86.jpg",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 check_upper_1.86.jpg",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "chip-flow.zip",
+  "title": "chip-flow.zip",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 chip-flow.zip",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "index.html",
+  "title": "index.html",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 index.html",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "pb_0.62.png",
+  "title": "pb_0.62.png",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 pb_0.62.png",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "pb_0.png",
+  "title": "pb_0.png",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 pb_0.png",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "pb_1.24.png",
+  "title": "pb_1.24.png",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 pb_1.24.png",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "pb_1.86.png",
+  "title": "pb_1.86.png",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 pb_1.86.png",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": "probe_46745a.bin",
+  "title": "probe_46745a.bin",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 probe_46745a.bin",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": " cript.j ",
+  "title": "script.js",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 script.js",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-name",
+  "text": " tyle.c ",
+  "title": "style.css",
+  "aria": null,
+  "w": 92,
+  "h": 23,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ft-cite",
+  "text": "@",
+  "title": "插入 @ 引用",
+  "aria": "插入 @ 引用 style.css",
+  "w": 22,
+  "h": 22,
+  "disabled": false
+ },
+ {
+  "tag": "summary",
+  "cls": "compo.er-",
+  "text": "D:\\Work\\ cratc… \\liquid-demo · kimi-k3",
+  "title": "项目 / 工作目录 / 模型",
+  "aria": null,
+  "w": 1232,
+  "h": 27,
+  "disabled": false
+ },
+ {
+  "tag": "label",
+  "cls": "r-only",
+  "text": "项目",
+  "title": null,
+  "aria": null,
+  "w": 1,
+  "h": 1,
+  "disabled": false
+ },
+ {
+  "tag": "select",
+  "cls": "wd-trigger .r-only",
+  "text": "创建项目网盘管理T5-live-mu-chatAGS-Pro＋ 新建项目…",
+  "title": null,
+  "aria": null,
+  "w": 1,
+  "h": 1,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "theme-.elect-trigger",
+  "text": "创建项目",
+  "title": "创建项目",
+  "aria": "项目",
+  "w": 72,
+  "h": 24,
+  "disabled": false
+ },
+ {
+  "tag": "label",
+  "cls": "r-only",
+  "text": "工作目录",
+  "title": null,
+  "aria": null,
+  "w": 1,
+  "h": 1,
+  "disabled": false
+ },
+ {
+  "tag": "select",
+  "cls": "r-only",
+  "text": "D:\\Work\\ cratch\\agen…o_ ite \\liquid-demoD:\\Work\\RL-ALSRC:\\U ",
+  "title": "本对话的工作目录：D:\\Work\\scratch\\agent-design-local-20260908\\demos\\demo_sites\\liquid-demo（开新对话时可另选）",
+  "aria": null,
+  "w": 1,
+  "h": 1,
+  "disabled": true
+ },
+ {
+  "tag": "button",
+  "cls": "wd-trigger",
+  "text": "D:\\Work\\ cratc… \\liquid-demo",
+  "title": "本对话的工作目录：D:\\Work\\scratch\\agent-design-local-20260908\\demos\\demo_sites\\liquid-demo（开新对话时可另选）",
+  "aria": null,
+  "w": 139,
+  "h": 19,
+  "disabled": true
+ },
+ {
+  "tag": "button",
+  "cls": "model-picker-trigger",
+  "text": "kimi-k3",
+  "title": "kimi-k3（anthropic · kimi-k3）· 1048k tokens（来源：登记表）。切换会按新窗口重算水位；进行中的这一轮不受影响。",
+  "aria": null,
+  "w": 77,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "select",
+  "cls": "r-only",
+  "text": "环境变量 · deep eek-fla h（anthropic · deep eek-fla h） · 窗口 1048k",
+  "title": null,
+  "aria": null,
+  "w": 1,
+  "h": 1,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "btn btn--gho.t knob",
+  "text": "运行设置",
+  "title": null,
+  "aria": "运行设置",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ },
+ {
+  "tag": "label",
+  "cls": "ta.k-label",
+  "text": "追加指令",
+  "title": null,
+  "aria": null,
+  "w": 1,
+  "h": 1,
+  "disabled": false
+ },
+ {
+  "tag": "textarea",
+  "cls": "",
+  "text": "",
+  "title": "Enter 发送，Shift+Enter 换行",
+  "aria": null,
+  "w": 1098,
+  "h": 36,
+  "disabled": false
+ },
+ {
+  "tag": "input",
+  "cls": "r-only",
+  "text": "",
+  "title": null,
+  "aria": null,
+  "w": 1,
+  "h": 1,
+  "disabled": false
+ },
+ {
+  "tag": "label",
+  "cls": "btn btn--gho.t upload-label",
+  "text": "附件",
+  "title": "添加图片或文件",
+  "aria": null,
+  "w": 36,
+  "h": 36,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "btn btn--gho.t cite-",
+  "text": "引用会话",
+  "title": "引用会话（不是文献出处）",
+  "aria": "引用会话",
+  "w": 44,
+  "h": 30,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "btn btn--primary .ubmit-btn",
+  "text": "继续对话",
+  "title": null,
+  "aria": null,
+  "w": 36,
+  "h": 36,
+  "disabled": false
+ },
+ {
+  "tag": "button",
+  "cls": "ctx-ring ctx-ring--ok",
+  "text": "上下文",
+  "title": "上下文 39%（409.8k / 1048.6k）",
+  "aria": "上下文 39%（409.8k / 1048.6k）",
+  "w": 28,
+  "h": 28,
+  "disabled": false
+ }
+]

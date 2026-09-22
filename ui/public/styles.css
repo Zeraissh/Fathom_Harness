@@ -169,6 +169,10 @@
   --space-lg: 16px;
   --space-xl: 24px;
 
+  --measure: 40em;          /* 正文度量：40 个中文全角字（1 全角字 ≈ 1em）。
+                               用 em 不用 ch——ch 是拉丁"0"的宽度，对中文不对口，
+                               而且 em 会让度量随字号自动跟走。 */
+
   /* 原生控件（date / 未升级的 select）跟页面亮暗走，避免系统白底浅字 */
   color-scheme: light;
 }
@@ -379,8 +383,30 @@ code, pre, .chip-name, .usage-table td, .log-entry-body {
   flex-direction: column;
 }
 
+/* 收起态 = 48px 图标条（不是消失）。此前是 display:none，收起后什么都点不到。 */
 body.sidebar-collapsed .sidebar {
+  width: 48px;
+  min-width: 48px;
+  overflow: hidden;
+}
+/* 收起态藏起的：宽内容在 48px 里放不下，且都是"展开态才看得清"的东西。
+   选择器逐个核过真实 DOM（`.sidebar-search` 里是 `#new-chat-btn` + `.run-search-row`，
+   品牌是 `.sidebar-brand`）。 */
+body.sidebar-collapsed .run-list,
+body.sidebar-collapsed .run-search-row,
+body.sidebar-collapsed #home-spend,
+body.sidebar-collapsed #workspace-face,
+body.sidebar-collapsed .sidebar-brand,
+body.sidebar-collapsed .new-chat-btn span {
   display: none;
+}
+/* 保留的按钮行改成竖排：图标按钮已经在 DOM 里（无需新建），
+   横排时 5×34=170px 会溢出 48px。 */
+body.sidebar-collapsed .sidebar-top-tools,
+body.sidebar-collapsed .sidebar-footer--icons {
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
 }
 
 .sidebar-collapse-btn {
@@ -759,6 +785,7 @@ body.sidebar-collapsed .sidebar {
   padding: 4px 0;
 }
 .upload-item--image { align-items: flex-start; }
+.upload-no { color: var(--text-2); font-size: var(--font-xs); }
 .upload-thumb {
   width: 56px;
   height: 56px;
@@ -786,14 +813,32 @@ body.sidebar-collapsed .sidebar {
   flex: 0 0 auto;
 }
 .composer-media[hidden] { display: none; }
+/* 编号缩略图：点一下把「Image #N」插进正文（A 簇）。按钮化是为了键盘可达，
+   但**布局语义必须与它原来那个 div 逐字一致**——尤其 aspect-ratio 与
+   overflow:hidden：丢了它们，下面 img 的 height:100% 就解析不到确定高度、
+   退回图片的自然比例，竖长图会把 composer 撑高。 */
 .composer-media-preview {
   display: block;
+  position: relative;
+  padding: 0;
   aspect-ratio: 4 / 3;
-  border-radius: 10px;
   overflow: hidden;
-  border: 1px solid var(--border-1);
-  background: var(--bg);
   flex-shrink: 0;
+  border: 1px solid var(--border-1);
+  border-radius: 10px;
+  background: var(--bg);
+  cursor: pointer;
+  line-height: 0;
+  appearance: none;
+}
+.composer-media-preview:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.composer-media-no {
+  position: absolute; left: 2px; bottom: 2px; line-height: 1;
+  /* scrim 照 .right-rail-scrim 的 color-mix 先例：文字与底是同一对互补令牌，
+     亮暗两套主题下都读得清。 */
+  background: color-mix(in srgb, var(--text-1) 62%, transparent);
+  color: var(--surface-0); border-radius: 3px;
+  padding: 1px 4px; font-size: var(--font-xs);
 }
 .composer-media-preview img {
   display: block;
@@ -1523,15 +1568,16 @@ body.sidebar-collapsed .sidebar {
 
 /* ===== P1 右列空间契约 =====
 
-   右列是**唯一 owner**：文件树与预览坞都是它的面板，宽度/折叠/选哪个面板只有
-   一份记忆。边界由 core/rail-policy.js 按预算算出（左栏 280 展开时为 936，
-   不是当初 preview-dock 单独写的 900），所以这里不写任何 @media 断点——
+   右列是**唯一 owner**：文件树、预览坞与「改动」面板都是它的槽，宽度/折叠/选
+   哪个槽只有一份记忆。边界由 core/rail-policy.js 按预算算出（左栏 280 展开时为
+   936，不是当初 preview-dock 单独写的 900），所以这里不写任何 @media 断点——
    JS 把算出来的结果落在 data-* 与 CSS 变量上。
 
-   形态（data-mode / data-layout / data-collapsed / data-panel）：
-     side + tabbed   中档：单列，tab 互斥
-     side + split    宽档（≥1440）：树与预览并排两列
-     overlay         窄档：不占位，退成覆盖抽屉，默认收起
+   形态（data-mode 预算档 / data-layout 视觉形态 / data-collapsed / data-surface）：
+     docked    宽档：占宽的真列（从对话拿宽，可拖）
+     floating  浮层：浮在对话上（不占位，遮罩表达层级）
+     收起 = side 档 40px 细条（细条上留着展开键）；overlay / 欢迎页整条藏掉，
+             重开靠 rail 外的把手（走查 UX-B2）
 */
 
 /* 右列变量的默认值。运行时由 index.html 的 paintRightRail() 用 inline style 覆盖；
@@ -1541,9 +1587,8 @@ body.sidebar-collapsed .sidebar {
 :root {
   --center-min: 26rem;      /* = CENTER_MIN_PX 416 */
   --rail-width: 288px;      /* 中档默认（RAIL_MIN 240 ~ RAIL_MAX 360 之间） */
-  --rail-tree-w: 144px;     /* split 档只在 ≥1440 生效 */
-  --rail-preview-w: 144px;
   --rail-expand-inset: 0px; /* 放大态左伸量：宿主按 -(主区宽-右列宽) 写 */
+  --rail-float-top: 0px;    /* 浮层让出对话头部那条的高度（宿主实测写，见 .back-bar） */
 }
 
 .right-rail {
@@ -1559,44 +1604,53 @@ body.sidebar-collapsed .sidebar {
   position: relative;
   z-index: 30;
 }
-.right-rail[data-collapsed="true"] { width: 40px; overflow: hidden; }
 
-/* split 档：**并排**两列。缺这一行时面板的 `flex: 0 0 var(--rail-tree-w)`
-   在 column 容器里被当成高度用——两条 141px 横条叠在 769px 的列顶、下面全空
-   （2026-09-18 走查 UX-B1 活页实锤）。 */
-.right-rail[data-layout="split"] { flex-direction: row; }
-.right-rail[data-layout="split"] > .right-rail-preview { border-left: 1px solid var(--border-1); }
-
-.right-rail-tabs {
+/* docked = 占宽的真列（宽屏）。它从对话那里拿宽，所以要有最小/最大宽。 */
+.right-rail[data-layout="docked"] {
   flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  padding: 6px 6px 2px;
+  width: var(--rail-width, 288px);
 }
-.right-rail[data-layout="split"] .right-rail-tabs { display: none; }
-.right-rail[data-collapsed="true"] .right-rail-tabs { display: none; }
 
-.right-rail-tab {
-  flex: 0 0 auto;
-  padding: 2px 8px;
-  border: 0;
-  border-radius: 4px;
-  background: transparent;
-  color: var(--text-3);
-  font: inherit;
-  font-size: var(--font-xs);
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  cursor: pointer;
+/**
+ * floating = 浮在对话上（窄屏）。**不占位**是它的定义——所以 absolute。
+ * 它不参与 flex，`centerWidth` 也就不扣它的宽（见 rail-policy.js 的 floating 分支）。
+ *
+ * ★ `top` 让出**对话头部那条**（计划 4 · T5 修复轮，实测缺陷）：
+ *   原本 `top: 0` 起、浮满右半条，把对话头部那排召出钮整个盖住——1100 档每只键的
+ *   `elementFromPoint` 命中的都是 `div#right-rail`，`page.click` 超时 ⇒ **窄档下
+ *   「再点同一个键」根本点不到**，与设计稿 §5「四条关闭路径（× / Esc / 遮罩 / 同键）
+ *   都要通」冲突。高度由宿主**实测**写进 `--rail-float-top`（不写死数值：头部的
+ *   高度随字号/脸/窗口宽度变），见 index.html 的 paintRightRail。
+ */
+.right-rail[data-layout="floating"] {
+  position: absolute;
+  top: var(--rail-float-top, 0px);
+  right: 0;
+  bottom: 0;
+  width: var(--rail-width, 288px);
+  z-index: 60;
+  border-left: 1px solid var(--border-1);
+  box-shadow: -18px 0 48px color-mix(in srgb, var(--text-1) 18%, transparent);
 }
-.right-rail-tab:hover { color: var(--text-1); background: var(--surface-2); }
-.right-rail-tab[aria-pressed="true"] { color: var(--text-1); background: var(--surface-2); }
-.right-rail-tab:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 1px; }
+/* 收起 = **细条**，不是消失：side 档收成 40px（宽由 railPolicy 给，RAIL_COLLAPSED_PX），
+   细条上留着那把翻转的展开键——它是宽档下唯一的重开入口。
+   ★ 键必须是右列的**直接子节点**才活得过收起（index.html:213-215 的既有注释，
+     2026-09-18 走查 UX-B2/B1 的成果）。
+   只有 overlay / 欢迎页（宿主把 rail 收成 0 宽）才整条藏掉，那时重开由 rail 外的把手接管。 */
+.right-rail[data-collapsed="true"] {
+  width: var(--rail-width, 40px);
+  overflow: hidden;
+}
+.right-rail[data-collapsed="true"] .right-rail-collapse i {
+  transform: rotate(180deg);
+}
+.right-rail[data-mode="overlay"][data-collapsed="true"] {
+  display: none;
+}
 
 .right-rail-collapse {
-  /* 浮在右列右上角，独立于 tab 行——split 档 tab 行整排隐藏（走查 UX-B1/B2），
-     收起态（40px 细条）也得留着它当展开入口。
+  /* 浮在右列右上角，独立于召出钮行。收起后右列收成 40px 细条，这把键
+     （箭头翻转后 ▸→◂）就是细条上唯一的重开入口（走查 UX-B2/B1）。
      z 序：坞 40 < 本键 45 < 放大态 70——坞开着时键仍可点，放大态则由坞接管。 */
   position: absolute;
   top: 6px;
@@ -1611,10 +1665,10 @@ body.sidebar-collapsed .sidebar {
 }
 .right-rail-collapse:hover { color: var(--text-1); }
 .right-rail-collapse:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 1px; }
-/* 收起后箭头掉头：▸ 收起 → ◂ 展开，入口还在看得见的地方 */
-.right-rail[data-collapsed="true"] .right-rail-collapse i { transform: rotate(180deg); }
 
-/* 拖拽柄：右列左缘的一条热区（覆盖与收起形态下不出现） */
+/* 拖拽柄：右列左缘的一条热区（覆盖、浮层与收起形态下不出现。
+   浮层不可拖：浮层宽由 railPolicy 的比例式定，可拖只属于占宽的 docked 列——
+   拖动时 railPolicy 会按 FLOATING_WIDTH_RATIO 重算，一松手就弹回） */
 .right-rail-drag {
   position: absolute;
   left: -3px;
@@ -1632,43 +1686,123 @@ body.sidebar-collapsed .sidebar {
 .right-rail--dragging iframe { pointer-events: none; }
 .right-rail[data-collapsed="true"] .right-rail-drag,
 .right-rail[data-mode="overlay"] .right-rail-drag { display: none; }
+.right-rail[data-layout="floating"] .right-rail-drag { display: none; }
 
-/* 两个面板：tabbed 下互斥占满；split 下按算出的像素并排 */
+/* 一次一只：三只槽默认全藏，只有当前面是 flex。 */
 .right-rail > .workspace-file-tree,
-.right-rail > .right-rail-preview {
+.right-rail > .right-rail-preview,
+.right-rail > .right-rail-review {
   flex: 1 1 auto;
   min-height: 0;
   min-width: 0;
+  display: none;
 }
-.right-rail > .workspace-file-tree { width: auto; }
-.right-rail[data-panel="tree"] > .right-rail-preview,
-.right-rail[data-layout="split"] > .right-rail-preview { display: none; }
-.right-rail[data-panel="preview"] > .workspace-file-tree,
-.right-rail[data-layout="split"] > .workspace-file-tree { display: none; }
-.right-rail[data-panel="preview"] > .right-rail-preview,
-.right-rail[data-layout="split"] > .right-rail-preview {
+.right-rail[data-surface="tree"] > .workspace-file-tree,
+.right-rail[data-surface="preview"] > .right-rail-preview,
+.right-rail[data-surface="review"] > .right-rail-review {
   display: flex;
   flex-direction: column;
 }
-.right-rail[data-panel="tree"] > .workspace-file-tree { display: flex; }
+/* 树自己的 .files-rail 样式给了 clamp(200px, 22vw, 280px) 固定宽——
+   在右列里它是"占满整列"的面，宽必须交还给容器。 */
+.right-rail > .workspace-file-tree { width: auto; }
 
-.right-rail[data-layout="split"] > .workspace-file-tree {
+/* 两脸的槽也成对（计划 1 的规矩）。Work 脸**恒出树**——计划 4 的刻意中间态
+   （Work 脸那个召出钮暂挂树，工作台四段归计划 6）；另两只槽在 Work 脸不许出现
+   （设计 §3：Work 脸完全不出现改动/PR）。
+   ★ 特异性 (0,3,1) 压过显形规则的 (0,3,0)——赢在**特异性**，与源顺序无关（余量为正）。
+     【对照】E14 空槽 hider 与显形规则**同为** (0,3,0)，那一对才是"只能靠源顺序"的，
+     所以它另有一条源顺序锁（test/ui-layout.test.ts 的 E14 那条）。 */
+body[data-face="work"] .right-rail > .workspace-file-tree {
   display: flex;
-  flex: 0 0 var(--rail-tree-w, 144px);
+  flex-direction: column;
 }
-.right-rail[data-layout="split"] > .right-rail-preview { flex: 0 0 var(--rail-preview-w, 144px); }
+body[data-face="work"] .right-rail > .right-rail-preview,
+body[data-face="work"] .right-rail > .right-rail-review {
+  display: none;
+}
 
-/* 覆盖形态：不占 flex 位，钉在主区右侧（窄档用；absolute 相对 #main-panel） */
-.right-rail[data-mode="overlay"] {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 60;
-  border-left: 1px solid var(--border-1);
-  box-shadow: -18px 0 48px color-mix(in srgb, var(--text-1) 18%, transparent);
+/* 召出钮：Work 脸一只（暂挂树）／Code 脸四只（终端·改动·预览·更多）。
+   ★ 写法是「先全藏、再按脸显」，不是「逐只 display:none」：
+     前者在**将来新增一只钮忘了配对时**默认藏住（安全的一侧）；
+     后者会把漏掉的那只**以无样式形态放到两张脸上**（Global Constraints 里 T6 实测栽过）。
+   外观照屋里的小方钮（.icon-btn / .usage-view-btn 一族）：compact chrome +
+   hover 反馈 + [aria-pressed="true"] 激活高亮（设计稿 §3：激活时高亮）。 */
+.rail-surface-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid var(--border-1);
+  border-radius: var(--radius);
+  background: var(--surface-0);
+  color: var(--text-2);
+  font: inherit;
+  font-size: var(--font-sm);
+  cursor: pointer;
 }
-.right-rail[data-mode="overlay"][data-collapsed="true"] { display: none; }
+/* hover 只改字色（照 .usage-view-btn 的形状）；激活给 --accent 实底——
+   持久线索独立于 hover，悬停未激活钮不会长得像激活钮（设计稿 §3 激活时高亮） */
+.rail-surface-btn:hover { color: var(--text-1); }
+.rail-surface-btn[aria-pressed="true"] {
+  background: var(--accent);
+  color: var(--on-accent);
+  border-color: var(--accent);
+}
+.rail-surface-btn:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 1px; }
+.rail-surface-btn .ph { flex: 0 0 auto; font-size: 15px; }
+body[data-face="work"] .rail-surface-btn--work {
+  display: flex;
+}
+body[data-face="code"] .rail-surface-btn--code {
+  display: flex;
+}
+
+/* 钮行与「更多」菜单的形态：钮行钉在对话头部 .back-bar（app.js 拼的），
+   margin-left:auto 推到标题行右端。菜单照 .wd-menu 抄一份**向下弹**变体——
+   .wd-menu 挂在底栏是向上弹（bottom: calc(100% + 6px)），在头部必须反向；
+   z-index/背景/边框/阴影同源。 */
+.rail-surface-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+  margin-left: auto;
+  position: relative; /* 菜单的定位上下文 */
+}
+.rail-more-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 40;
+  min-width: min(12rem, 80vw);
+  padding: 4px;
+  border: 1px solid var(--border-2);
+  border-radius: calc(var(--radius) + 2px);
+  background: var(--surface-0);
+  color: var(--text-1);
+  box-shadow: 0 14px 36px color-mix(in srgb, var(--text-1) 22%, transparent);
+}
+/* 作者规则会压过 UA 的 [hidden]（display:none）——.wd-menu 同款补丁 */
+.rail-more-menu[hidden] { display: none !important; }
+.rail-more-item {
+  display: block;
+  width: 100%;
+  padding: 6px 8px;
+  border: none;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text-1);
+  font: inherit;
+  font-size: var(--font-sm);
+  text-align: left;
+  cursor: pointer;
+}
+.rail-more-item:hover { background: var(--surface-2); }
+.rail-more-item:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 1px; }
 
 /* ---- 窄档的重开入口与层级（二轮走查 2026-09-18 夜）----
    实测：收起后右列 0 宽消失、全站没有第二个入口（断头路）；
@@ -1731,13 +1865,16 @@ body.sidebar-collapsed .sidebar {
 }
 /* 走查 UX-B4/E14：坞收起只写 root.hidden，槽还是 display:flex——右列留一块空槽。
    注意槽里有**两个**坞实例（文件预览 overlay + 产物画布），判据必须是
-   "没有任何可见坞"而不是"存在 hidden 坞"，否则一个收起会把另一个也连坐藏掉。 */
+   "没有任何可见坞"而不是"存在 hidden 坞"，否则一个收起会把另一个也连坐藏掉。
+   ★ 特异性与上面 :is() 显形规则**同为 (0,3,0)**——空槽时的 display:none
+   **只靠源顺序赢**（显形在前、本条在后）。顺序由 ui-layout 的 E14 源顺序锁守着，
+   别把这条挪到显形规则之前。 */
 .right-rail-preview:not(:has(> .preview-dock:not([hidden]))) { display: none; }
 /* 坞自带的手柄（z-40）压住右列拖柄（z-30），且 railHosted 下 mousedown 早退
    ——右列拖宽在坞打开时被静默吞掉。手柄在列里本就不该有拖拽语义。 */
 .right-rail-preview .preview-dock .pd-handle { pointer-events: none; }
 
-/* 右列自己管收起（键在 tab 行右侧）。树自带的收起键让位——否则两个收起键
+/* 右列自己管收起（.right-rail-collapse）。树自带的收起键让位——否则两个收起键
    各写一份偏好，"一份记忆"就不成立了。树模块内部的折叠逻辑保留不动，
    它只是不再有用户入口，也因此不再写旧键。 */
 .right-rail .files-rail-toggle { display: none; }
@@ -1746,11 +1883,37 @@ body.sidebar-collapsed .sidebar {
 
 /* ===== 窄屏返回栏 ===== */
 
+/**
+ * 对话头部：**钉在滚动区顶端的固定条**（计划 4 · T5 修复轮）。
+ *
+ * 两条实测缺陷合起来要求它 sticky + 高层级：
+ *   ① 它原本住在**可滚动**的 #main-area 里 ⇒ 长对话滚到底后整排召出钮滚出视口
+ *      （1920 档实测 back-bar 的 y = −3544），键点不到；
+ *   ② 窄档 `layout=floating` 的浮层原本 `top: 0` 起，把这条整个盖住 ⇒
+ *      「再点同一个键」（设计稿 §5 的四条关闭路径之一）在窄档根本不可点。
+ * ⇒ 头部钉住（sticky top:0）+ 层级 **高过遮罩(59)与浮层(60)**；浮层那半由
+ *   `--rail-float-top` 让出本条的高度（实测写，见 paintRightRail）。
+ *
+ * 负 margin + 等量 padding 是**满宽**那半：`.content-area` 的 padding 是
+ * `var(--space-lg)`（16px），抵消后本条的边框盒从滚动区最顶/最左起到最右，
+ * 不透明底把滚过去的正文完全挡住；而条里内容的偏移与从前**逐像素一致**
+ * （margin-top −16 + padding-top 16 = 原样），后面的兄弟节点也仍从原位置起。
+ * 边框盒高度因此**与滚动位置无关**（恒 = 16 + 内容高），`--rail-float-top`
+ * 量一次就长期有效。
+ */
 .back-bar {
   display: flex;
   align-items: flex-start;
   gap: var(--space-sm);
   margin-bottom: var(--space-sm);
+  position: sticky;
+  top: 0;
+  z-index: 61;
+  background: var(--surface-0);
+  margin-top: calc(-1 * var(--space-lg));
+  padding-top: var(--space-lg);
+  margin-inline: calc(-1 * var(--space-lg));
+  padding-inline: var(--space-lg);
 }
 
 .back-bar > .back-btn,
@@ -3860,6 +4023,28 @@ body.sidebar-collapsed .sidebar {
   outline: 2px solid var(--focus-ring);
   outline-offset: 1px;
 }
+/* A6 的一对按钮（展开 / 折叠）：与 .files-rail-toggle 同一档；
+   栏收起时只剩开关，这对按钮跟着标题一起藏。 */
+.files-rail-all {
+  flex: 0 0 auto;
+  padding: 2px 4px;
+  border: 0;
+  background: transparent;
+  color: var(--text-2);
+  font: inherit;
+  font-size: var(--font-sm);
+  letter-spacing: 0;
+  text-transform: none;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.files-rail-all:hover { color: var(--text-1); }
+.files-rail-all:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 1px;
+}
+.files-rail--collapsed .files-rail-all { display: none; }
 .files-rail--collapsed .workspace-file-tree-head {
   padding: 8px 6px;
 }
@@ -3923,6 +4108,21 @@ body.sidebar-collapsed .sidebar {
 .ft-cite:focus-visible {
   outline: 2px solid var(--focus-ring);
   outline-offset: 1px;
+}
+/* A6 降噪折叠：组行整体弱化色，括号里的计数再小一号。
+   窄栏下计数换到第二行——树列最小 200px（TREE_MIN_PX），组名与计数
+   合起来放不下一行时，宁可换行也不截断：名字可读是计划 1 的成果线。 */
+.ft-group-name { color: var(--text-2); flex-wrap: wrap; }
+.ft-group-name .ft-group-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ft-group-name .ft-group-count {
+  flex: 0 0 auto;
+  color: var(--text-3);
+  font-size: var(--font-xs);
+  white-space: nowrap;
 }
 .ft-empty,
 .ft-error,
@@ -4485,7 +4685,6 @@ body.sidebar-collapsed .sidebar {
   font-size: var(--font-xs);
 }
 
-.conversation { max-width: min(112ch, 100%); gap: 14px; }
 .chat-item:has(.chat-tool-group) {
   align-self: flex-start;
   width: fit-content;
@@ -4698,6 +4897,37 @@ body.sidebar-collapsed .sidebar {
   white-space: nowrap;
 }
 
+/* 能力条（三轮走查 L1）。挂在 scope 摘要行右端——details 收起时只有 summary
+   渲染，而 #composer-scopebar 与输入行同在 y=807 会被盖住，挂那儿等于挂进柜子。
+   旧 .assembly-* 样式自 09-07 起一直在（见下方 .assembly-chip），缺的只是挂载点。 */
+.composer-capability {
+  margin-left: auto;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-xs);
+  min-width: 0;
+}
+.composer-capability .assembly-chip {
+  background: var(--yellow-bg);
+  border-bottom: none;
+  border-radius: var(--radius);
+  padding: 0 5px;
+  color: var(--text-1);
+  font-size: var(--font-xs);
+}
+/* 理由弹层：**在 details 之外**——收起状态正是它被用到的状态 */
+.composer-capability-why {
+  margin: 0 0 var(--space-xs);
+  padding: var(--space-sm) var(--space-md);
+  border-left: 2px solid var(--yellow);
+  background: var(--bg2);
+  font-size: var(--font-md);
+  color: var(--text-2);
+  max-width: 78ch;
+  line-height: 1.55;
+}
+
 .composer-scopebar {
   display: flex;
   align-items: center;
@@ -4706,6 +4936,22 @@ body.sidebar-collapsed .sidebar {
   margin-bottom: 2px;
   padding-bottom: 0;
   border-bottom: 0;
+}
+
+/**
+ * 折叠时必须**真的不渲染**，否则是一个"看得见、点不到"的幽灵控件（计划 3 · T1）。
+ *
+ * author 的 display:flex 压过了 UA 对折叠 <details> 内容的隐藏，所以 scope
+ * 收起时 scopebar 仍留着布局盒；`overflow: visible`（见 .submit-bar 那条）
+ * 又允许它溢出自己的盒子、落进输入行那一条 y 带，而透明的
+ * TEXTAREA#task-input 画在它上面接走点击——实测 25/25 次 elementFromPoint
+ * 全命中 textarea，于是「选择目录」那行字看得见、点不到。
+ *
+ * display:none 直接掐掉盒子，不给它溢出的机会。特异性 (0,3,0) > (0,1,0)，
+ * 与书写顺序无关。
+ */
+.composer-scope:not([open]) .composer-scopebar {
+  display: none;
 }
 
 .composer-mode-block {
@@ -5179,6 +5425,17 @@ body.sidebar-collapsed .sidebar {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+/* 能力标（三轮走查 L2）：换过去会丢什么，不必逐个悬停读详情。
+   用警示底色而不是 text-3——它不是元信息，是后果。 */
+.model-picker-item-flag {
+  align-self: flex-start;
+  padding: 0 5px;
+  border-radius: var(--radius);
+  background: var(--yellow-bg);
+  color: var(--text-1);
+  font-size: var(--font-xs);
+  white-space: nowrap;
+}
 .model-picker-check {
   flex: 0 0 auto;
   color: var(--accent);
@@ -5239,6 +5496,15 @@ body.sidebar-collapsed .sidebar {
   font-size: var(--font-xs);
   color: var(--text-3);
   line-height: 1.4;
+}
+/* 详情里的能力说明（三轮走查 L2）——左侧竖线把它和"窗口多少"那段区分开 */
+.model-picker-detail-caveat {
+  margin: 6px 0 0;
+  padding-left: 8px;
+  border-left: 2px solid var(--yellow);
+  color: var(--text-2);
+  font-size: var(--font-xs);
+  line-height: 1.5;
 }
 @media (max-width: 700px) {
   .model-picker-menu {
@@ -5660,15 +5926,14 @@ body.sidebar-collapsed .sidebar {
 }
 .empty-state h2 { color: var(--text-1); font-size: var(--font-display-lg); }
 .empty-state p.empty-window-note,
-.empty-state p.empty-cite-hint,
-.empty-state p.next-actions-kicker {
+.empty-state p.empty-cite-hint {
   margin: 4px 0 0;
   max-width: 48ch;
   color: var(--text-3);
   font-size: var(--font-sm);
   line-height: 1.5;
 }
-.empty-state p:not(.empty-brand):not(.empty-eyebrow):not(.empty-tagline):not(.empty-tagline-cn):not(.empty-window-note):not(.empty-cite-hint):not(.next-actions-kicker) {
+.empty-state p:not(.empty-brand):not(.empty-eyebrow):not(.empty-tagline):not(.empty-tagline-cn):not(.empty-window-note):not(.empty-cite-hint) {
   max-width: 62ch;
   color: var(--text-2);
   line-height: 1.7;
@@ -5869,7 +6134,6 @@ body.sidebar-collapsed .sidebar {
 .empty-state--design .empty-tagline-cn,
 .empty-state--design .empty-window-note,
 .empty-state--design .empty-cite-hint,
-.empty-state--design .next-actions,
 .empty-state--design .empty-depthline {
   display: none;
 }
@@ -6549,6 +6813,84 @@ body.sidebar-collapsed .sidebar {
 .md .md-table-wrap { overflow-x: auto; margin: 0 0 8px; }
 .md .md-table-wrap .md-table { margin: 0; }
 
+/* ===== 长内容块（B5/B6）：头部条 + 折叠 + 复制出口 ===== */
+
+/* 代码与表格共用的壳。头部条回答三问：这是什么、多少行、能拿它做什么 */
+.md .md-block {
+  margin: 0 0 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.md .md-block-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 8px;
+  font-size: var(--font-xs);
+  color: var(--text-3);
+  background: var(--bg3);
+  border-bottom: 1px solid var(--border);
+}
+.md .md-block-lang {
+  font-family: var(--font-mono);
+  text-transform: lowercase;
+  color: var(--text-2);
+}
+.md .md-block-count { margin-right: auto; } /* 把按钮顶到右端 */
+.md .md-block-act {
+  font-size: var(--font-xs);
+  color: var(--text-2);
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 1px 8px;
+  cursor: pointer;
+  line-height: 1.5;
+}
+.md .md-block-act:hover { color: var(--accent); border-color: var(--accent); }
+
+/* 壳内的代码块让出边框、圆角与外边距——壳统一给了 */
+.md .md-block .md-code {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+}
+
+/* 折叠的代码：原生 details，展开零 JS。箭头跟房子其余 summary 同款 */
+.md .md-code-rest summary {
+  display: block;
+  cursor: pointer;
+  font-size: var(--font-xs);
+  color: var(--text-3);
+  padding: 4px 8px;
+  border-top: 1px solid var(--border);
+}
+.md .md-code-rest summary::-webkit-details-marker { display: none; }
+.md .md-code-rest summary::before { content: "▸ "; }
+.md .md-code-rest[open] summary::before { content: "▾ "; }
+.md .md-code-rest summary:hover { color: var(--accent); }
+
+/* 长表折行：一张表两个 <tbody>，第二个默认隐藏。折的是显示不是渲染——
+   行一直在 DOM 里，"复制为 TSV"要读到全部 */
+.md .md-table-rest { display: none; }
+.md .md-table-block.is-open .md-table-rest { display: table-row-group; }
+.md .md-block .md-table-wrap { margin: 0; }
+
+/* B5 原话要「自身横滚」：.chat-body 的 word-break: break-word 会继承进单元格，
+   把每列 min-content 坍缩成单字符——宽表永远超不过容器，横滚容器永远不触发
+   （活页验收当场量出来的：14 列表格被压成 wrap 同宽）。单元格回 normal：
+   词保持整词宽，宽列自然超宽，表格才滚得起来。 */
+.md .md-table th,
+.md .md-table td { word-break: normal; }
+
+/* 画布与记忆面板里没有聊天派发（data-chat-action 的宿主在 run 详情上）：
+   动作按钮藏起来，语言/行数信息留着；长表不折——文档预览该看全文 */
+.ac-doc .md-block-act,
+.mem-preview-content .md-block-act { display: none; }
+.ac-doc .md-table-rest,
+.mem-preview-content .md-table-rest { display: table-row-group; }
+
 /* ===== 统一 composer：模式说明行 + 禁用态 ===== */
 /* 说明行独占一行——底栏是 flex-wrap，不给 100% 它会挤进控件行 */
 .composer-note {
@@ -6593,7 +6935,9 @@ body.sidebar-collapsed .sidebar {
  *
  * 宽度：委托方指出原来的 78ch 太窄——那是纯文章排版的经验值，可这里的内容
  * 一半是工具行、命令、路径与代码，挤在 78ch 里会大量折行，反而更难读。
- * 放宽到 108ch，并给右栏预留 clamp 宽度：子 agent 面板出现时对话收窄但不塌。
+ * 度量改成 --measure: 40em（全角字宽，见 :root；**本处**原先的 ch 上限已删——
+ * 别处的 ch 上限是别的区域的事，没动），
+ * 并给右栏预留 clamp 宽度：子 agent 面板出现时对话收窄但不塌。
  */
 .detail-layout {
   display: grid;
@@ -6602,9 +6946,12 @@ body.sidebar-collapsed .sidebar {
   align-items: start;
 }
 .conversation {
-  /* 宽屏靠左：auto 居中会让工具行和正文漂到栏中间。 */
-  max-width: min(132ch, 100%);
-  margin: 0 0 var(--space-lg);
+  /* 整块居中 + 全角字度量。此前上限用 ch（拉丁"0"的宽度）：对中文太宽，
+     实测 57 字/行，而且靠左——宽屏右边空一大片。
+     居中放在**容器**上而不是子元素上，所以工具行与正文共享同一条左沿——
+     这正是旧注释担心的"漂到栏中间"，那个问题是逐子元素居中造成的。 */
+  max-width: min(var(--measure), 100%);
+  margin: 0 auto var(--space-lg);
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -6748,61 +7095,6 @@ body.sidebar-collapsed .sidebar {
   color: var(--text-2);
   font-size: var(--font-sm, 12px);
   margin: 0 12px 6px;
-}
-
-/* 对话里的下一步：只画 suggestNextActions 认过的真能力 */
-.next-actions {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  margin-top: 8px;
-}
-.next-actions[hidden] {
-  display: none !important;
-}
-.next-actions-kicker {
-  margin: 0;
-  color: var(--text-3);
-  font-size: var(--font-sm);
-  line-height: 1.4;
-}
-.next-actions-list {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-.next-action-chip {
-  margin: 0;
-  padding: 6px 12px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: var(--surface-1, var(--bg2));
-  color: var(--text-1);
-  font: inherit;
-  font-size: var(--font-sm);
-  line-height: 1.3;
-  cursor: pointer;
-}
-.next-action-chip:hover {
-  border-color: var(--border-2, var(--accent));
-  color: var(--accent);
-}
-.next-action-chip:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-.conversation-stack .next-actions {
-  align-items: flex-start;
-  margin: 12px 0 4px;
-  padding: 0 var(--space-md, 12px);
-}
-.conversation-stack .next-actions-list {
-  justify-content: flex-start;
 }
 
 /* 收尾条：只说"这次是怎么结束的"，其余都在对话里 */
@@ -7417,17 +7709,6 @@ body.sidebar-collapsed .sidebar {
 .md .md-code code {
   font-family: inherit;
   white-space: pre;               /* 代码不折行——折行会改变缩进的含义 */
-}
-/* 语言角标：右上角一枚小字，说清这是什么语言 */
-.md .md-code[data-lang]::before {
-  content: attr(data-lang);
-  position: absolute;
-  top: 2px;
-  right: var(--space-sm);
-  font-size: var(--font-xs);
-  color: var(--text-3);
-  text-transform: lowercase;
-  pointer-events: none;
 }
 .hl-comment { color: var(--hl-comment); font-style: italic; }
 .hl-str { color: var(--hl-str); }
@@ -9432,7 +9713,23 @@ button.chg-row-head:focus-visible { outline: 2px solid var(--focus); outline-off
 .ac-tabs {
   display: flex;
   flex: 1 1 0;
-  min-width: 0;
+  /**
+   * ★ 不许压到 0（计划 3 · T3）。
+   *
+   * 坞头自己有 overflow-x:auto（见 .ac-head 的注释：「头里的键够不着时
+   * 允许横滚」），但那条横滚滚的是坞头自己那一行——而这里原本
+   * min-width:0，让它成了坞头里**唯一**能被压到 0 的成员：实测 split 档
+   * 159px 的坞里 tablist clientWidth=0、930px 的标签一个也看不见。
+   *
+   * 这个下限的实量依据（verify-dock-tabs.mjs 活页量，1600×900 · split
+   * 档 · 坞 159px）：坞头固定成本 = padding-inline 16×2（32）+ 收起键 32
+   * + 加号键 32 + 放大键 70 + gap 8×3（24）= 190px——固定成员自己就已
+   * 超出 159px 的坞（159 − 190 = −31），标签条实得 0。下限取一个短标签
+   * 的实宽（第一个标签量到 79.9px）再留余量：6rem=96px 让第一个标签
+   * 完整可见。**坞头修前就已经在滚**（固定成员自己就溢出），这条下限改的是
+   * **标签条自己的宽**——让那 930px 的内容不再关在一个 0 宽的盒子里。
+   */
+  min-width: 6rem;
   gap: 2px;
   overflow-x: auto;
   align-items: stretch;
@@ -10417,6 +10714,17 @@ button.cc-card:hover { border-color: var(--border-2); }
 }
 .upload-remove:hover { color: var(--red); }
 
+/* --- 附件清单的重试钮（失败条目专用，与删除钮成对） --- */
+.upload-retry {
+  padding: 2px var(--space-sm);
+  font-size: var(--font-xs);
+  flex: 0 0 auto;
+}
+
+/* 上传失败的条目：它还在清单里，带原因与一条出路——不是"报个错就消失" */
+.upload-item--failed { color: var(--red); }
+.upload-err { font-size: var(--font-xs); color: var(--red); }
+
 /* --- 对话正文路径链接旁的预览钮（夹在链接与「文件夹中显示」之间的中段） --- */
 .local-path-preview {
   display: inline-grid;
@@ -10943,3 +11251,256 @@ button.cc-card:hover { border-color: var(--border-2); }
   resize: vertical;
 }
 .ac-review-actions { display: flex; justify-content: flex-end; gap: var(--space-sm); }
+
+/* 两脸差异：只认 body[data-face]，别处一律不许判断"现在是哪张脸" */
+body[data-face="work"] .workspace-git-chip { display: none; }
+body[data-face="code"] .workspace-git-chip { display: flex; }
+
+/* —— 「本场改动」卡（计划 3 · T6）：只在 Code 脸出现 ——
+ * 两脸成对：Code 脸下面整组是这张卡的样式，Work 脸（office）必须成对地
+ * 整张藏掉——只写一半等于没锁（同款范式见上面 workspace-git-chip 那两条）。
+ * 收着 = 事件派生的文件清单；展开 = 宿主取 git patch 填进 file-body。
+ * 增删行沿用 .chg-hunk-line--* 的 --status-ok/--status-bad 令牌，不新造颜色。
+ * 三个动作的图标全是 CSS 画的（::before/::after），HTML 里不许出现 ✓/✕ 这类字符。 */
+body[data-face="work"] .chat-change-card { display: none; }
+body[data-face="code"] .chat-change-card {
+  position: relative; /* 「在右栏审阅 →」按钮的定位上下文（它在 details 外、头行右端） */
+  margin: 10px 0 4px;
+  align-self: flex-start;
+  width: min(680px, 100%);
+  border: 1px solid var(--border-1);
+  border-radius: 10px;
+  background: var(--surface-1);
+}
+body[data-face="code"] .chat-change-card-details > summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 108px 8px 12px; /* 右侧让出「在右栏审阅 →」按钮（绝对定位，宽约 88px + 右侧 10px 留白） */
+  cursor: pointer;
+  list-style: none;
+  color: var(--text-1);
+  font-size: var(--font-sm);
+  font-weight: 600;
+  user-select: none;
+}
+body[data-face="code"] .chat-change-card-details > summary::-webkit-details-marker { display: none; }
+body[data-face="code"] .chat-change-card-details > summary::before,
+body[data-face="code"] .chat-change-file > summary::before {
+  content: "";
+  flex: none;
+  width: 0;
+  height: 0;
+  border-left: 5px solid var(--text-3);
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  transition: transform 0.15s ease;
+}
+body[data-face="code"] .chat-change-card-details:not([open]) > summary::before,
+body[data-face="code"] .chat-change-file:not([open]) > summary::before {
+  transform: rotate(-90deg);
+}
+body[data-face="code"] .chat-change-card-body {
+  border-top: 1px solid var(--border-1);
+  padding: 6px 12px 10px;
+}
+body[data-face="code"] .chat-change-file {
+  border: none;
+  margin: 2px 0;
+}
+body[data-face="code"] .chat-change-file > summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  cursor: pointer;
+  list-style: none;
+  color: var(--text-1);
+  font-size: var(--font-sm);
+}
+body[data-face="code"] .chat-change-file > summary::-webkit-details-marker { display: none; }
+body[data-face="code"] .chat-change-file-path {
+  font-family: var(--font-mono);
+  overflow-wrap: anywhere;
+}
+body[data-face="code"] .chat-change-file-meta {
+  flex: none;
+  color: var(--text-3);
+  font-size: 12px;
+}
+body[data-face="code"] .chat-change-file-reviewed {
+  flex: none;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--status-ok-surface);
+  color: var(--status-ok);
+  font-size: 12px;
+}
+body[data-face="code"] .chat-change-file-body {
+  margin: 4px 0 8px 13px;
+  padding-left: 10px;
+  border-left: 2px solid var(--border-1);
+  overflow-x: auto;
+}
+body[data-face="code"] .chat-change-note {
+  margin: 4px 0;
+  color: var(--text-3);
+  font-size: var(--font-sm);
+}
+body[data-face="code"] .chat-hunk { margin: 8px 0 14px; }
+body[data-face="code"] .chat-hunk-head {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 12px;
+  color: var(--accent);
+  padding: 2px 6px;
+  background: var(--surface-2);
+  border-radius: 4px;
+  margin-bottom: 4px;
+  overflow-wrap: anywhere;
+}
+body[data-face="code"] .chat-hunk-lines {
+  border: 1px solid var(--border-1);
+  border-radius: 6px;
+  background: var(--surface-1);
+  overflow-x: auto;
+}
+body[data-face="code"] .chat-hunk-line {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 12px;
+  line-height: 1.5;
+  padding: 0 8px;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+body[data-face="code"] .chat-hunk-line--add { color: var(--status-ok); background: var(--status-ok-surface); }
+body[data-face="code"] .chat-hunk-line--del { color: var(--status-bad); background: var(--status-bad-surface); }
+body[data-face="code"] .chat-hunk-line--ctx { color: var(--text-3); }
+body[data-face="code"] .chat-hunk-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+body[data-face="code"] .chat-hunk-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border: 1px solid var(--border-1);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-2);
+  font-size: 12px;
+  cursor: pointer;
+}
+body[data-face="code"] .chat-hunk-action:hover { color: var(--text-1); border-color: var(--text-3); }
+body[data-face="code"] .chat-hunk-action:disabled { opacity: 0.45; cursor: default; }
+body[data-face="code"] .chat-hunk-icon {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  position: relative;
+  display: inline-block;
+}
+/* 已阅 = 圆圈加对勾 */
+body[data-face="code"] .chat-hunk-icon--review { border: 1.5px solid currentColor; border-radius: 50%; }
+body[data-face="code"] .chat-hunk-icon--review::after {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 4px;
+  width: 5px;
+  height: 2.5px;
+  border-left: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(-45deg);
+}
+/* 撤掉 = 逆时针回环箭头 */
+body[data-face="code"] .chat-hunk-icon--revert::before {
+  content: "";
+  position: absolute;
+  left: 1px;
+  top: 1px;
+  width: 10px;
+  height: 10px;
+  border: 1.5px solid currentColor;
+  border-top-color: transparent;
+  border-right-color: transparent;
+  border-radius: 50%;
+}
+body[data-face="code"] .chat-hunk-icon--revert::after {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 0;
+  width: 0;
+  height: 0;
+  border-top: 3.5px solid transparent;
+  border-bottom: 3.5px solid transparent;
+  border-right: 5px solid currentColor;
+}
+/* 下一个 = 右下箭头 */
+body[data-face="code"] .chat-hunk-icon--next {
+  width: 7px;
+  height: 7px;
+  border-top: 1.5px solid currentColor;
+  border-right: 1.5px solid currentColor;
+  transform: rotate(45deg) translateY(-1px);
+}
+
+/* —— 右栏「改动」审阅面板（计划 3 · T7 → 计划 4 拆 split 后重锁）：只在 Code 脸出现 ——
+ * 两脸槽成对（Work 脸恒出树、另两只槽不出现）在右列块里用 (0,3,1) 规则做——
+ * 旧的那条 body[data-face="work"] .right-rail-review 是 (0,2,1)，压不过 :is()
+ * 显形规则 (0,3,0)，Work 脸上真的会出 review（修复轮 2 ①），已删。
+ * 召出钮那半的成对（.rail-surface-btn 三件套）也在右列块里锁。
+ *
+ * ★ 一次一只的显隐（三槽默认全藏、当前面 flex）不锁脸：它挂在 data-surface
+ * 上，同一份"一次一只"在两张脸上各自生效（Work 脸的槽显隐由上面的
+ * (0,3,1) 成对规则接管）。
+ *
+ * ★ 旧的 tabbed 三向互斥随页签行一起拆了（layout 不再有 tabbed 值）；
+ * split 档的规则与「在右栏审阅」的 announceStatus 分支随 split 一起消失——
+ * I4 的根因（split 档没有第三列）也随 split 一起消失。 */
+
+/* 槽位基线：与树/预览同款占位（flex 列里吃满剩余高度） */
+body[data-face="code"] .right-rail-review {
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  overflow-y: auto;
+  padding: 10px 12px;
+}
+
+body[data-face="code"] .right-rail-review-head {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  padding: 2px 0 8px;
+  border-bottom: 1px solid var(--border-1);
+  color: var(--text-1);
+  font-size: var(--font-sm);
+  font-weight: 600;
+}
+body[data-face="code"] .right-rail-review-list { padding-top: 6px; }
+
+/* 卡头的「在右栏审阅 →」：与 hunk 动作同款小按钮。
+ * 绝对定位在头行右端——按钮是 details 的兄弟（不是 summary 的子级），
+ * 嵌进 summary 会被 axe 判 nested-interactive。top:5px 对齐头行
+ * （头行高约 33px、按钮高约 23px，居中差 ≈5px；标题极短不会折行）。 */
+body[data-face="code"] .chat-change-open-review {
+  position: absolute;
+  top: 5px;
+  right: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border: 1px solid var(--border-1);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-2);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+body[data-face="code"] .chat-change-open-review:hover { color: var(--text-1); border-color: var(--text-3); }
+body[data-face="code"] .chat-change-open-review:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 1px; }

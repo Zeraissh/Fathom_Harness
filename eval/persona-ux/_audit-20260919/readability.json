@@ -1,0 +1,69 @@
+{
+ "budget": {
+  "viewport": 1880,
+  "sidebar": {
+   "w": 312,
+   "x": 0
+  },
+  "conversation": {
+   "w": 1568,
+   "x": 312
+  },
+  "detailRail": null,
+  "rightRail": {
+   "w": 0,
+   "x": 1880
+  },
+  "detailLayoutCols": null,
+  "railDataset": {
+   "mode": "side",
+   "layout": "tabbed"
+  }
+ },
+ "runId": "9743c7e7-a1c0-40e1-9c75-86b7ff854e5f",
+ "typography": {
+  "cols": {
+   "sel": ".conversation-stack",
+   "w": 1144,
+   "fontSize": "14px",
+   "lineHeight": "22.4px",
+   "color": "rgb(20, 19, 15)",
+   "maxWidth": "none"
+  },
+  "para": {
+   "sel": ".md-p",
+   "w": 524,
+   "fontSize": "14px",
+   "lineHeight": "18.9px",
+   "color": "rgb(20, 19, 15)",
+   "maxWidth": "none"
+  },
+  "userBubble": null,
+  "bubbleW": null,
+  "estimatedCJKPerLine": 81
+ },
+ "nextActions": {
+  "box": {
+   "w": 1144,
+   "h": 54,
+   "y": 373
+  },
+  "chips": [
+   "接着说",
+   "先对齐做法",
+   "点名一个文件",
+   "看右边的文件",
+   "设个定时"
+  ]
+ },
+ "capability": {
+  "chips": "识图 未配·核查关",
+  "hidden": false
+ },
+ "harness": {
+  "model": "kimi-k3",
+  "describeImageBacking": "none",
+  "supportsVision": false
+ },
+ "selectedRunConfig": "D:\\Work\\scratc…s\\liquid-demo · kimi-k3"
+}

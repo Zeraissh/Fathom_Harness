@@ -1,0 +1,527 @@
+{
+ "steps": [
+  {
+   "name": "home",
+   "w": 1600,
+   "facts": {
+    "url": "#/",
+    "bodyScrollX": 0,
+    "sidebar": {
+     "w": 312,
+     "h": 900,
+     "x": 0,
+     "y": 0
+    },
+    "main": {
+     "w": 1288,
+     "h": 217,
+     "x": 312,
+     "y": 155
+    },
+    "rail": {
+     "w": 0,
+     "h": 2490,
+     "x": 1600,
+     "y": -982
+    },
+    "composer": {
+     "w": 0,
+     "h": 0,
+     "x": 0,
+     "y": 0
+    },
+    "railCollapsed": "true",
+    "railMode": "side",
+    "railLayout": "tabbed"
+   },
+   "overflow": [
+    {
+     "el": "div.run-item-ta.k",
+     "delta": 54,
+     "text": "关于合肥的特色建筑，做一个可交互的三维对象页：…"
+    },
+    {
+     "el": "div.ft-row",
+     "delta": 56,
+     "text": "_ag @"
+    },
+    {
+     "el": "button.ft-name",
+     "delta": 9,
+     "text": "_ag "
+    },
+    {
+     "el": "span#workdir-trigger-text.wd-trigger-text",
+     "delta": 46,
+     "text": "D:\\Work\\ cratc… \\liquid-demo"
+    }
+   ],
+   "textCount": 304,
+   "contrastFails": 0
+  },
+  {
+   "name": "home",
+   "w": 1100,
+   "facts": {
+    "url": "#/",
+    "bodyScrollX": 0,
+    "sidebar": {
+     "w": 292,
+     "h": 900,
+     "x": 0,
+     "y": 0
+    },
+    "main": {
+     "w": 808,
+     "h": 217,
+     "x": 292,
+     "y": 155
+    },
+    "rail": {
+     "w": 0,
+     "h": 2490,
+     "x": 1100,
+     "y": -982
+    },
+    "composer": {
+     "w": 0,
+     "h": 0,
+     "x": 0,
+     "y": 0
+    },
+    "railCollapsed": "true",
+    "railMode": "side",
+    "railLayout": "tabbed"
+   },
+   "overflow": [
+    {
+     "el": "div.run-item-ta.k",
+     "delta": 2,
+     "text": "请参考Nord on的AGS2产品 做一个可交…"
+    },
+    {
+     "el": "div.ft-row",
+     "delta": 56,
+     "text": "_ag @"
+    },
+    {
+     "el": "button.ft-name",
+     "delta": 9,
+     "text": "_ag "
+    },
+    {
+     "el": "span#workdir-trigger-text.wd-trigger-text",
+     "delta": 46,
+     "text": "D:\\Work\\ cratc… \\liquid-demo"
+    }
+   ],
+   "textCount": 304,
+   "contrastFails": 0
+  },
+  {
+   "name": "home",
+   "w": 390,
+   "facts": {
+    "url": "#/",
+    "bodyScrollX": 0,
+    "sidebar": {
+     "w": 292,
+     "h": 708,
+     "x": 0,
+     "y": 0
+    },
+    "main": {
+     "w": 390,
+     "h": 195,
+     "x": 0,
+     "y": 708
+    },
+    "rail": {
+     "w": 0,
+     "h": 0,
+     "x": 0,
+     "y": 0
+    },
+    "composer": {
+     "w": 0,
+     "h": 0,
+     "x": 0,
+     "y": 0
+    },
+    "railCollapsed": "true",
+    "railMode": "overlay",
+    "railLayout": "tabbed"
+   },
+   "overflow": [
+    {
+     "el": "div.run-item-ta.k",
+     "delta": 2,
+     "text": "请参考Nord on的AGS2产品 做一个可交…"
+    },
+    {
+     "el": "span#workdir-trigger-text.wd-trigger-text",
+     "delta": 46,
+     "text": "D:\\Work\\ cratc… \\liquid-demo"
+    }
+   ],
+   "textCount": 60,
+   "contrastFails": 0
+  },
+  {
+   "name": "heavy",
+   "w": 1600,
+   "facts": {
+    "url": "#/run/4ac7109c-4d36-47f7-8ac3-27e3219da60a/loop",
+    "bodyScrollX": 0,
+    "sidebar": {
+     "w": 312,
+     "h": 900,
+     "x": 0,
+     "y": 0
+    },
+    "main": {
+     "w": 966,
+     "h": 760,
+     "x": 312,
+     "y": 0
+    },
+    "rail": {
+     "w": 322,
+     "h": 760,
+     "x": 1278,
+     "y": 0
+    },
+    "composer": {
+     "w": 0,
+     "h": 0,
+     "x": 0,
+     "y": 0
+    },
+    "railCollapsed": "false",
+    "railMode": "side",
+    "railLayout": "split"
+   },
+   "overflow": [
+    {
+     "el": "div.run-item-ta.k",
+     "delta": 68,
+     "text": "关于合肥的特色建筑，做一个可交互的三维对象页：…"
+    },
+    {
+     "el": "span.chat-agent-peek",
+     "delta": 40,
+     "text": "Both are genuine photo  of the building."
+    },
+    {
+     "el": "code.local-path-code",
+     "delta": 488,
+     "text": "D:\\Work\\ cratch\\agent-de ign-local-20260"
+    },
+    {
+     "el": "span",
+     "delta": 11,
+     "text": "_cdp-pix-9700"
+    },
+    {
+     "el": "span#workdir-trigger-text.wd-trigger-text",
+     "delta": 30,
+     "text": "D:\\Work\\ cratc… \\liquid-demo"
+    }
+   ],
+   "textCount": 1128,
+   "contrastFails": 0
+  },
+  {
+   "name": "heavy",
+   "w": 1100,
+   "facts": {
+    "url": "#/run/4ac7109c-4d36-47f7-8ac3-27e3219da60a",
+    "bodyScrollX": 0,
+    "sidebar": {
+     "w": 292,
+     "h": 900,
+     "x": 0,
+     "y": 0
+    },
+    "main": {
+     "w": 568,
+     "h": 760,
+     "x": 292,
+     "y": 0
+    },
+    "rail": {
+     "w": 240,
+     "h": 760,
+     "x": 860,
+     "y": 0
+    },
+    "composer": {
+     "w": 0,
+     "h": 0,
+     "x": 0,
+     "y": 0
+    },
+    "railCollapsed": "false",
+    "railMode": "side",
+    "railLayout": "tabbed"
+   },
+   "overflow": [
+    {
+     "el": "div.run-item-ta.k",
+     "delta": 2,
+     "text": "请参考Nord on的AGS2产品 做一个可交…"
+    },
+    {
+     "el": "span.chat-head",
+     "delta": 39,
+     "text": "FATHOM · RUN 4AC710关于合肥的特色建筑，做一个可交互的三维对象"
+    },
+    {
+     "el": "div.chat-plan",
+     "delta": 72,
+     "text": "编排计划3 步 · 层宽 1 · 并行度 1第 1 层✘ 1 取证：安徽广播电视"
+    },
+    {
+     "el": "ol.plan-layer. chat-plan-layer",
+     "delta": 84,
+     "text": "第 1 层✘ 1 取证：安徽广播电视中心事实卡（建成年代/设计要点/形体特征）+"
+    },
+    {
+     "el": "li.plan-layer",
+     "delta": 84,
+     "text": "第 1 层✘ 1 取证：安徽广播电视中心事实卡（建成年代/设计要点/形体特征）+"
+    },
+    {
+     "el": "div.plan-node",
+     "delta": 84,
+     "text": "✘ 1 取证：安徽广播电视中心事实卡（建成年代/设计要点/形体特征）+ 参考图包"
+    },
+    {
+     "el": "span.chat-agent-peek",
+     "delta": 288,
+     "text": "Both are genuine photo  of the building."
+    },
+    {
+     "el": "code.local-path-code",
+     "delta": 488,
+     "text": "D:\\Work\\ cratch\\agent-de ign-local-20260"
+    },
+    {
+     "el": "a.chat-artifact-name",
+     "delta": 88,
+     "text": "anhui-tv-center/index.html"
+    },
+    {
+     "el": "span#workdir-trigger-text.wd-trigger-text",
+     "delta": 30,
+     "text": "D:\\Work\\ cratc… \\liquid-demo"
+    }
+   ],
+   "textCount": 1094,
+   "contrastFails": 0
+  },
+  {
+   "name": "heavy",
+   "w": 390,
+   "facts": {
+    "url": "#/run/4ac7109c-4d36-47f7-8ac3-27e3219da60a",
+    "bodyScrollX": 0,
+    "sidebar": {
+     "w": 0,
+     "h": 0,
+     "x": 0,
+     "y": 0
+    },
+    "main": {
+     "w": 360,
+     "h": 12892,
+     "x": 0,
+     "y": 0
+    },
+    "rail": {
+     "w": 0,
+     "h": 0,
+     "x": 0,
+     "y": 0
+    },
+    "composer": {
+     "w": 0,
+     "h": 0,
+     "x": 0,
+     "y": 0
+    },
+    "railCollapsed": "true",
+    "railMode": "overlay",
+    "railLayout": "tabbed"
+   },
+   "overflow": [
+    {
+     "el": "div.back-bar",
+     "delta": 120,
+     "text": "FATHOM · RUN 4AC710关于合肥的特色建筑，做一个可交互的三维对象"
+    },
+    {
+     "el": "span.chat-head",
+     "delta": 208,
+     "text": "FATHOM · RUN 4AC710关于合肥的特色建筑，做一个可交互的三维对象"
+    },
+    {
+     "el": "span.chat-agent-peek",
+     "delta": 170,
+     "text": "Both are genuine photo  of the building."
+    },
+    {
+     "el": "code.local-path-code",
+     "delta": 488,
+     "text": "D:\\Work\\ cratch\\agent-de ign-local-20260"
+    },
+    {
+     "el": "a.chat-artifact-name",
+     "delta": 27,
+     "text": "anhui-tv-center/FACTS.md"
+    },
+    {
+     "el": "span#workdir-trigger-text.wd-trigger-text",
+     "delta": 30,
+     "text": "D:\\Work\\ cratc… \\liquid-demo"
+    }
+   ],
+   "textCount": 847,
+   "contrastFails": 0
+  },
+  {
+   "name": "heavy-loop",
+   "w": 1600,
+   "facts": {
+    "url": "#/run/4ac7109c-4d36-47f7-8ac3-27e3219da60a/loop",
+    "bodyScrollX": 0,
+    "sidebar": {
+     "w": 312,
+     "h": 900,
+     "x": 0,
+     "y": 0
+    },
+    "main": {
+     "w": 966,
+     "h": 760,
+     "x": 312,
+     "y": 0
+    },
+    "rail": {
+     "w": 322,
+     "h": 760,
+     "x": 1278,
+     "y": 0
+    },
+    "composer": {
+     "w": 0,
+     "h": 0,
+     "x": 0,
+     "y": 0
+    },
+    "railCollapsed": "false",
+    "railMode": "side",
+    "railLayout": "split"
+   },
+   "overflow": [
+    {
+     "el": "div.run-item-ta.k",
+     "delta": 68,
+     "text": "关于合肥的特色建筑，做一个可交互的三维对象页：…"
+    },
+    {
+     "el": "span.chat-agent-peek",
+     "delta": 40,
+     "text": "Both are genuine photo  of the building."
+    },
+    {
+     "el": "code.local-path-code",
+     "delta": 488,
+     "text": "D:\\Work\\ cratch\\agent-de ign-local-20260"
+    },
+    {
+     "el": "span",
+     "delta": 11,
+     "text": "_cdp-pix-9700"
+    },
+    {
+     "el": "span#workdir-trigger-text.wd-trigger-text",
+     "delta": 30,
+     "text": "D:\\Work\\ cratc… \\liquid-demo"
+    }
+   ],
+   "textCount": 1128,
+   "contrastFails": 0
+  },
+  {
+   "name": "heavy-loop",
+   "w": 390,
+   "facts": {
+    "url": "#/run/4ac7109c-4d36-47f7-8ac3-27e3219da60a/loop",
+    "bodyScrollX": 0,
+    "sidebar": {
+     "w": 0,
+     "h": 0,
+     "x": 0,
+     "y": 0
+    },
+    "main": {
+     "w": 360,
+     "h": 12892,
+     "x": 0,
+     "y": 0
+    },
+    "rail": {
+     "w": 0,
+     "h": 0,
+     "x": 0,
+     "y": 0
+    },
+    "composer": {
+     "w": 0,
+     "h": 0,
+     "x": 0,
+     "y": 0
+    },
+    "railCollapsed": "true",
+    "railMode": "overlay",
+    "railLayout": "tabbed"
+   },
+   "overflow": [
+    {
+     "el": "div.back-bar",
+     "delta": 120,
+     "text": "FATHOM · RUN 4AC710关于合肥的特色建筑，做一个可交互的三维对象"
+    },
+    {
+     "el": "span.chat-head",
+     "delta": 208,
+     "text": "FATHOM · RUN 4AC710关于合肥的特色建筑，做一个可交互的三维对象"
+    },
+    {
+     "el": "span.chat-agent-peek",
+     "delta": 170,
+     "text": "Both are genuine photo  of the building."
+    },
+    {
+     "el": "code.local-path-code",
+     "delta": 488,
+     "text": "D:\\Work\\ cratch\\agent-de ign-local-20260"
+    },
+    {
+     "el": "a.chat-artifact-name",
+     "delta": 27,
+     "text": "anhui-tv-center/FACTS.md"
+    },
+    {
+     "el": "span#workdir-trigger-text.wd-trigger-text",
+     "delta": 30,
+     "text": "D:\\Work\\ cratc… \\liquid-demo"
+    }
+   ],
+   "textCount": 847,
+   "contrastFails": 0
+  }
+ ],
+ "consoleErrors": []
+}

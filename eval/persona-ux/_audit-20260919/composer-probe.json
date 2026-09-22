@@ -1,0 +1,210 @@
+{
+ "welcome": {
+  "vh": 900,
+  "panel": {
+   "y": 0,
+   "h": 900,
+   "bot": 900,
+   "pos": "relative",
+   "inView": true,
+   "ovf": "auto",
+   "sticky": "relative"
+  },
+  "panelScrollTop": 0,
+  "panelScrollH": 1882,
+  "panelClientH": 900,
+  "composer": {
+   "y": 1508,
+   "h": 87,
+   "bot": 1595,
+   "pos": "relative",
+   "inView": false,
+   "ovf": "visible",
+   "sticky": "relative"
+  },
+  "centerRow": {
+   "y": -982,
+   "h": 2490,
+   "bot": 1508,
+   "pos": "static",
+   "inView": true,
+   "ovf": "visible",
+   "sticky": "static"
+  },
+  "mainArea": {
+   "y": 155,
+   "h": 217,
+   "bot": 372,
+   "pos": "static",
+   "inView": true,
+   "ovf": "hidden",
+   "sticky": "static"
+  },
+  "dock": {
+   "y": 0,
+   "h": 0,
+   "bot": 0,
+   "pos": "static",
+   "inView": false,
+   "ovf": "auto",
+   "sticky": "static"
+  },
+  "heroText": ""
+ },
+ "run": {
+  "vh": 900,
+  "panel": {
+   "y": 0,
+   "h": 900,
+   "bot": 900,
+   "pos": "relative",
+   "inView": true,
+   "ovf": "hidden",
+   "sticky": "relative"
+  },
+  "panelScrollTop": 0,
+  "panelScrollH": 900,
+  "panelClientH": 900,
+  "composer": {
+   "y": 769,
+   "h": 115,
+   "bot": 884,
+   "pos": "relative",
+   "inView": true,
+   "ovf": "visible",
+   "sticky": "relative"
+  },
+  "centerRow": {
+   "y": 0,
+   "h": 760,
+   "bot": 760,
+   "pos": "static",
+   "inView": true,
+   "ovf": "visible",
+   "sticky": "static"
+  },
+  "mainArea": {
+   "y": 0,
+   "h": 760,
+   "bot": 760,
+   "pos": "static",
+   "inView": true,
+   "ovf": "auto",
+   "sticky": "static"
+  },
+  "dock": {
+   "y": 760,
+   "h": 9,
+   "bot": 769,
+   "pos": "static",
+   "inView": true,
+   "ovf": "auto",
+   "sticky": "static"
+  },
+  "heroText": ""
+ },
+ "welcome1100": {
+  "vh": 900,
+  "panel": {
+   "y": 0,
+   "h": 900,
+   "bot": 900,
+   "pos": "relative",
+   "inView": true,
+   "ovf": "auto",
+   "sticky": "relative"
+  },
+  "panelScrollTop": 0,
+  "panelScrollH": 1886,
+  "panelClientH": 900,
+  "composer": {
+   "y": 1513,
+   "h": 87,
+   "bot": 1600,
+   "pos": "relative",
+   "inView": false,
+   "ovf": "visible",
+   "sticky": "relative"
+  },
+  "centerRow": {
+   "y": -986,
+   "h": 2490,
+   "bot": 1504,
+   "pos": "static",
+   "inView": true,
+   "ovf": "visible",
+   "sticky": "static"
+  },
+  "mainArea": {
+   "y": 150,
+   "h": 217,
+   "bot": 367,
+   "pos": "static",
+   "inView": true,
+   "ovf": "hidden",
+   "sticky": "static"
+  },
+  "dock": {
+   "y": 1504,
+   "h": 9,
+   "bot": 1513,
+   "pos": "static",
+   "inView": false,
+   "ovf": "auto",
+   "sticky": "static"
+  },
+  "heroText": ""
+ },
+ "welcome390": {
+  "vh": 900,
+  "panel": {
+   "y": 708,
+   "h": 578,
+   "bot": 1285,
+   "pos": "relative",
+   "inView": true,
+   "ovf": "auto",
+   "sticky": "relative"
+  },
+  "panelScrollTop": 0,
+  "panelScrollH": 578,
+  "panelClientH": 578,
+  "composer": {
+   "y": 912,
+   "h": 87,
+   "bot": 999,
+   "pos": "relative",
+   "inView": false,
+   "ovf": "visible",
+   "sticky": "relative"
+  },
+  "centerRow": {
+   "y": 708,
+   "h": 195,
+   "bot": 903,
+   "pos": "static",
+   "inView": true,
+   "ovf": "visible",
+   "sticky": "static"
+  },
+  "mainArea": {
+   "y": 708,
+   "h": 195,
+   "bot": 903,
+   "pos": "static",
+   "inView": true,
+   "ovf": "hidden",
+   "sticky": "static"
+  },
+  "dock": {
+   "y": 903,
+   "h": 9,
+   "bot": 912,
+   "pos": "static",
+   "inView": false,
+   "ovf": "auto",
+   "sticky": "static"
+  },
+  "heroText": ""
+ }
+}

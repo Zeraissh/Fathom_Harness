@@ -2,7 +2,7 @@
  * /api/workspace/git 契约：白名单 workdir、不回传 remote URL、切分支仅 loopback。
  */
 import { execFile } from "node:child_process";
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { promisify } from "node:util";
@@ -42,6 +42,17 @@ async function gitRepo(): Promise<string> {
     { cwd: dir },
   );
   return resolve(dir);
+}
+
+/** 仓库 + src/app.js（已提交 42，工作区改成 43 的未提交 M）。 */
+async function repoWithSrc(): Promise<{ repo: string; src: string }> {
+  const repo = await gitRepo();
+  await mkdir(join(repo, "src"));
+  await writeFile(join(repo, "src", "app.js"), "const answer = 42;\n");
+  await execFileAsync("git", ["add", "src/app.js"], { cwd: repo });
+  await execFileAsync("git", ["commit", "-m", "add src/app.js"], { cwd: repo });
+  await writeFile(join(repo, "src", "app.js"), "const answer = 43;\n");
+  return { repo, src: resolve(join(repo, "src")) };
 }
 
 async function startHost(workdir: string): Promise<string> {
@@ -182,5 +193,60 @@ describe("/api/workspace/git", () => {
     );
     expect(remote.status).toBe(403);
     expect(remote.body.error).toContain("loopback");
+  });
+});
+
+/**
+ * 终审 I2：/api/workspace/git/diff 的圈禁是双检（path 按 root 相对，
+ * 但必须同时落在 root 与 workdir 之内）。第一道管越界（../../x），
+ * 第二道管「workdir 是仓库子目录」时的出界（README.md 在 root 内、
+ * 在 workdir 外）。删掉第二道，下面第一条当场红——第一道拦不住它。
+ */
+describe("/api/workspace/git/diff 圈禁双检（终审 I2）", () => {
+  it("workdir 是仓库子目录时，子目录之外的路径 400（圈禁第二道活着）", async () => {
+    const { src } = await repoWithSrc();
+    const base = await startHost(src);
+    const res = await fetch(
+      `${base}/api/workspace/git/diff?workdir=${encodeURIComponent(src)}&path=${encodeURIComponent("README.md")}`,
+    );
+    expect(res.status).toBe(400);
+  });
+
+  it("workdir=子目录 + path=src/app.js：path 仍按 root 相对，拿到 repo/src/app.js 的 patch", async () => {
+    const { src } = await repoWithSrc();
+    const base = await startHost(src);
+    const res = await fetch(
+      `${base}/api/workspace/git/diff?workdir=${encodeURIComponent(src)}&path=${encodeURIComponent("src/app.js")}`,
+    );
+    expect(res.status).toBe(200);
+    const d = (await res.json()) as any;
+    expect(d.present).toBe(true);
+    expect(d.tracked).toBe(true);
+    expect(d.path).toBe("src/app.js");
+    expect(d.hunks.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("workdir=仓库根时 src/app.js 的 M 拿到 +43 的 hunk（基线）", async () => {
+    const { repo } = await repoWithSrc();
+    const base = await startHost(repo);
+    const res = await fetch(
+      `${base}/api/workspace/git/diff?workdir=${encodeURIComponent(repo)}&path=${encodeURIComponent("src/app.js")}`,
+    );
+    expect(res.status).toBe(200);
+    const d = (await res.json()) as any;
+    const plus = d.hunks.flatMap((h: any) =>
+      h.lines.filter((l: any) => l.sign === "+").map((l: any) => l.text),
+    );
+    expect(plus).toContain("const answer = 43;");
+    expect(plus).not.toContain("const answer = 42;");
+  });
+
+  it("路径越界（../../x）被第一道 400 挡住", async () => {
+    const { repo } = await repoWithSrc();
+    const base = await startHost(repo);
+    const res = await fetch(
+      `${base}/api/workspace/git/diff?workdir=${encodeURIComponent(repo)}&path=${encodeURIComponent("../../etc/passwd")}`,
+    );
+    expect(res.status).toBe(400);
   });
 });

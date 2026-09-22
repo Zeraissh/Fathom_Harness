@@ -1,0 +1,39 @@
+{
+ "A": {
+  "composer": {
+   "y": 1508,
+   "bot": 1595,
+   "inView": false
+  },
+  "centerRow": {
+   "y": -982,
+   "bot": 1508,
+   "inView": true
+  },
+  "rail": {
+   "w": 0,
+   "h": 2490,
+   "display": "flex"
+  },
+  "railTreeH": 2490,
+  "railTreeW": 1,
+  "panelScroll": 982
+ },
+ "B": {
+  "composer": {
+   "y": 372,
+   "bot": 459,
+   "inView": true
+  },
+  "centerRow": {
+   "y": 155,
+   "bot": 372,
+   "inView": true
+  },
+  "rail": {
+   "w": 0,
+   "h": 0
+  },
+  "panelScroll": 0
+ }
+}

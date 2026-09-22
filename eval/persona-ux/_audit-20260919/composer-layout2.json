@@ -1,0 +1,163 @@
+{
+ "menu": {
+  "clicked": true,
+  "rowCount": 24,
+  "rows": [
+   {
+    "el": "div.run-item",
+    "text": "核查CLI已完成看一眼 `_ux_probe/view-pro…`_ux_probe/view-probe.png` 是一张 6",
+    "title": "",
+    "role": "option"
+   },
+   {
+    "el": "div.run-item-task",
+    "text": "看一眼 `_ux_probe/view-pro…",
+    "title": "看一眼 `_ux_probe/view-probe.png`（用 view_image），告诉我它是什么颜色。",
+    "role": null
+   },
+   {
+    "el": "button.run-item-delete",
+    "text": "",
+    "title": "删除对话",
+    "role": null
+   },
+   {
+    "el": "i.ph.ph-trash",
+    "text": "",
+    "title": "",
+    "role": null
+   },
+   {
+    "el": "div.run-item",
+    "text": "核查CLI未能结构化收口请参考Nordson的AGS2产品 做一个可交…我先确认几个会直接改变交付物的岔路口——Nordson ",
+    "title": "",
+    "role": "option"
+   },
+   {
+    "el": "div.run-item-task",
+    "text": "请参考Nordson的AGS2产品 做一个可交…",
+    "title": "请参考Nordson的AGS2产品 做一个可交互的三维对象页：自包含 HTML，shader 或 WebGL 场景，相对",
+    "role": null
+   },
+   {
+    "el": "button.run-item-delete",
+    "text": "",
+    "title": "删除对话",
+    "role": null
+   },
+   {
+    "el": "i.ph.ph-trash",
+    "text": "",
+    "title": "",
+    "role": null
+   },
+   {
+    "el": "div.run-item.run-item--unread",
+    "text": "核查CLI部分完成关于合肥的特色建筑，做一个可交互的三维对象页：…Now I have first-hand facts and",
+    "title": "",
+    "role": "option"
+   },
+   {
+    "el": "div.run-item-task",
+    "text": "关于合肥的特色建筑，做一个可交互的三维对象页：…",
+    "title": "关于合肥的特色建筑，做一个可交互的三维对象页：自包含 HTML，shader 或 WebGL 场景，相对资源。",
+    "role": null
+   },
+   {
+    "el": "button.run-item-delete",
+    "text": "",
+    "title": "删除对话",
+    "role": null
+   },
+   {
+    "el": "i.ph.ph-trash",
+    "text": "",
+    "title": "",
+    "role": null
+   },
+   {
+    "el": "div.run-item",
+    "text": "核查CLI未能结构化收口做一个可交互的三维对象页：自包含 HTML，s…EFEM 与全流程的数值断言都已全部通过。最后补边界回归",
+    "title": "",
+    "role": "option"
+   },
+   {
+    "el": "div.run-item-task",
+    "text": "做一个可交互的三维对象页：自包含 HTML，s…",
+    "title": "做一个可交互的三维对象页：自包含 HTML，shader 或 WebGL 场景，相对资源。做一个KLA的双层foup看看",
+    "role": null
+   },
+   {
+    "el": "button.run-item-delete",
+    "text": "",
+    "title": "删除对话",
+    "role": null
+   },
+   {
+    "el": "i.ph.ph-trash",
+    "text": "",
+    "title": "",
+    "role": null
+   },
+   {
+    "el": "div.run-item",
+    "text": "核查CLI部分完成做一个可交互的三维对象页：自包含 HTML，s…最后一次整页复核仍空返回（识图服务这会儿抖得厉害）。本轮的成果",
+    "title": "",
+    "role": "option"
+   },
+   {
+    "el": "div.run-item-task",
+    "text": "做一个可交互的三维对象页：自包含 HTML，s…",
+    "title": "做一个可交互的三维对象页：自包含 HTML，shader 或 WebGL 场景，相对资源。我想看看雷峰塔",
+    "role": null
+   },
+   {
+    "el": "button.run-item-delete",
+    "text": "",
+    "title": "删除对话",
+    "role": null
+   },
+   {
+    "el": "i.ph.ph-trash",
+    "text": "",
+    "title": "",
+    "role": null
+   },
+   {
+    "el": "div.run-item",
+    "text": "核查CLI已完成帮我做多个动态效果，我想要通过这些动态效果直观…识图复核暴露的压字问题共 5 处（s6×2、s9×2、s10×1",
+    "title": "",
+    "role": "option"
+   },
+   {
+    "el": "div.run-item-task",
+    "text": "帮我做多个动态效果，我想要通过这些动态效果直观…",
+    "title": "帮我做多个动态效果，我想要通过这些动态效果直观的看到半导体行业中一片完整的芯片的产出过程",
+    "role": null
+   },
+   {
+    "el": "button.run-item-delete",
+    "text": "",
+    "title": "删除对话",
+    "role": null
+   },
+   {
+    "el": "i.ph.ph-trash",
+    "text": "",
+    "title": "",
+    "role": null
+   }
+  ]
+ },
+ "api": {
+  "top": [
+   "models",
+   "roles",
+   "source",
+   "roleModels",
+   "context"
+  ],
+  "sample": "{\"models\":[{\"id\":\"env:executor\",\"label\":\"环境变量 · deepseek-flash\",\"provider\":\"anthropic\",\"model\":\"deepseek-flash\",\"baseUrl\":\"https://api.deepseek.com/anthropic\",\"hasApiKey\":false,\"contextWindow\":{\"window\":1048576,\"windowSource\":\"registry\"}},{\"id\":\"env:vision\",\"label\":\"环境变量 · deepseek-v4-flash-vision-exp\",\"provider\":\"anthropic\",\"model\":\"deepseek-v4-flash-vision-exp\",\"baseUrl\":\"https://api.deepseek.com/anthropic\",\"hasApiKey\":false,\"contextWindow\":{\"window\":1048576,\"windowSource\":\"registry\"}},{\"id\":\"m-mtuv17mr-aygdk1\",\"label\":\"kimi-k3\",\"provider\":\"anthropic\",\"model\":\"kimi-k3\",\"baseUrl\":\"https://api.moonshot.cn/anthropic\",\"hasApiKey\":true,\"contextWindow\":{\"window\":1048576,\"windowSource\":\"registry\"",
+  "visionKeys": []
+ }
+}

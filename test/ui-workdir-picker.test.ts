@@ -487,4 +487,76 @@ describe("initWorkdirPicker", () => {
     const b = initWorkdirPicker({}, { fetch: fetchImpl });
     expect(a).toBe(b);
   });
+
+  it("打开浮层后立刻粘贴：异步回写不许覆盖它（计划 3 · T2）", async () => {
+    /** 用一个可控的 fetch：第一次 /api/fs/list 挂起，直到我们放行。 */
+    let release;
+    const gate = new Promise((r) => { release = r; });
+    const fetchImpl = vi.fn(async (url) => {
+      if (String(url).includes("/api/fs/list")) {
+        await gate;                      // ← 起点目录的响应，掐住
+        return {
+          ok: true,
+          json: async () => ({ path: "D:\\start-dir", parent: null, dirs: [] }),
+        };
+      }
+      return { ok: true, json: async () => ({}) };
+    });
+
+    const api = initWorkdirPicker({}, { fetch: fetchImpl });
+    api.open("D:\\start-dir");           // 宿主真实打开方式：带起点目录
+
+    // 用户抢在响应前面粘贴
+    const input = document.querySelector(".wp-path-input");
+    input.value = "D:\\pasted-by-user";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+
+    release();                            // 起点目录的响应现在才落地
+    await flush();
+    await flush();
+
+    expect(input.value).toBe("D:\\pasted-by-user");   // ← 不许被覆盖
+  });
+
+  it("程序性导航（下钻）仍然会把输入框带过去——脏标记只挡异步回写（计划 3 · T2）", async () => {
+    const fetchImpl = vi.fn(async (url) => {
+      if (String(url).includes("/api/fs/list")) {
+        const u = new URL(String(url), "http://localhost");
+        const path = u.searchParams.get("path");
+        if (path === "D:\\root") {
+          return {
+            ok: true,
+            json: async () => ({
+              path: "D:\\root", parent: null,
+              dirs: [{ name: "child", path: "D:\\root\\child" }],
+            }),
+          };
+        }
+        return {
+          ok: true,
+          json: async () => ({ path: "D:\\root\\child", parent: "D:\\root", dirs: [] }),
+        };
+      }
+      return { ok: true, json: async () => ({}) };
+    });
+
+    const api = initWorkdirPicker({}, { fetch: fetchImpl });
+    api.open("D:\\root");
+    await flush(); await flush();
+
+    // 先让用户动一下输入框（脏），再下钻——下钻是明确的方向，输入框该跟着变
+    const input = document.querySelector(".wp-path-input");
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+
+    // 下钻行的真实选择器是 button.wp-dir，路径记在 title——renderDirs
+    // （workdir-picker.js:606-619）不写 data-path，计划原文猜的
+    // `.wp-dir, [data-path]` + dataset.path 在这里会找不到行
+    const childRow = [...document.querySelectorAll(".wp-dir")]
+      .find((el) => el.title === "D:\\root\\child");
+    if (!childRow) throw new Error("没找到下钻行 .wp-dir[title=D:\\root\\child]");
+    childRow.click();
+    await flush(); await flush();
+
+    expect(input.value).toBe("D:\\root\\child");
+  });
 });

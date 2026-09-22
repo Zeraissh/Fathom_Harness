@@ -18,6 +18,35 @@ export function formatGitTriggerLabel(git) {
   return git.dirty ? `${head} *` : head;
 }
 
+/**
+ * 取某个文件**工作区相对 HEAD** 的真 patch（计划 3 · T4）。
+ *
+ * 语义如实：这不是"本场 run 专属的改动"，它混着用户自己的未提交改动。
+ * 「本场碰过哪些路径」是另一条链（事件流）的事。
+ *
+ * 契约：`path` 是**相对仓库 root** 的，不是相对 workdir——workdir 可能是
+ * 仓库的子目录；调用方要先拿到仓库根（/api/workspace/git 的 `root`）再拼 path。
+ * **★ 传错基准多半不报错，但这不是全称**：workdir=root/sub 时，调用方若传 workdir
+ * 相对的 `sub/file.txt`，它作为 root 相对路径就是 root/sub/file.txt——**双检全过**，
+ * 于是返回的是**另一个文件**的 patch。但若传的是**越出边界**的形状，仍会被挡下、
+ * 返 400——**是哪一道挡取决于形状**：`../x.txt`（连 root 都逃出去）是**第一道**挡；
+ * `sub/../x.txt` 或 root 层的 `file.txt`（留在 root 内、逃出 workdir）是**第二道**挡。
+ * **只有落在边界内的**错基准才是静默取错——服务端无法识别"基准传错了但恰好落在
+ * 界内"，那正是它静默的原因。基准一致必须由调用方自己保证。
+ */
+export async function fetchFilePatch(workdir, path, fetchImpl = fetch) {
+  if (!workdir || !path) return null;
+  try {
+    const res = await fetchImpl(
+      `/api/workspace/git/diff?workdir=${encodeURIComponent(workdir)}&path=${encodeURIComponent(path)}`,
+    );
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;   // 取不到就不给卡，不炸会话流
+  }
+}
+
 export function githubMcpConnected(mcp) {
   return (mcp?.servers ?? []).some((s) =>
     String(s?.name ?? "").toLowerCase() === "github" && s.status === "connected",

@@ -201,16 +201,11 @@
          （树 clamp(200,22vw,280) 且零 @media；坞 38% 自带 900 断点），
          谁都不负责「对话至少得多宽」。现在两者都是 #right-rail 的面板，
          宽度/折叠/选哪个面板只有一份记忆，边界由 core/rail-policy.js 按预算算。 -->
-    <div id="right-rail" class="right-rail" data-mode="side" data-layout="tabbed" data-panel="tree" data-collapsed="false">
-      <div class="right-rail-tabs" role="group" aria-label="右列面板">
-        <button type="button" class="right-rail-tab" data-rail-panel="tree"
-          id="rail-tab-tree" aria-pressed="true" aria-controls="workspace-file-tree">文件</button>
-        <button type="button" class="right-rail-tab" data-rail-panel="preview"
-          id="rail-tab-preview" aria-pressed="false" aria-controls="right-rail-preview">预览</button>
-      </div>
-      <!-- 收起/展开键是右列的**直接子节点**，不在 tab 行里：split 档 tab 行整排
-           隐藏（两栏都开着，切换没有语义），键若随行消失，宽档收不起也回不来
-           （2026-09-18 走查 UX-B2/B1）。绝对定位浮在右上角，三种形态都在。 -->
+    <div id="right-rail" class="right-rail" data-mode="side" data-layout="docked" data-surface="tree" data-collapsed="false">
+      <!-- 收起键仍是右列的直接子节点（不在这排钮里）：一次一只的那排钮随面走，
+           而收起键要在每一只面下都在。绝对定位浮在右上角，两种形态都在。
+           召出钮行不住在列里（挂在 app.js 的对话头部 .back-bar）——列一关就再
+           没有那个键，任务 4 的「再点同一个键」才可能成立（计划 4 · T3 的 3-H）。 -->
       <button type="button" class="right-rail-collapse" id="right-rail-collapse"
         aria-label="收起右列" title="收起右列" aria-expanded="true"><i class="ph ph-caret-right" aria-hidden="true"></i></button>
       <div class="right-rail-drag" id="right-rail-drag" role="separator" aria-orientation="vertical"
@@ -220,12 +215,15 @@
       <aside id="workspace-file-tree" class="files-rail workspace-file-tree" aria-label="工作区文件"></aside>
       <!-- 预览坞占位：preview-dock.js 把自己挂进来（原先是 #center-row，见其 host 解析） -->
       <div id="right-rail-preview" class="right-rail-preview"></div>
+      <!-- 「改动」审阅面板占位（计划 3 · T7）：与卡片同一套已阅/撤掉/下一个 hunk 动作。
+           一次一只：surface="review" 时由 CSS 显形（tabbed/split 已随计划 4 拆掉）。 -->
+      <div id="right-rail-review" class="right-rail-review"></div>
     </div>
     <!-- 窄档把手：收起=0 宽时全站唯一的重开入口（二轮走查实锤：此前收起即断头路）。
          角标 = 有新内容没看（railVisibility 的 badge）。 -->
     <button type="button" id="right-rail-handle" class="right-rail-handle" hidden
       aria-label="打开右列" title="打开右列"><i class="ph ph-caret-left" aria-hidden="true"></i></button>
-    <!-- 窄档 sheet 的遮罩：只有 overlay 且打开时可见；点它 = 关闭 -->
+    <!-- 窄档 sheet 的遮罩：floating 且打开时可见（第三档 side+floating 也亮）；点它 = 关闭 -->
     <div id="right-rail-scrim" class="right-rail-scrim" hidden></div>
   </div>
   <!-- 跳转箭头：**在滚动容器之外**，所以它自己不会被滚走。
@@ -252,7 +250,14 @@
          §2.4）：默认收起，点开才是控件本体。摘要写「当前装的是什么」，由
          deriveScopeSummary 从控件文字派生（观察器跟进，别处更新文字不必记得这里）。 -->
     <details class="composer-scope" id="composer-scope">
-      <summary class="composer-scope-summary" id="composer-scope-summary" title="项目 / 工作目录 / 模型"><span class="composer-scope-text">选项目、目录与模型</span></summary>
+      <!-- 能力条（2026-09-19 三轮走查 L1）：**必须在 summary 里**。
+           为什么：收起的 details 里，#composer-scopebar 仍有布局盒（author 的
+           display:flex 压过 UA 对折叠内容的隐藏），它溢进输入行那一条 y 带、
+           被透明的 TEXTAREA#task-input 接走点击——挂那儿等于挂进柜子里
+           （计划 3 · T1 把那个盒子用 display:none 掐掉了，但"能挂的只有
+           summary"这条结论不变）。这里只放弱态（看不见图 / 核查关），
+           由 capabilityChips 过滤，常态零占位。 -->
+      <summary class="composer-scope-summary" id="composer-scope-summary" title="项目 / 工作目录 / 模型"><span class="composer-scope-text">选项目、目录与模型</span><span class="composer-capability" id="composer-capability-chips" hidden></span></summary>
       <div class="composer-scopebar" id="composer-scopebar">
       <div class="scope-field scope-field--project" id="project-field">
         <i class="ph ph-briefcase" aria-hidden="true"></i>
@@ -271,7 +276,9 @@
         </button>
         <div id="workdir-menu" class="wd-menu" hidden></div>
       </div>
-      <div class="scope-field scope-field--git" id="workspace-git-chip" hidden>
+      <!-- workspace-git-chip 类是 body[data-face] 两脸规则的挂钩（方案 A）；
+           scope-field--git 是与其他 scope 共享的布局类，留着不混 -->
+      <div class="scope-field scope-field--git workspace-git-chip" id="workspace-git-chip" hidden>
         <i class="ph ph-git-branch" aria-hidden="true"></i>
         <label id="workspace-git-label" class="sr-only" for="workspace-git-trigger">当前分支</label>
         <button type="button" id="workspace-git-trigger" class="wd-trigger"
@@ -341,6 +348,9 @@
       </button>
       </div>
     </details>
+    <!-- 能力条的理由弹层：**必须在 details 之外**——收起时 details 只渲染 summary，
+         而"点开 chip 看它为什么这么说"恰恰是收起状态下的用法。 -->
+    <div class="composer-capability-why" id="composer-capability-why" hidden></div>
     <!-- 信息队列：运行中收到的排队消息以 chips 呈现在输入行上方；
          内容全部由 message_queued / message_queue_updated 事件重放长出（renderQueueChips）。
          不能放进 .composer-input-row——它是 flex 行，chips 会被挤成内联一员 -->
@@ -536,6 +546,7 @@ import {
   deriveSessionFiles,
   selectConversationArtifacts,
   selectPreviewArtifacts,
+  ensurePreviewArtifact,
   resolveArtifactOpen,
   readSidebarCollapsed,
   writeSidebarCollapsed,
@@ -577,7 +588,7 @@ import {
   nextDesignSampleState,
   nextDesignLookState,
   harnessVisionConfigured,
-  readNextActionChip,
+  deriveFace,
   deriveComposerMode,
   deriveScopeSummary,
   composerSubmitPlan,
@@ -591,6 +602,8 @@ import {
   deriveRewindFilePreview,
   buildChatFeedbackMessage,
   patchComposer,
+  patchCapabilityBar,
+  deriveNextSuggestion,
   renderQueueChips,
   shouldShowReconnecting,
   deriveScrollNav,
@@ -618,6 +631,12 @@ import {
   applyDocumentTabTitle,
   filterWorkspaceFileEntries,
   createPathInspectCache,
+  stripAttachmentLine,
+  renderPatchHunksHtml,
+  buildRevertMessage,
+  toRepoRootRelative,
+  deriveTouchedFiles,
+  renderReviewPanel,
 } from "/app.js";
 import {
   loadSettings,
@@ -643,9 +662,9 @@ import {
   artifactExitHash,
   initArtifactCanvas,
   isBrowserPreviewPath,
-  wrapIndex,
   indexAfterCloseTab,
   artifactBasename,
+  wrapIndex,
 } from "/features/artifact-canvas.js";
 import {
   initFilePreview,
@@ -660,7 +679,7 @@ import {
   initWorkdirCombobox,
   initWorkdirPicker,
 } from "/features/workdir-picker.js";
-import { initWorkspaceGitChip } from "/features/workspace-git.js";
+import { initWorkspaceGitChip, fetchFilePatch } from "/features/workspace-git.js";
 import {
   isCommandCenterRoute,
   COMMAND_CENTER_HASH,
@@ -756,7 +775,7 @@ function syncChangesCommand() {
 // ——画布清单换了数据源，就会出现"右栏点得到、画布里没有"的两张皮。
 let artifactCanvasApi = /** @type {null|{ open:(i:number,o?:{full?:boolean})=>boolean, close:()=>void, isOpen:()=>boolean, isExpanded:()=>boolean, setExpanded:(b:boolean)=>void, noteWrites:(p:string[])=>void, currentIndex:()=>number, currentPath:()=>string, getEditScope:()=>({slide:string, path?:string}|null), element:HTMLElement }} */ (null);
 /** 深链待恢复：选中 run 的 state 可能要等 SSE 流到产物才够数据，先记账，渲染后补开 */
-let pendingArtifact = /** @type {null|{ runId:string, index:number, full?:boolean }} */ (null);
+let pendingArtifact = /** @type {null|{ runId:string, path:string|null, index:number|null, full?:boolean }} */ (null);
 /** 语义同 enteredSettingsFromApp：深链直达时「关闭」回 run 页而不是 history.back */
 let enteredCanvasFromApp = false;
 let unregisterArtifactCommand = /** @type {null|(() => void)} */ (null);
@@ -772,12 +791,23 @@ function conversationArtifactFiles(runId) {
   });
 }
 
-/** 用户点开过的预览标签（网站或本地路径）。没打开过的文件不进标签条。 */
+/** 用户点开过的预览标签（网站或本地路径）。它是**补集**，不是全集——见下。 */
 const extraPreviewFiles = new Map();
+/**
+ * 用户在这一场里主动关掉的预览标签。合并清单里的「关掉」= 藏掉：光从
+ * extraPreviewFiles 删没用（这一场的产物根本不在那本账上），要单独记一笔；
+ * 重新点开（rememberPreviewFile）即恢复。
+ */
+const dismissedPreviewFiles = new Map(); // runId -> Set<string>
 
 function rememberPreviewFile(runId, path) {
   const want = String(path ?? "").trim();
   if (!runId || !want) return;
+  const dismissed = dismissedPreviewFiles.get(runId);
+  if (dismissed) {
+    dismissed.delete(want);
+    if (dismissed.size === 0) dismissedPreviewFiles.delete(runId);
+  }
   const list = extraPreviewFiles.get(runId) ?? [];
   if (list.some((f) => f.path === want)) return;
   extraPreviewFiles.set(runId, [...list, {
@@ -786,8 +816,89 @@ function rememberPreviewFile(runId, path) {
   }]);
 }
 
+/**
+ * 这一场的预览标签条 = **这场对话的产物 ∪ 用户点开过的**，再减去用户关掉的。
+ *
+ * 从前这里只有「用户点开过的」，于是产物条里看得见的东西在画布标签条里
+ * 找不到；代码里为此打了个补丁（`openPendingArtifact` 在标签条为空时手动
+ * 从 `currentRunArtifacts` 挑一个塞进去）。那个特例就是两套清单不该分开的证据。
+ *
+ * 用既有的两个纯函数接上，不新增机制：
+ *   · `selectPreviewArtifacts` —— 滤掉核查脚本与 node_modules
+ *   · `ensurePreviewArtifact`  —— 已在里面就回原位，否则追加到末尾
+ *
+ * **kind 一律归一**：画布只认 `browser` / `preview` 两种，而
+ * `deriveSessionFiles` 给的是 `upload` / `artifact`——不归一的话画布会按
+ * 未知取值分派。判据与 `rememberPreviewFile` 逐字相同，只此一处。
+ */
+const asPreviewTab = (path) => ({
+  path: String(path ?? ""),
+  kind: isBrowserPreviewPath(path) ? "browser" : "preview",
+});
+
+/**
+ * 标签条缓存 stamp 的底料：谱系链（continuedFrom）上每一场的 timeline 长度
+ * 与 lastSeq——都从 state 上直接读（O(1)），不碰任何一条时间线事件。合并清单
+ * 只随这两样变：时间线只追加不原地改，重放是同一批事件得出同一份状态；
+ * runId 也拼进 stamp——链上换了成员、新成员长度恰与旧成员相同时，纯长度串
+ * 会撞键。链长 = 一场对话的续跑次数（1~3），走链是 O(链长) 而不是 O(事件数)。
+ */
+function previewTabStamp(runId) {
+  const byId = new Map((runs ?? []).map((r) => [r.runId, r]));
+  const seen = new Set();
+  const parts = [];
+  let cur = runId;
+  while (cur && !seen.has(cur)) {
+    seen.add(cur);
+    const st = runStates.get(cur);
+    parts.push(`${cur}:${st?.timeline?.length ?? 0}:${st?.lastSeq ?? 0}`);
+    cur = byId.get(cur)?.continuedFrom;
+  }
+  return parts.join("|");
+}
+
+/**
+ * 标签条的缓存。**这不是优化项**：`openedPreviewArtifacts` 有 5 个调用点
+ * （grep 数出来的，不是抄计划——计划里写的 7 是错的；删掉 openPendingArtifact
+ * 的手动塞标签特例后从 6 处变 5 处），
+ * 其中 `initArtifactCanvas` 的 `getArtifacts` 在画布的渲染路径上。
+ * 改之前它是一次 Map 查；改之后它是"把整条时间线走一遍"——不缓存的话，
+ * 长 run 上每帧走一遍时间线是实打实的退化。
+ */
+const previewTabsCache = new Map(); // runId -> { stamp: string, list: {path, kind}[] }
+
 function openedPreviewArtifacts(runId) {
-  return extraPreviewFiles.get(runId) ?? [];
+  if (!runId) return [];
+  const mine = extraPreviewFiles.get(runId) ?? [];
+  const dismissed = dismissedPreviewFiles.get(runId);
+  // 键的 mine/dismissed 两段用**内容**、不用长度：forgetPreviewFile 会把路径
+  // 从 mine 里 filter 掉——账本可增可删，长度键不单射。今天的代码里每次
+  // 账本变更都紧跟一次派生（缓存单条目、每步覆写），长度键还撞不出旧清单；
+  // 但那个不变式没写在脸上，「改完账本没立刻派生」的新路径会让长度键绕回
+  // 旧值、撞上旧缓存（review 的五步序列按今天的代码推演，第 5 步比对的是
+  // 第 4 步写的键——第 3 步的旧清单早被覆写了；推演与活页证据见
+  // task-6-report.md 的 Fix round 1）。内容键把这个危险整类去掉。
+  // 路径里不可能出现 \x00，按序 join 不歧义；dismissed 排序后才是确定串。
+  // 手动账本只有几件，O(件数) 可忽略。
+  const mineSig = mine.map((f) => f.path).join("\x00");
+  const disSig = dismissed ? [...dismissed].sort().join("\x00") : "";
+  const stamp = `${previewTabStamp(runId)}|${mineSig}|${disSig}`;
+  const hit = previewTabsCache.get(runId);
+  if (hit && hit.stamp === stamp) return hit.list;
+
+  // 顺序：这一场的产物在前（它就是这一场的目录），手动点开过的补在后面。
+  // 关掉的先滤掉：产物条点开 = rememberPreviewFile 先解 dismissed 再并清单，
+  // 所以「关掉」的恢复路径与首次点开同一条，不另开机制。
+  let list = selectPreviewArtifacts(currentRunArtifacts(runId))
+    .map((f) => asPreviewTab(f.path))
+    .filter((t) => !dismissed?.has(t.path));
+  for (const f of mine) {
+    if (dismissed?.has(f.path)) continue;
+    list = ensurePreviewArtifact(list, f.path).list.map((t) => asPreviewTab(t.path));
+  }
+
+  previewTabsCache.set(runId, { stamp, list });
+  return list;
 }
 
 function forgetPreviewFile(runId, path) {
@@ -796,6 +907,9 @@ function forgetPreviewFile(runId, path) {
   const next = (extraPreviewFiles.get(runId) ?? []).filter((f) => f.path !== want);
   if (next.length) extraPreviewFiles.set(runId, next);
   else extraPreviewFiles.delete(runId);
+  const dismissed = dismissedPreviewFiles.get(runId) ?? new Set();
+  dismissed.add(want);
+  dismissedPreviewFiles.set(runId, dismissed);
 }
 
 function closePreviewTab(index) {
@@ -821,48 +935,79 @@ function currentRunArtifacts(runId) {
   return selectPreviewArtifacts(files);
 }
 
-/** 打开画布：走 hash 路由，浏览器前进/后退天然可用 */
-function openArtifactByIndex(runId, index) {
-  if (!runId || openedPreviewArtifacts(runId).length === 0) return;
+/** 下标 → 深链 ref：写出去的地址一律按路径（清单在手边，直接查；查不到退回数字形态）。 */
+function artifactRefForIndex(runId, index) {
+  const item = openedPreviewArtifacts(runId)[index];
+  return item ? { path: item.path } : index;
+}
+
+/**
+ * 打开画布：走 hash 路由，浏览器前进/后退天然可用。
+ * 写出去的地址是**路径形态**（计划 3 · T5）——下标会随会话状态位移，
+ * 路径不会。`full` 只在深链恢复时给布尔（强制与 hash 一致）；其余调用
+ * 不传——openCanvas 省略 full 是「保持现状」，点产物不该把放大态缩回去。
+ */
+function openArtifactByIndex(runId, index, opts = {}) {
+  const list = openedPreviewArtifacts(runId);
+  if (!runId || list.length === 0) return;
   enteredCanvasFromApp = true;
-  const target = encodeArtifactHash(runId, index);
+  const at = wrapIndex(index, list.length);
+  const wantFull = typeof opts?.full === "boolean" ? opts.full : undefined;
+  // ?full 是深链的一部分：剥掉它，刷新就会从放大态缩回停靠态。
+  const target = encodeArtifactHash(runId, artifactRefForIndex(runId, at), { full: Boolean(wantFull) });
   if (location.hash === target) {
-    artifactCanvasApi?.open(index);
+    artifactCanvasApi?.open(index, wantFull === undefined ? undefined : { full: wantFull });
     return;
   }
   location.hash = target;
 }
 
-/** 任何路径都进右侧画布：只把这一份记成标签，不把整场文件都展开。 */
-function openArtifactByPath(runId, path) {
+/** 任何路径都进右侧画布：只把这一份记成标签，不把整场文件都展开。
+ *  @returns {boolean} 是否真的开上了（走画布那条路为 true，「找不到」为 false）——
+ *   openPendingArtifact 靠它决定 pending 清不清：用「pendingArtifact 有没有被替换」
+ *   判成败是错的（成功时不替换，判据永不为真，每次渲染都会重开一次画布）。 */
+function openArtifactByPath(runId, path, opts = {}) {
   const want = String(path ?? "").trim();
   if (!runId || !want) {
     announceStatus("找不到该产物");
-    return;
+    return false;
   }
   rememberPreviewFile(runId, want);
   const resolved = resolveArtifactOpen(openedPreviewArtifacts(runId), want);
   if (resolved.mode === "canvas") {
-    openArtifactByIndex(runId, resolved.index);
-    return;
+    openArtifactByIndex(runId, resolved.index, opts);
+    return true;
   }
   announceStatus("找不到该产物");
+  return false;
 }
 
-/** 深链/切换落点：数据够了就开，不够就留着 pending 等下一次渲染 */
+/**
+ * 深链/切换落点：数据够了就开，不够就留着 pending 等下一次渲染。
+ * 从前这里还有一个特例——标签条为空时手动从 currentRunArtifacts 挑一个塞进去；
+ * 那是「两套清单不互通」打的补丁。标签条现在天然含这一场的产物，那个特例已经删掉。
+ *
+ * **深链在计划 3 · T5 之后是按路径的**（`#/run/<id>/artifact/<转义路径>`）：
+ * 从前按下标时，"合并清单的下标"会随会话状态整体位移，而 wrapIndex 把越界
+ * 取模兜住——**静默指到另一个文件，不报错**。数字形态仍然认（历史链接），
+ * 但新写出去的一律是路径。
+ */
 function openPendingArtifact() {
   if (!pendingArtifact) return;
-  const { runId, index, full } = pendingArtifact;
+  const { runId, path, index, full } = pendingArtifact;
   if (runId !== selectedRunId) return;
-  if (openedPreviewArtifacts(runId).length === 0) {
-    const catalog = currentRunArtifacts(runId);
-    if (catalog.length === 0) return;
-    const i = wrapIndex(index, catalog.length);
-    if (i < 0) return;
-    rememberPreviewFile(runId, catalog[i].path);
-    if (artifactCanvasApi?.open(0, { full: Boolean(full) })) pendingArtifact = null;
+  // 路径形态：走已有的那条"路径 → 下标"的解析（它会把这一份记成标签）。
+  // full 一并带下去：放大态深链（?full）刷新后仍要放大——openArtifactByIndex
+  // 会把 ?full 写回地址（「?full 往返，刷新保持形态」是既有契约）。
+  if (path !== null && path !== undefined) {
+    // openArtifactByPath 返回"是否真的开上了"——不能用 pendingArtifact 有没有被替换来判：
+    // 成功时它不会替换 pendingArtifact，那个判据永不为真，于是每次渲染都会重开一次画布
+    // （重取内容 / 重置 deck 位置 / 并且抢焦点——openCanvas 末尾会 dock.closeBtn.focus()）。
+    if (openArtifactByPath(runId, path, { full: Boolean(full) })) pendingArtifact = null;
+    // 没开成（找不到）就留着等下一次渲染
     return;
   }
+  // 旧的下标形态：原样
   if (artifactCanvasApi?.open(index, { full: Boolean(full) })) pendingArtifact = null;
 }
 
@@ -1097,76 +1242,6 @@ function syncScrollNav() {
   });
 })();
 
-/**
- * 下一步芯片：写入输入框，或点开已经存在的入口。
- * 不在这里发明能力——识图 / 飞书 / 开 PR 没武装时 suggestNextActions 根本不会画出对应键。
- */
-function applyNextActionChip(btn) {
-  const spec = readNextActionChip(btn);
-  if (!spec) return;
-  if (spec.plan && planModeToggle) {
-    planModeToggle.checked = true;
-    writePref(PREF_PLAN, true);
-    syncPlanHint();
-  }
-  if (spec.fill) {
-    taskInput.value = spec.fill;
-    taskInput.focus();
-    taskInput.setSelectionRange(spec.fill.length, spec.fill.length);
-    syncWelcomeComposerField();
-    syncComposer();
-  }
-  if (spec.action === "mention") {
-    if (!spec.fill) {
-      const pad = taskInput.value && !/\s$/.test(taskInput.value) ? " " : "";
-      taskInput.value = `${taskInput.value}${pad}@`;
-      syncWelcomeComposerField();
-      syncComposer();
-    }
-    onComposerCiteInput();
-    taskInput.focus();
-    const v = taskInput.value;
-    if (typeof taskInput.setSelectionRange === "function") {
-      taskInput.setSelectionRange(v.length, v.length);
-    }
-  } else if (spec.action === "files") {
-    fileTreeApi?.setCollapsed(false);
-    announceStatus("右侧是这个文件夹里的文件。");
-  } else if (spec.action === "schedules") {
-    location.hash = SCHEDULES_HASH;
-    schedulesApi?.open();
-  } else if (spec.action === "pr") {
-    const trigger = document.getElementById("workspace-git-trigger");
-    const host = document.getElementById("workspace-git-chip");
-    if (trigger && !trigger.disabled && host && !host.hidden) trigger.click();
-    else announceStatus("现在还不能开 PR。");
-  } else if (spec.action === "preview" && spec.path) {
-    if (selectedRunId) openArtifactByPath(selectedRunId, spec.path);
-    else {
-      const wd = currentWorkdir();
-      if (wd) filePreviewApi?.open({ path: spec.path, url: buildFilePreviewUrl({ path: spec.path, workdir: wd }) });
-    }
-  } else if (spec.action === "review" && spec.path) {
-    if (selectedRunId) openArtifactByPath(selectedRunId, spec.path);
-    else {
-      const wd = currentWorkdir();
-      if (wd) filePreviewApi?.open({ path: spec.path, url: buildFilePreviewUrl({ path: spec.path, workdir: wd }) });
-    }
-    requestAnimationFrame(() => {
-      const inspect = document.getElementById("ac-inspect");
-      if (inspect && !inspect.hidden && inspect.getAttribute("aria-pressed") !== "true") inspect.click();
-    });
-  } else if (spec.action === "focus") {
-    taskInput.focus();
-  }
-  if (spec.announce) announceStatus(spec.announce);
-}
-
-document.addEventListener("click", (e) => {
-  const btn = e.target instanceof Element ? e.target.closest(".empty-state [data-next-id]") : null;
-  if (btn) applyNextActionChip(btn);
-});
-
 (function bindScrollNav() {
   const scroller = document.getElementById("main-area");
   const nav = document.getElementById("scroll-nav");
@@ -1198,6 +1273,12 @@ document.addEventListener("click", (e) => {
 // ---- 统一 composer 的三个事实（派生逻辑在 app.js，这里只存输入）----
 /** @type {ReturnType<typeof deriveComposerMode>|null} */
 let composerMode = null;
+/**
+ * 收尾后待采纳的「下一步」提议（三轮走查 A+B）。
+ * Tab 采纳 → 立刻清掉；会话重新在跑 / 已在打字 → 每次 syncComposer 重算时清掉。
+ * 留着过期的那句比不显示更糟：Tab 会把用户填进一句跟上文无关的话里。
+ */
+let pendingNextSuggestion = null;
 
 // ---- 上排控件收成一行摘要（2026-09-18 回走 §2.4）----
 // 摘要文字从控件本体派生（`deriveScopeSummary`），用观察器跟进：项目/目录/模型
@@ -1932,7 +2013,7 @@ function parseRoute() {
   if (isArtifactsRoute(location.hash || "")) return { kind: "artifacts" };
   if (isUsageRoute(location.hash || "")) return { kind: "usage" };
   const artifact = parseArtifactRoute(location.hash || "");
-  if (artifact) return { kind: "artifact", runId: artifact.runId, index: artifact.index, full: artifact.full };
+  if (artifact) return { kind: "artifact", runId: artifact.runId, path: artifact.path, index: artifact.index, full: artifact.full };
   const m = /^#\/run\/([^/]+)(?:\/([^/?]+))?/.exec(location.hash || "");
   if (!m) return { kind: "home" };
   return { kind: "run", runId: decodeURIComponent(m[1]), tab: normalizeTab(m[2]) };
@@ -2151,10 +2232,13 @@ function applyHash() {
     // 产物画布深链：先确保会话选中（selectRun 的 writeHash 会盖掉深链，随后恢复），
     // 产物清单就位后 openPendingArtifact 补开；state 还没流到产物时挂账等渲染。
     // full 跟随深链（?full = 放大态），刷新后形态不丢。
-    pendingArtifact = { runId: route.runId, index: route.index, full: Boolean(route.full) };
+    pendingArtifact = { runId: route.runId, path: route.path, index: route.index, full: Boolean(route.full) };
     if (route.runId !== selectedRunId) {
       selectRun(route.runId, { keepHash: true });
-      const target = encodeArtifactHash(route.runId, route.index, { full: Boolean(route.full) });
+      // 路径形态深链重写回地址时也要按路径写——route.index 在路径形态下是 null，
+      // 拿它去 encode 会写成 artifact/0，把深链静默换成第 0 件。
+      const ref = route.path !== null && route.path !== undefined ? { path: route.path } : route.index;
+      const target = encodeArtifactHash(route.runId, ref, { full: Boolean(route.full) });
       if (location.hash !== target) {
         suppressHashHandling = true;
         location.hash = target;
@@ -2237,6 +2321,7 @@ function renderDetailWithState(state) {
       const next = runStates.get(runId);
       if (next) renderDetailWithState(next);
     },
+    changeCardReviewed: reviewedAtSeq.get(runId) ?? null,
     onOpenRun: (id) => { if (id) selectRun(id); },
     onCancelCampaignChild: (childId) => {
       const cid = state.runConfig?.campaignId;
@@ -2258,7 +2343,6 @@ function renderDetailWithState(state) {
     canContinue: info?.canContinue === true,
     planUsed: state.runConfig?.mode === "plan",
     workspaceFace,
-    onNextAction: applyNextActionChip,
   });
   // T8 变更审查：详情骨架换 run 会整体重建，把分区节点搬回新的 rail-body
   // 并指向当前 run（同一节点 re-parent，加载态与展开态不丢）
@@ -2271,6 +2355,11 @@ function renderDetailWithState(state) {
     );
   }
   syncChangesCommand();
+  // T6 「本场改动」卡：renderRunDetail 已把卡画进对话，这里补宿主侧——展开文件
+  // 才取 patch（收着只有路径清单，行数是 git 侧的东西）
+  bindChangeCardHost();
+  paintChangeCardPatches(runId, info?.workdir || currentWorkdir());
+  paintReviewPanel(); // T7：面板与卡同一时机重画（内容同源，sig 相同就不动）
   // T12 阅读模式：对话渲染落定后做后处理（聚焦模式藏过程元素、插摘要行；
   // 完整模式即现状）。与 changes-panel 同一挂账时机，骨架重建时开关 re-parent。
   if (readingModeApi) {
@@ -2288,6 +2377,232 @@ function renderDetailWithState(state) {
   if (runId === selectedRunId) syncComposer();
   syncScrollNav();
 }
+
+/* —— 「本场改动」卡宿主侧（计划 3 · T6）——
+ * 卡的事件派生侧在 app.js（收着 = 路径清单），展开侧在这里：取 git patch
+ * 填进打开的文件体。两个缓存：patch 按 `${runId}:${path}:${lastSeq}`
+ * （lastSeq 进 key：文件又被改过就重取，不拿旧 patch 充数）、git root 按 workdir。 */
+
+/** runId:path:lastSeq → FilePatch（取不到的 null 也记，不反复打） */
+const changeCardPatchCache = new Map();
+/** workdir → git root（/api/workspace/git 的 root 字段；非 git 目录记 null） */
+const changeCardGitRootCache = new Map();
+/** runId:path:lastSeq 在飞请求——连着展开同一个文件只打一次 */
+const changeCardInflight = new Map();
+
+function changeCardWorkdirOf(runId) {
+  const info = runs.find((r) => r.runId === runId) ?? null;
+  return info?.workdir || currentWorkdir();
+}
+
+async function changeCardGitRoot(workdir) {
+  if (!workdir) return null;
+  if (changeCardGitRootCache.has(workdir)) return changeCardGitRootCache.get(workdir);
+  const promise = (async () => {
+    try {
+      const res = await fetch(`/api/workspace/git?workdir=${encodeURIComponent(workdir)}`);
+      const data = res.ok ? await res.json() : null;
+      const root = data && typeof data.root === "string" ? data.root : null;
+      changeCardGitRootCache.set(workdir, root);
+      return root;
+    } catch {
+      changeCardGitRootCache.set(workdir, null);
+      return null;
+    }
+  })();
+  return promise;
+}
+
+async function fillChangeCardFile(runId, workdir, body) {
+  const path = body.getAttribute("data-path") ?? "";
+  const lastSeq = body.getAttribute("data-last-seq") ?? "";
+  const key = `${runId}:${path}:${lastSeq}`;
+  let promise = changeCardInflight.get(key);
+  if (!promise && changeCardPatchCache.has(key)) {
+    // 命中缓存：同步画，不用等微任务（重画后重开文件走这条路）
+    body.innerHTML = renderPatchHunksHtml(changeCardPatchCache.get(key), { runId, path, lastSeq });
+    return;
+  }
+  if (!promise) {
+    promise = (async () => {
+      const root = await changeCardGitRoot(workdir);
+      // 契约 1：diff 端点要 root 相对路径。转换失败（逃出仓库 / 非 git）宁可
+      // 取不到也不猜——猜错的基准会被服务端双检放行、静默取成另一个文件。
+      const rel = root ? toRepoRootRelative(path, workdir, root) : null;
+      if (!rel) {
+        const patch = {
+          present: false,
+          path,
+          note: root
+            ? "这个路径换算不到仓库里，取不到补丁（改的路径照列）"
+            : "这个目录不是 git 仓库，取不到补丁（改的路径照列）",
+        };
+        changeCardPatchCache.set(key, patch);
+        return patch;
+      }
+      const patch = await fetchFilePatch(workdir, rel);
+      changeCardPatchCache.set(key, patch);
+      return patch;
+    })().finally(() => { changeCardInflight.delete(key); });
+    changeCardInflight.set(key, promise);
+  }
+  const patch = await promise;
+  if (!body.isConnected) return;
+  body.innerHTML = renderPatchHunksHtml(patch, { runId, path, lastSeq });
+}
+
+/** 把当前打开着的文件体填上 patch（渲染每轮都叫；已画的跳过，不重刷滚动） */
+function paintChangeCardPatches(runId, workdir) {
+  const host = document.querySelector("#main-area #conversation");
+  if (!host || !runId) return;
+  for (const body of host.querySelectorAll(".chat-change-file-body")) {
+    if (body.childElementCount > 0 || String(body.textContent ?? "").trim()) continue;
+    const fileEl = body.closest("details.chat-change-file");
+    if (!fileEl || !fileEl.open) continue;
+    void fillChangeCardFile(runId, workdir, body);
+  }
+}
+
+function bindChangeCardHost() {
+  const host = document.querySelector("#main-area #conversation");
+  if (!host || host.__changeCardBound) return;
+  host.__changeCardBound = true;
+  // <details> 的 toggle 不冒泡——展开文件要在 capture 阶段才收得到
+  host.addEventListener("toggle", handleChangeCardToggle, true);
+  host.addEventListener("click", handleChangeCardClick);
+}
+
+/* —— 「改动」审阅面板宿主侧（计划 3 · T7）——
+ * 右栏第三只面板：与卡**同一套** data-change-action 挂钩、同一套处理函数、
+ * 同一份 renderPatchHunksHtml——只共享，不复制。面板与卡也共用已阅容器
+ * reviewedAtSeq（失效语义自动一致）。 */
+
+/** 卡片与面板共用的已阅回调（renderRunDetail 直接引用；rid 由按钮自带） */
+function handleChangeCardReview(rid, path, lastSeq) {
+  const key = rid || selectedRunId;
+  if (!key || !path) return;
+  const byPath = reviewedAtSeq.get(key) ?? new Map();
+  byPath.set(path, Number(lastSeq) || 0);
+  reviewedAtSeq.set(key, byPath);
+  const next = runStates.get(key);
+  if (next) renderDetailWithState(next);
+}
+
+/** 卡片与面板共用的撤掉回调：只写进输入框，不发送（逐字 buildRevertMessage） */
+function handleChangeCardRevert(rid, path, header, added, deleted) {
+  const msg = buildRevertMessage({
+    path,
+    header: header ?? "",
+    added: Number(added) || 0,
+    deleted: Number(deleted) || 0,
+  });
+  taskInput.value = msg;
+  taskInput.dispatchEvent(new Event("input", { bubbles: true }));
+  taskInput.focus();
+  const len = msg.length;
+  try { taskInput.setSelectionRange(len, len); } catch { /* 输入框不可选就随它去 */ }
+}
+
+/** capture 阶段收 <details class="chat-change-file"> 的 toggle（不冒泡）：展开才取 patch */
+function handleChangeCardToggle(e) {
+  const details = e.target instanceof Element ? e.target : null;
+  if (!details || details.tagName !== "DETAILS" || !details.classList.contains("chat-change-file")) return;
+  if (!details.open || !selectedRunId) return;
+  const body = details.querySelector(":scope > .chat-change-file-body");
+  if (body) void fillChangeCardFile(selectedRunId, changeCardWorkdirOf(selectedRunId), body);
+}
+
+/** 卡与面板共用的 click 委托：review / revert / next-hunk / open-review-panel */
+function handleChangeCardClick(e) {
+  const btn = e.target instanceof Element ? e.target.closest("[data-change-action]") : null;
+  if (!btn || btn.disabled) return;
+  const action = btn.dataset.changeAction;
+  if (action === "review") {
+    handleChangeCardReview(btn.dataset.runId, btn.dataset.path, btn.dataset.lastSeq);
+    return;
+  }
+  if (action === "revert") {
+    handleChangeCardRevert(btn.dataset.runId, btn.dataset.path, btn.dataset.header, btn.dataset.added, btn.dataset.deleted);
+    return;
+  }
+  if (action === "next-hunk") {
+    // 滚到下一个 hunk——这是"动一下"，不是导航，不改地址栏。
+    // ★ data-hunk-idx 是**按文件**从 0 起的（renderPatchHunksHtml 每个文件体
+    // 各调一次），所以必须把查找圈在按钮所属的那个文件里——按容器查的话，
+    // 展开 ≥2 个文件时，点第二个文件的 hunk 0 会命中文档序第一个 idx=1
+    // （第一个文件的 hunk 1），滚去别的文件（终审 I1）。
+    const container = btn.closest(".right-rail-review") ?? btn.closest(".chat-change-card");
+    const scope = btn.closest(".chat-change-file") ?? container;
+    const hunks = scope ? [...scope.querySelectorAll(".chat-hunk")] : [];
+    const cur = Number(btn.dataset.hunkIdx);
+    const next = hunks.find((h) => Number(h.dataset.hunkIdx) === cur + 1);
+    if (next) next.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    return;
+  }
+  if (action === "open-review-panel") {
+    // 按钮在 summary 外（a11y：summary 里嵌按钮 = nested-interactive），
+    // 点击本不会带开卡；留着 preventDefault 防将来按钮搬回头行里。
+    e.preventDefault();
+    showRailSurface({ surface: "review" });
+    paintReviewPanel();
+  }
+}
+
+/** 把选中 run 的触碰文件画进面板槽（deriveTouchedFiles 与卡同口径） */
+function paintReviewPanel() {
+  const slot = document.getElementById("right-rail-review");
+  if (!slot) return;
+  const runId = selectedRunId;
+  if (!runId) {
+    slot.innerHTML = "";
+    slot.dataset.sig = "";
+    return;
+  }
+  const state = runStates.get(runId);
+  const files = deriveTouchedFiles(state ?? {});
+  const reviewed = reviewedAtSeq.get(runId);
+  // sig = 内容签名：没变就不重画——重画会把用户展开着的文件塌回去
+  const sig = files.map((f) => `${f.path}:${f.edits}:${f.lastSeq}`).join("|") +
+    "||" + (reviewed ? [...reviewed.entries()].map(([p, s]) => `${p}:${s}`).sort().join("|") : "");
+  if (slot.dataset.sig === sig) return;
+  const openPaths = new Set();
+  for (const details of slot.querySelectorAll("details.chat-change-file[open]")) {
+    openPaths.add(details.dataset.path);
+  }
+  slot.innerHTML = renderReviewPanel(files, { runId, reviewed });
+  slot.dataset.sig = sig;
+  // 保留用户在面板里展开着的文件（同一路径重开，patch 照旧）
+  for (const details of slot.querySelectorAll("details.chat-change-file")) {
+    if (openPaths.has(details.dataset.path)) details.open = true;
+  }
+  paintReviewPanelPatches();
+}
+
+/** 面板里当前打开着的文件体填上 patch（与 paintChangeCardPatches 同一时机） */
+function paintReviewPanelPatches() {
+  const slot = document.getElementById("right-rail-review");
+  const runId = selectedRunId;
+  if (!slot || !runId) return;
+  for (const body of slot.querySelectorAll(".chat-change-file-body")) {
+    if (body.childElementCount > 0 || String(body.textContent ?? "").trim()) continue;
+    const fileEl = body.closest("details.chat-change-file");
+    if (!fileEl || !fileEl.open) continue;
+    void fillChangeCardFile(runId, changeCardWorkdirOf(runId), body);
+  }
+}
+
+function bindReviewPanelHost() {
+  const slot = document.getElementById("right-rail-review");
+  if (!slot || slot.__reviewPanelBound) return;
+  slot.__reviewPanelBound = true;
+  slot.addEventListener("toggle", handleChangeCardToggle, true);
+  slot.addEventListener("click", handleChangeCardClick);
+  // 「改动」tab 点动唤回：事件流可能已经把内容带旧了，补一次重画（sig 没变就不动）
+  document.addEventListener("review:reveal", () => paintReviewPanel());
+}
+
+// 面板槽是静态 DOM（不随 run 重建），启动时接一次
+bindReviewPanelHost();
 
 /**
  * 切换 Loop 面的读法。对话视图的正文按需拉——会话可达数 MB，没必要在
@@ -2333,6 +2648,11 @@ function refreshTranscriptIfWatching(runId) {
 const stoppingRuns = new Set();
 /** 本页关掉的待复核条，按 run。刷新后还会再出现——那是新会话该看见的提醒。 */
 const dismissedUnverified = new Set();
+/**
+ * 「本场改动」卡的已阅集合：runId → (路径 → 已阅时的 lastSeq)。
+ * 已阅后重画卡靠的就是它进了 chatItemSig；文件再被改（lastSeq 涨了），旧记自动失效。
+ */
+const reviewedAtSeq = new Map();
 
 function revealDecisionDock(runId) {
   selectRun(runId);
@@ -2375,7 +2695,33 @@ function syncComposer() {
       ? deliveryFace(info?.stopReason ?? selectedState.stopReason, deriveArtifacts(selectedState))
       : null,
   });
+  /**
+   * 收尾后的「下一步」幽灵（三轮走查 A+B）。
+   *
+   * 用模型的提议换掉 placeholder——输入框空着时它就是那句灰问句，**按 Tab 落成
+   * 可编辑的回复**。三个前提：会话**已结束**、输入框空着、不是提交中；任一不满足
+   * 就把 `pendingNextSuggestion` 清掉（留着过期的那句比不显示更糟）。
+   */
+  pendingNextSuggestion = selectedState && selectedState.status !== "running"
+      && composerMode.mode !== "submitting" && !(taskInput?.value ?? "").trim()
+    ? deriveNextSuggestion(selectedState.completion)
+    : null;
+  if (pendingNextSuggestion) {
+    composerMode.placeholder = pendingNextSuggestion.ask;
+    // 幽灵用原生 placeholder（已是 text-3 最暗）；"怎么采纳"走 title，
+    // 由 patchComposer 一处合成——发送快捷键不能被覆盖掉
+    composerMode.tabHint = `按 Tab 采纳：${pendingNextSuggestion.reply}`;
+  }
+  // 两脸差异的唯一落点（方案 A · 计划 1）
+  // 显式位暂为 null：脸切换控件写的就是 workspaceFace 本身，没有第二份来源，
+  // 推断全由它驱动；显式位留给后续（如按会话存脸）接入。
+  document.body.dataset.face = deriveFace({ face: null, workspace: workspaceFace });
   patchComposer(composerMode);
+  // 能力条跟着 composer 走：换模型/换核查开关都发生在这儿，而输入框是全局的
+  // （首页也在）——挂在 renderRunDetail 上会让首页一片空白（三轮走查活页抓到）
+  // verify 一律以 composer 的开关为准：首页没有 run、selectedState 是 {}，
+  // 真值是 verifyToggle.checked，不是 run 状态里的某个字段。
+  patchCapabilityBar({ ...(selectedState ?? {}), verify: verifyToggle?.checked === true }, harnessSnapshot);
   paintPlanModeHint();
   workdirComboboxApi?.paint();
   void workspaceGitChipApi?.refresh();
@@ -3451,6 +3797,17 @@ if (planModeToggle) {
 // 独立核查默认值同样来自设置中心（此前无持久化，设置页是它的唯一出处）
 if (verifyToggle) {
   verifyToggle.checked = composerDefaults(uiSettings).verify;
+  // 能力条的「核查关」格挂在这个开关上（syncComposer 只在消息/切 run/开闭设置
+  // 时重画）：勾上「独立核查」后芯片必须当场消失，不等下一次 syncComposer。
+  // 设置页 applyComposerDefaults 走的是 .checked 赋值，不触发 change——
+  // 那半边照旧走它自己的重画时机，这里只管用户亲手勾的那一下。
+  verifyToggle.addEventListener("change", () => {
+    const selectedState = selectedRunId ? runStates.get(selectedRunId) : null;
+    patchCapabilityBar(
+      { ...(selectedState ?? {}), verify: verifyToggle.checked === true },
+      harnessSnapshot,
+    );
+  });
 }
 
 // ---- 提交：一个框，两种去向 ----
@@ -3515,6 +3872,23 @@ taskInput.addEventListener("keydown", (e) => {
       hideCitePicker();
       return;
     }
+  }
+  /**
+   * 收尾后的下一步：输入框空着时 Tab 采纳幽灵问句（三轮走查 A+B）。
+   * **没有建议、或已经在打字 → 直接放行**——键盘不能吃，Tab 的默认职责是切焦点。
+   */
+  if (e.key === "Tab" && !e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey
+      && pendingNextSuggestion && taskInput.value.trim() === "") {
+    e.preventDefault();
+    const { reply } = pendingNextSuggestion;
+    pendingNextSuggestion = null;
+    taskInput.value = reply;
+    if (typeof taskInput.setSelectionRange === "function") {
+      taskInput.setSelectionRange(reply.length, reply.length);
+    }
+    syncWelcomeComposerField();
+    syncComposer();
+    return;
   }
   if (e.key !== "Enter") return;
   if (e.isComposing || e.keyCode === 229) return;
@@ -4859,19 +5233,33 @@ if (newChatBtn) {
  * （bash / read_file 处理文本与数据文件），只是看不了图。
  */
 const uploaded = [];
+/** 本稿的附件序号（A 簇：编号供按位置引用）。提交清稿时归零——编号是**每稿**的。 */
+let attachSeq = 0;
 const composerCompose = document.getElementById("composer-compose");
 const composerMedia = document.getElementById("composer-media");
 
+/** 在光标处插入一段文本并把光标推到插入内容之后（保持焦点）。 */
+function insertAtCaret(el, text) {
+  if (!el) return;
+  const start = el.selectionStart ?? el.value.length;
+  el.setRangeText(text, start, el.selectionEnd ?? start, "end");
+  el.focus();
+}
+
 function renderUploads() {
   if (!uploadList) return;
-  const images = uploaded.filter((u) => u.previewUrl && /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(u.path));
+  // 只把**已就绪**的图片挂进缩略图条：失败的还没有 attachNo，引用按钮
+  // 会插出「Image #undefined」——Task 2 的引用路径假设条目已有编号。
+  const images = uploaded.filter((u) => u.attachNo !== undefined && u.previewUrl && /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(u.path));
   if (composerMedia) {
     composerMedia.hidden = images.length === 0;
     composerMedia.innerHTML = images
       .map((u) => (
-        `<div class="composer-media-preview">` +
+        `<button type="button" class="composer-media-preview" data-upload-cite="${u.attachNo}" ` +
+        `title="插入引用 Image #${u.attachNo}" aria-label="插入 Image #${u.attachNo} 的引用">` +
         `<img src="${escapeHtml(u.previewUrl)}" alt="${escapeHtml(u.path)}" />` +
-        `</div>`
+        `<span class="composer-media-no">${u.attachNo ?? ""}</span>` +
+        `</button>`
       ))
       .join("");
   }
@@ -4880,18 +5268,49 @@ function renderUploads() {
   uploadList.innerHTML = uploaded
     .map((u, i) => {
       const name = escapeHtml(u.path);
+      // 图片说「Image #N」（用户正文里引用的就是这个词），非图说「附件 #N」。
+      // 编号只在 attachNo 已存在时拼——上传中那会儿还没有编号，`?? ""` 会
+      // 渲染出「Image #  0%」这种双空格怪样。门控照缩略图条那条
+      // `attachNo !== undefined`（上传中/失败的条目压根不进缩略图）。
+      const tag = u.attachNo !== undefined
+        ? (u.previewUrl ? `Image #${u.attachNo}` : `附件 #${u.attachNo}`)
+        : (u.previewUrl ? "图片" : "附件");
+      // 非图附件**每个状态**都带类型图标（A4 的 chip 靠它认类型）；图片有缩略图，
+      // 不需要。附：验收探针量的正是「有类型图标 + 有 附件 #N」同时成立。
+      const icon = !u.previewUrl
+        ? `<i class="ph ${attachmentIcon(u.path)}" aria-hidden="true"></i>`
+        : "";
+      if (u.status === "failed") {
+        // 失败**说清原因**（文件过大 / 网络中断 / 已切走），并给一条出路
+        // 超限是"文件本身不行"，重试解决不了——别给一个点了没反应的按钮
+        // （预检会原样再拦一次、文案一字不变，用户会以为是自己点错了）。
+        const canRetry = u.bytes <= UPLOAD_MAX_BYTES_CLIENT;
+        const retryBtn = canRetry
+          ? `<button type="button" class="btn btn--ghost upload-retry" data-upload-retry="${i}" ` +
+            `title="重试" aria-label="重试上传 ${name}">重试</button>`
+          : "";
+        return `<li class="upload-item upload-item--failed">`
+          + `${icon}<code>${name}</code> `
+          + `<span class="upload-err">${escapeHtml(u.error ?? "上传失败")}</span> `
+          + retryBtn
+          + `<button type="button" class="btn btn--ghost upload-remove" data-upload-remove="${i}" `
+          + `title="删除附件" aria-label="删除附件 ${name}">`
+          + `<i class="ph ph-x" aria-hidden="true"></i></button></li>`;
+      }
+      if (u.status === "uploading") {
+        return `<li class="upload-item"><span class="upload-no">${icon}${tag}</span> `
+          + `<code>${name}</code> <span class="knob-hint">${u.progress}%</span></li>`;
+      }
       const size = `<span class="knob-hint">${(u.bytes / 1024).toFixed(0)} KB</span>`;
-      // 预览按钮：上传返回的 absolutePath 直接喂 /api/file-preview（圈禁在服务端）
       const previewBtn =
         `<button type="button" class="btn btn--ghost upload-preview" data-upload-preview="${i}" ` +
         `title="预览" aria-label="预览 ${name}">` +
         `<i class="ph ph-eye" aria-hidden="true"></i><span>预览</span></button>`;
-      // 删除按钮：从清单移除 + 从输入框删掉对应「附件：」行 + 删盘上的文件
       const removeBtn =
         `<button type="button" class="btn btn--ghost upload-remove" data-upload-remove="${i}" ` +
         `title="删除附件" aria-label="删除附件 ${name}">` +
         `<i class="ph ph-x" aria-hidden="true"></i></button>`;
-      return `<li class="upload-item"><code>${name}</code> ${size} ${previewBtn}${removeBtn}</li>`;
+      return `<li class="upload-item"><span class="upload-no">${icon}${tag}</span> <code>${name}</code> ${size} ${previewBtn}${removeBtn}</li>`;
     })
     .join("");
 }
@@ -4902,6 +5321,7 @@ function renderUploads() {
  * 头上，一眼就能看出错。
  */
 function clearUploads() {
+  attachSeq = 0;
   if (uploaded.length === 0) return;
   for (const u of uploaded) {
     if (u.previewUrl) URL.revokeObjectURL(u.previewUrl);
@@ -4923,12 +5343,22 @@ async function removeUploadedFile(index) {
   if (!u) return;
   uploaded.splice(index, 1);
   if (u.previewUrl) URL.revokeObjectURL(u.previewUrl);
-  // 输入框里上传时追加的那行「附件：<path>」一并删掉，模型才不会看到已删文件
-  taskInput.value = taskInput.value
-    .split(/\r?\n/)
-    .filter((line) => line.trim() !== `附件：${u.path}`)
-    .join("\n");
+  // 输入框里那条附件行一并删掉，模型才不会看到已删文件。
+  // 用纯函数而不是内联过滤：格式有两种，两处各写一遍必然漂移。
+  taskInput.value = stripAttachmentLine(taskInput.value, u.path);
   renderUploads();
+  // 只有真正落过盘的条目才去删盘上的文件。
+  // 失败/上传中的条目**从来没落过盘**，拿它的原始文件名去打 DELETE 只会得到一句
+  // 「盘上文件保留」——而盘上本来就没有，那句话是假的（服务端也只许删 uploads/
+  // 子目录内的文件，所以它必被拒）。落过盘的判据是**absolutePath 在不在**，
+  // 不是 status==="done"：上传回来时用户已切走的那条会把 status 置成 failed，
+  // 但文件**确实在原来的 uploads/** 里——按 status 判它永远删不掉，成静默孤儿
+  // （切走分支把 info 也记进了 entry，absolutePath 在，这里能删到真文件）。
+  // 清单与输入框在上面的 splice/strip 里已经清干净了，这里只是**别去删盘**。
+  if (!u.absolutePath) {
+    announceStatus(`已从清单移除 ${u.path}`);
+    return;
+  }
   try {
     const res = await fetch("/api/upload", {
       method: "DELETE",
@@ -4954,61 +5384,182 @@ function escapeHtml(s) {
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 }
 
+/**
+ * 客户端的上传上限。**与服务端 ui/server.ts:2598 的 UPLOAD_MAX_BYTES 同源**——
+ * 这条预检只为了"别把 20MB 白传一遍再被拒"，真正的闸在服务端，一步都不能省。
+ * 两个数漂移会造出"本地过了、服务端拒"这种最难解释的失败；有一条测试钉着它们相等。
+ */
+const UPLOAD_MAX_BYTES_CLIENT = 20_000_000;
+
+/**
+ * 传一个文件，回报进度。
+ *
+ * 用 XHR 而不是 fetch：**fetch 没有上传进度**（没有 upload 流）。整条链路
+ * 只有这一处需要进度，所以只在这一处换掉，别的 fetch 一律不动。
+ *
+ * @param {File} file
+ * @param {string|undefined} workdir
+ * @param {(pct:number)=>void} onProgress
+ */
+function uploadOne(file, workdir, onProgress) {
+  return new Promise((resolve, reject) => {
+    void (async () => {
+      let body;
+      try {
+        const buf = await file.arrayBuffer();
+        // 大文件用 chunk 转 base64——一次性 apply 整个数组会爆调用栈
+        let binary = "";
+        const view = new Uint8Array(buf);
+        for (let i = 0; i < view.length; i += 0x8000) {
+          binary += String.fromCharCode(...view.subarray(i, i + 0x8000));
+        }
+        body = JSON.stringify({
+          name: file.name,
+          data: btoa(binary),
+          ...(workdir ? { workdir } : {}),
+        });
+      } catch (err) {
+        reject(err);
+        return;
+      }
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", "/api/upload");
+      xhr.setRequestHeader("Content-Type", "application/json");
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100));
+      };
+      xhr.onload = () => {
+        let parsed = null;
+        try { parsed = JSON.parse(xhr.responseText); } catch { /* 非 JSON 就是失败 */ }
+        if (xhr.status >= 200 && xhr.status < 300 && parsed) resolve(parsed);
+        else reject(new Error(humanizeActionFailure("上传", xhr.status, parsed?.error)));
+      };
+      xhr.onerror = () => reject(new Error("网络中断（宿主不可达）"));
+      xhr.onabort = () => reject(new Error("上传被中断"));
+      xhr.send(body);
+    })();
+  });
+}
+
+/** 非图附件的类型图标（房子里的图标是 Phosphor，别用 unicode 图形）。 */
+function attachmentIcon(path) {
+  const ext = String(path).split(".").pop()?.toLowerCase() ?? "";
+  if (["csv", "tsv"].includes(ext)) return "ph-chart-line";
+  if (["xlsx", "xls"].includes(ext)) return "ph-table";
+  if (ext === "pdf") return "ph-file-pdf";
+  if (["zip", "tar", "gz", "7z"].includes(ext)) return "ph-file-zip";
+  if (["md", "txt", "log"].includes(ext)) return "ph-file-text";
+  return "ph-file";
+}
+
+/**
+ * 传一条附件并落账。**首次上传与重试共用这一段**——
+ * 序号分配、工作目录、at 快照、写输入框四处各算一遍是漂移的温床，
+ * 而"重试"和"首次"除了入口以外**没有任何区别**。
+ *
+ * @param {{file: File, path: string, bytes: number, status: string, progress: number,
+ *          error?: string, workdir?: string, attachNo?: number, autoCite?: boolean}} entry
+ * @param {{at: {mode: string, runId: string|null}, targetWorkdir: string|undefined}} ctx
+ */
+async function uploadEntry(entry, ctx) {
+  // 预检：别把 20MB 白传一遍再被服务端拒（服务端那一步仍然要跑，一步都不能省）
+  if (entry.bytes > UPLOAD_MAX_BYTES_CLIENT) {
+    entry.status = "failed";
+    entry.error = `文件过大：${(entry.bytes / 1_000_000).toFixed(1)}MB 超过 ${(UPLOAD_MAX_BYTES_CLIENT / 1_000_000).toFixed(0)}MB 上限`;
+    renderUploads();
+    return;
+  }
+  try {
+    const info = await uploadOne(entry.file, ctx.targetWorkdir, (pct) => {
+      entry.progress = pct;
+      renderUploads();
+    });
+    // 上传是 fire-and-forget 起手的。等它回来时用户可能已经切走了——
+    // 那条路径属于另一个工作目录，写进现在的框里就是错配。
+    if ((composerMode?.mode ?? "new") !== ctx.at.mode || (composerMode?.runId ?? null) !== ctx.at.runId) {
+      // 文件**确实落过盘**（在原来的 uploads/ 里）——把 info 记进 entry
+      // （path → uploads/…、absolutePath 有了），删附件那一下才真删得掉它。
+      // 不记的话 absolutePath 一直是 undefined，removeUploadedFile 会按
+      // 「没落过盘」跳过 DELETE，这文件就成了永远删不掉的静默孤儿。
+      Object.assign(entry, info);
+      entry.status = "failed";
+      entry.error = `已上传到原来的工作目录（${info.path}），但你已经切换了对话——没有写进输入框`;
+      renderUploads();
+      return;
+    }
+    const attachNo = ++attachSeq;
+    Object.assign(entry, info, { attachNo, status: "done", progress: 100 });
+    // ★ 顺序不许反：**先插引用、再追加传输行**。
+    // 反过来先赋值 `.value` 会把光标推到文末，insertAtCaret 就变成"插在全文末尾"。
+    // ★ 焦点守卫也不许丢：输入框没焦点时 selectionStart 是 0，插进去会跑到全文最前面。
+    // 这两条是 Task 2 的 fix round 2 挣来的（review 的 Minor 1），**本任务重写这段时
+    // 必须原样保留**——计划正文写下时它们还不存在，故此处标注。
+    // 单张才自动插引用；批量只给编号缩略图（A2 的设计）。autoCite 在建条目时定，
+    // 因为"这一次传了几张"是那一次的信息，重试时不该重新判断。
+    if (entry.autoCite && document.activeElement === taskInput) {
+      insertAtCaret(taskInput, `Image #${attachNo} `);
+    }
+    // 把路径写进任务描述——模型只有看到路径才知道文件存在。
+    // 带上编号：用户正文里写的「Image #2」才与某一条路径对得上。
+    const line = `附件 #${attachNo}：${info.path}`;
+    taskInput.value = taskInput.value ? `${taskInput.value}\n${line}` : line;
+  } catch (err) {
+    // 失败**留在清单里**带原因与重试。从前是 showSubmitError 后 continue——
+    // 文件从清单里消失，用户只看到一句会飘走的错误，还得重新选一次文件。
+    entry.status = "failed";
+    entry.error = err?.message ?? "未知错误";
+  }
+  entry.autoCite = false;
+  renderUploads();
+}
+
 async function uploadFiles(files) {
   showSubmitError(null);
   /**
    * 附件落在**哪个工作目录**取决于这次提交去哪儿。
    * 已打开的对话用那场会话绑定的路径；新建才用输入栏下拉。
    */
-  const at = { mode: composerMode?.mode ?? "new", runId: composerMode?.runId ?? null };
-  const targetWorkdir = composerMode?.workdirLocked
-    ? (composerMode.workdir ?? workdirSelect?.value)
-    : workdirSelect?.value;
-  for (const file of files) {
-    try {
-      const buf = await file.arrayBuffer();
-      // 大文件用 chunk 转 base64——一次性 apply 整个数组会爆调用栈
-      let binary = "";
-      const view = new Uint8Array(buf);
-      for (let i = 0; i < view.length; i += 0x8000) {
-        binary += String.fromCharCode(...view.subarray(i, i + 0x8000));
-      }
-      const res = await fetch("/api/upload", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: file.name,
-          data: btoa(binary),
-          ...(targetWorkdir ? { workdir: targetWorkdir } : {}),
-        }),
-      });
-      if (!res.ok) {
-        const b = await res.json().catch(() => ({}));
-        showSubmitError(humanizeActionFailure("上传", res.status, b.error));
-        continue;
-      }
-      const info = await res.json();
-      // 上传是 fire-and-forget（change 处理器不 await）。等它回来时用户可能
-      // 已经切走了——那条路径属于另一个工作目录，写进现在的框里就是错配。
-      if ((composerMode?.mode ?? "new") !== at.mode || (composerMode?.runId ?? null) !== at.runId) {
-        showSubmitError(`附件已上传到原来的工作目录（${info.path}），但你已经切换了对话——没有写进输入框。`);
-        continue;
-      }
-      uploaded.push({
-        ...info,
-        // 记住落在哪个工作目录——删除时服务端要按同一个目录验白名单
-        workdir: targetWorkdir ?? undefined,
-        previewUrl: file.type.startsWith("image/") ? URL.createObjectURL(file) : null,
-      });
-      // 把路径写进任务描述——模型只有看到路径才知道文件存在
-      const line = `附件：${info.path}`;
-      taskInput.value = taskInput.value ? `${taskInput.value}
-${line}` : line;
-    } catch (err) {
-      showSubmitError(`上传失败：${err.message ?? "未知错误"}`);
-    }
-  }
+  const ctx = {
+    at: { mode: composerMode?.mode ?? "new", runId: composerMode?.runId ?? null },
+    targetWorkdir: composerMode?.workdirLocked
+      ? (composerMode.workdir ?? workdirSelect?.value)
+      : workdirSelect?.value,
+  };
+  // 先把每一条挂进清单（status="uploading"），用户立刻看得见"它在动"。
+  // 从前是上传成功才 push——一个 20MB 的文件在传完之前，界面上什么都没有。
+  const pending = files.map((file) => {
+    const entry = {
+      file,
+      path: file.name,
+      bytes: file.size,
+      status: "uploading",
+      progress: 0,
+      workdir: ctx.targetWorkdir ?? undefined,
+      previewUrl: file.type.startsWith("image/") ? URL.createObjectURL(file) : null,
+      autoCite: files.length === 1 && file.type.startsWith("image/"),
+    };
+    uploaded.push(entry);
+    return entry;
+  });
   renderUploads();
+  for (const entry of pending) await uploadEntry(entry, ctx);
+}
+
+/**
+ * 重试一条失败的上传。数据还在内存里（`entry.file`），不必让用户重新选文件。
+ * 传回**这条原本落在的那个工作目录**，不是当前下拉的值——它就是在那儿失败的。
+ */
+async function retryUpload(index) {
+  const entry = uploaded[index];
+  if (!entry?.file || entry.status === "uploading") return;
+  entry.status = "uploading";
+  entry.progress = 0;
+  entry.error = undefined;
+  renderUploads();
+  await uploadEntry(entry, {
+    at: { mode: composerMode?.mode ?? "new", runId: composerMode?.runId ?? null },
+    targetWorkdir: entry.workdir,
+  });
 }
 
 if (fileUpload) {
@@ -5056,12 +5607,21 @@ if (uploadList) {
       void removeUploadedFile(Number(removeBtn.getAttribute("data-upload-remove")));
       return;
     }
+    const retryBtn = e.target instanceof Element ? e.target.closest("[data-upload-retry]") : null;
+    if (retryBtn) { void retryUpload(Number(retryBtn.getAttribute("data-upload-retry"))); return; }
     const btn = e.target instanceof Element ? e.target.closest("[data-upload-preview]") : null;
     if (!btn) return;
     const u = uploaded[Number(btn.getAttribute("data-upload-preview"))];
     if (u) previewUploadedFile(u);
   });
 }
+
+// 点缩略图把「Image #N」插到光标处——A 簇的编号引用就靠这一下
+composerMedia?.addEventListener("click", (e) => {
+  const btn = e.target instanceof Element ? e.target.closest("[data-upload-cite]") : null;
+  if (!btn) return;
+  insertAtCaret(taskInput, `Image #${btn.getAttribute("data-upload-cite")} `);
+});
 
 // 拖拽/粘贴：只有真文件才接管上传；纯文本拖拽/粘贴还给浏览器默认行为。
 // 拖拽落哪个工作目录、粘贴怎么命名——判定分别在 uploadFiles 与
@@ -5212,12 +5772,24 @@ function railOpen() {
   saveRailPref({ collapsed: false });
 }
 
-/** 右列有没有可看的内容：树非空 ∪ 预览坞里有可见内容。 */
-function railHasContent() {
-  if (railTreeEntryCount !== null && railTreeEntryCount > 0) return true;
+/**
+ * 坞里有没有可见内容。
+ *
+ * `railHasContent` 的另一半——单独提出来是因为 `railPolicy` 也要它：
+ * split 档下"坞里没内容"就该让树吃满整列（否则坞一收起，那条预览列
+ * 会留下一道空缝，而「收起预览」键的效果就看不见了）。
+ * **一条判据一处写**：railHasContent 也走它，两处不许各写一份。
+ */
+function railPreviewHasContent() {
   const host = document.getElementById("right-rail-preview");
   if (!host) return false;
   return [...host.children].some((el) => !el.hidden);
+}
+
+/** 右列有没有可看的内容：树非空 ∪ 预览坞里有可见内容。 */
+function railHasContent() {
+  if (railTreeEntryCount !== null && railTreeEntryCount > 0) return true;
+  return railPreviewHasContent();
 }
 
 /** 当前该不该显示：纯函数 railVisibility 的宿主适配层（上下文/内容/档位在这拼）。 */
@@ -5227,9 +5799,9 @@ function railVisibilityNow() {
     viewportWidth: window.innerWidth,
     sidebarWidth: railSidebarWidth(),
     preferredFraction: pref.fraction,
-    splitRatio: pref.splitRatio,
-    panel: pref.panel,
+    surface: pref.surface,
     collapsed: false,
+    hasPreviewContent: railPreviewHasContent(),
   }).mode;
   const context = document.getElementById("main-panel")?.classList.contains("is-welcome")
     ? "welcome"
@@ -5257,17 +5829,18 @@ function paintRightRail() {
     viewportWidth: window.innerWidth,
     sidebarWidth: railSidebarWidth(),
     preferredFraction: pref.fraction,
-    splitRatio: pref.splitRatio,
-    panel: pref.panel,
+    surface: pref.surface,
     collapsed: vis.collapsed, // 显示层收起态由内容驱动；pref.collapsed 仍是用户意图
+    hasPreviewContent: railPreviewHasContent(),
   });
   rail.dataset.mode = p.mode;
   rail.dataset.layout = p.layout;
-  rail.dataset.panel = pref.panel;
+  rail.dataset.surface = pref.surface;
   rail.dataset.collapsed = String(p.collapsed);
-  // 窄档 sheet 的遮罩：只有 overlay 且打开时可见（点它 = railClose，见 bindRightRail）
+  // 浮层的遮罩：floating 且打开时可见（点它 = railClose，见 bindRightRail）；
+  // docked 占位列，没有遮罩。
   const railScrim = document.getElementById("right-rail-scrim");
-  if (railScrim) railScrim.hidden = !(p.mode === "overlay" && !p.collapsed);
+  if (railScrim) railScrim.hidden = !(p.layout === "floating" && !p.collapsed);
   // 窄档把手：0 宽收起时全站唯一的重开入口（此前收起即断头路，走查实锤）。
   // 欢迎页的收起也收成 0 宽（styles.css：细条不占位才不会把中栏推离输入框的轴）——
   // 所以它同样要靠这把手上车。
@@ -5277,8 +5850,6 @@ function paintRightRail() {
     railHandle.classList.toggle("right-rail-handle--badge", vis.badge);
   }
   rail.style.setProperty("--rail-width", `${p.railWidth}px`);
-  rail.style.setProperty("--rail-tree-w", `${p.tree}px`);
-  rail.style.setProperty("--rail-preview-w", `${p.preview}px`);
   /**
    * 「放大」的左伸量（走查 UX-B3）：坞挂在右列里，`position:absolute; inset:0`
    * 的最近定位祖先是右列——于是"放大"只填满右列自己（实测 239px，对话纹丝不动），
@@ -5290,16 +5861,38 @@ function paintRightRail() {
     "--rail-expand-inset",
     `${-Math.max(0, availableWidth - p.railWidth)}px`,
   );
+  /**
+   * 浮层让出**对话头部那条**（计划 4 · T5 修复轮）。
+   *
+   * 实测缺陷：`.right-rail[data-layout="floating"]` 原本 `top: 0` 起，浮满右半条，
+   * 把对话头部那排召出钮整个盖住（1100 档每只键的 elementFromPoint 命中的都是
+   * `div#right-rail`，page.click 超时）⇒ 窄档下「再点同一个键」点不到，
+   * 与设计稿 §5 的四条关闭路径冲突。让位量 = 头部固定条（`.back-bar`，sticky）
+   * 的下沿——它是 `var(--space-lg)` + 内容高，随字号/脸/窗口变 ⇒ **实测**，
+   * 不写死数值（同 railSidebarWidth() 的做法）。
+   * 相对 `#center-row` 量：浮层的包含块是它，而视口坐标里它未必从 y=0 起。
+   * 占宽列是 flex 兄弟、与头部不重叠 ⇒ 那里写 0（.back-bar 的边框盒高与滚动
+   * 位置无关，所以量一次长期有效）。
+   */
+  const headBar = document.querySelector("#main-area > .back-bar");
+  const rowTop = document.getElementById("center-row")?.getBoundingClientRect().top ?? 0;
+  const floatTop = (p.layout === "floating" && headBar)
+    ? Math.max(0, Math.round(headBar.getBoundingClientRect().bottom - rowTop))
+    : 0;
+  rail.style.setProperty("--rail-float-top", `${floatTop}px`);
   // 对话地板设在 #center-row 上——**不能设在 rail 上**：rail 与 #main-area 是兄弟，
   // CSS 变量只向下继承，横向传不过去（第一版就错在这里，活页量出 computed=0px）。
-  // 值取 CENTER_MIN_PX（地板本身，不是对话的实际宽）：side 档才需要地板，
-  // 覆盖档右列不占位，地板撤掉。
+  // 值取 CENTER_MIN_PX（地板本身，不是对话的实际宽）：只有 docked 从对话拿宽，
+  // 才需要地板；floating 浮层不占位，地板撤掉。
   document.getElementById("center-row")?.style.setProperty(
     "--center-min",
-    p.mode === "side" ? `${CENTER_MIN_PX}px` : "0px",
+    p.layout === "docked" ? `${CENTER_MIN_PX}px` : "0px",
   );
-  for (const tab of rail.querySelectorAll("[data-rail-panel]")) {
-    tab.setAttribute("aria-pressed", String(tab.dataset.railPanel === pref.panel));
+  // 召出钮在对话头部（app.js 的 .back-bar），不在 rail 子树里——必须从 document 找；
+  // 「更多」不参与一次一只的互斥。
+  for (const btn of document.querySelectorAll(".rail-surface-btn")) {
+    if (btn.dataset.railSurface === "more") continue;
+    btn.setAttribute("aria-pressed", String(btn.dataset.railSurface === pref.surface));
   }
   const btn = rail.querySelector("#right-rail-collapse");
   if (btn) {
@@ -5326,17 +5919,17 @@ function saveRailPref(patch) {
   paintRightRail();
 }
 
-/** 切到某个面板。覆盖档下切面板等于把抽屉拉出来（也算用户手动打开）。 */
-function showRailPanel(panel) {
+/** 切到某个面。浮层（floating）下切面等于把抽屉拉出来（也算用户手动打开）。 */
+function showRailSurface({ surface }) {
   railOpenedThisSession = true;
-  saveRailPref({ panel, collapsed: false });
+  saveRailPref({ surface, collapsed: false });
 }
 
 (function bindRightRail() {
   const rail = railElement();
   if (!rail) return;
   const pref0 = readRailPref(window.localStorage);
-  rail.dataset.panel = pref0.panel;
+  rail.dataset.surface = pref0.surface;
 
   rail.addEventListener("click", (event) => {
     // 收起/展开（走查 UX-B2：此前这个键没有任何处理器，点了字节级零变化）。
@@ -5348,23 +5941,108 @@ function showRailPanel(panel) {
       else railClose();
       return;
     }
-    const tab = event.target.closest?.("[data-rail-panel]");
-    if (tab) {
-      showRailPanel(tab.dataset.railPanel);
-      // 走查 UX-B4/E14：坞收起后浮出钮不再占窗口右上角（与收起键打架），
-      // 由「预览」tab 广播唤回——坞只在真有内容时响应。
-      if (tab.dataset.railPanel === "preview") {
-        document.dispatchEvent(new CustomEvent("preview:reveal"));
-      }
+  });
+
+  // 召出钮行挂在对话头部的 .back-bar（app.js 拼的），在 rail 子树之外——
+  // 委托必须挂在 #main-panel 上（覆盖头部与右列整片；任务 4 的 Q11）。
+  const surfaceHost = document.getElementById("main-panel");
+  surfaceHost?.addEventListener("click", (event) => {
+    const item = event.target.closest?.(".rail-more-item");
+    if (item) {
+      closeRailMoreMenu();
+      showRailSurface({ surface: item.dataset.railSurface });
+      return;
+    }
+    const moreBtn = event.target.closest?.("#rail-surface-more");
+    if (moreBtn) {
+      toggleRailMoreMenu();
+      return;
+    }
+    const btn = event.target.closest?.("[data-rail-surface]");
+    if (!btn || btn.dataset.railSurface === "more") return;
+    // 先关「更多」菜单再切面：不然点「预览」后菜单还悬在换了面的头上
+    closeRailMoreMenu();
+    const surface = btn.dataset.railSurface;
+    if (surface === "terminal") {
+      // 占位：宿主没有交互式终端端点。给话而不是 disabled——disabled 读屏会跳过。
+      announceStatus("终端还没接——宿主没有交互式终端端点");
+      return;
+    }
+    // 同键开/关：点的就是当前显示的那只面、且列开着 ⇒ 收起；异键（或同键
+    // 但列收着）⇒ 开/换面——同一个键既能开也能关（计划 4 · T4 的承重交互）。
+    // vis.collapsed 是显示层（内容驱动），pref.surface 是「当前面」——判据必须
+    // 读当前面，不能是常量、也不能只看 collapsed。
+    const now = railVisibilityNow();
+    if (!now.vis.collapsed && now.pref.surface === surface) {
+      railClose();
+      return;
+    }
+    showRailSurface({ surface });
+    // 走查 UX-B4/E14：坞收起后浮出钮不再占窗口右上角（与收起键打架），
+    // 由「预览」钮广播唤回——坞只在真有内容时响应。
+    if (surface === "preview") {
+      document.dispatchEvent(new CustomEvent("preview:reveal"));
+    }
+    // T7：点「改动」钮唤回面板内容（事件流可能已把内容带旧，重画补一次）
+    if (surface === "review") {
+      document.dispatchEvent(new CustomEvent("review:reveal"));
     }
   });
 
-  // 坞（产物画布 / 文件预览）打开时把自己"抬"到前台：右列切到预览面板。
+  // 「更多」菜单：照 workspace-git 的 house 模式（原生 div + hidden +
+  // 点外 mousedown 关闭 + Esc 关闭并还焦给触发钮）。
+  function toggleRailMoreMenu() {
+    const menu = document.getElementById("rail-more-menu");
+    const trigger = document.getElementById("rail-surface-more");
+    if (!menu || !trigger) return;
+    menu.hidden = !menu.hidden;
+    trigger.setAttribute("aria-expanded", String(!menu.hidden));
+  }
+  function closeRailMoreMenu() {
+    const menu = document.getElementById("rail-more-menu");
+    const trigger = document.getElementById("rail-surface-more");
+    if (!menu) return;
+    menu.hidden = true;
+    trigger?.setAttribute("aria-expanded", "false");
+  }
+  document.addEventListener("mousedown", (event) => {
+    const menu = document.getElementById("rail-more-menu");
+    if (!menu || menu.hidden) return;
+    const bar = document.querySelector(".rail-surface-bar");
+    if (bar && bar.contains(event.target)) return;
+    closeRailMoreMenu();
+  });
+  // ★ 菜单的 Esc 必须是 stopImmediatePropagation，不是 stopPropagation：右列还有一条
+  //   Esc handler 也挂在 document 上（同节点）。普通 stopPropagation 拦不住同节点的
+  //   监听器，两层会一起关（jsdom 实测：两个 handler 都开火）。菜单开着时 Esc 只关
+  //   菜单这一层；菜单关掉后这里早退，这个键归还给右列那条。
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") return;
+    const menu = document.getElementById("rail-more-menu");
+    if (!menu || menu.hidden) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    closeRailMoreMenu();
+    document.getElementById("rail-surface-more")?.focus();
+  });
+
+  // 坞（产物画布 / 文件预览）打开时把自己"抬"到前台：右列切到预览面。
   // 宽档按用户意图自动开；窄档永不自动展开（只更新角标）——不再强写偏好（R3）。
   rail.addEventListener("preview:open", () => {
-    if (!railVisibilityNow().vis.collapsed) saveRailPref({ panel: "preview" });
+    if (!railVisibilityNow().vis.collapsed) saveRailPref({ surface: "preview" });
     else paintRightRail();
   });
+
+  /**
+   * 坞里的**内容可见性**变了（开 / 收起 / 展开 / 关闭）→ 右列显示层要重算。
+   *
+   * `railHasContent()` 看「树非空 ∪ 坞里有可见内容」，而收起**不经过右列的
+   * 任何交互**，不接这一条，内容驱动的收起态就不会重画——表现就是"点了收起，
+   * 那条缝纹丝不动，跟没作用一样"。
+   *
+   * 与上面那条分开：`preview:open` 管的是"切右列面板"，这条只管"重算"。
+   */
+  rail.addEventListener("preview:content", () => paintRightRail());
 
   // 窄档 sheet 的另外两条关闭路径（遮罩点外 / Esc）。把手是 0 宽收起态唯一的重开入口。
   document.getElementById("right-rail-scrim")?.addEventListener("click", () => railClose());
@@ -5372,7 +6050,7 @@ function showRailPanel(panel) {
   document.addEventListener("keydown", (event) => {
     if (event.key !== "Escape") return;
     const current = railElement();
-    if (!current || current.dataset.mode !== "overlay" || current.dataset.collapsed === "true") return;
+    if (!current || current.dataset.layout !== "floating" || current.dataset.collapsed === "true") return;
     railClose();
   });
 
@@ -5981,7 +6659,7 @@ try {
     onClose: () => closeArtifactRoute(),
     onSwitch: (index) => {
       if (selectedRunId) {
-        replaceArtifactHash(encodeArtifactHash(selectedRunId, index, {
+        replaceArtifactHash(encodeArtifactHash(selectedRunId, artifactRefForIndex(selectedRunId, index), {
           full: artifactCanvasApi?.isExpanded() ?? false,
         }));
       }
@@ -5989,8 +6667,9 @@ try {
     onCloseTab: (index) => closePreviewTab(index),
     onExpandChange: (full) => {
       // 放大/还原反映到深链（?full），刷新保持形态。replace：不堆一层「上一次预览」。
+      // 地址按路径写（T5）——下标形态会让放大态的 URL 随会话状态位移。
       if (!selectedRunId || !artifactCanvasApi) return;
-      const target = encodeArtifactHash(selectedRunId, artifactCanvasApi.currentIndex(), { full });
+      const target = encodeArtifactHash(selectedRunId, artifactRefForIndex(selectedRunId, artifactCanvasApi.currentIndex()), { full });
       if (location.hash !== target) replaceArtifactHash(target);
     },
     onReveal: (path) => {

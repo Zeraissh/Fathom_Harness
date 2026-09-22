@@ -468,6 +468,18 @@ export function initWorkdirPicker(host = {}, env = {}) {
   let currentPath = null;
   /** 异步渲染令牌：连续点下钻时，慢的那次 fetch 回来不许覆盖快的 */
   let renderToken = 0;
+  /**
+   * 用户是否**动过**路径输入框（计划 3 · T2）。
+   *
+   * 为什么需要它：`load()` 是异步的，回来时无条件回写输入框（下面那行）。
+   * 宿主打开浮层时传真实起点目录，于是**打开后立刻粘贴**会被起点目录
+   * 静默盖掉、前往去了旧目录。`renderToken` 只做 load↔load 互斥，
+   * 对"用户已经动过输入框"一无所知。
+   *
+   * 判据必须是"用户动过"，**不能是"框里有东西"**——用户可能先粘贴、
+   * 再下钻、再回来，空/非空判断会把合法的导航也挡掉。
+   */
+  let pathTyped = false;
   /** @type {HTMLElement|null} */
   let restoreFocusTo = null;
 
@@ -582,7 +594,10 @@ export function initWorkdirPicker(host = {}, env = {}) {
         if (last) {
           btn.setAttribute("aria-current", "location");
         } else {
-          btn.addEventListener("click", () => void load(crumb.path));
+          btn.addEventListener("click", () => {
+            pathTyped = false; // 这是用户明确要走的方向，输入框该跟着变
+            void load(crumb.path);
+          });
         }
         currentEl.appendChild(btn);
       });
@@ -615,7 +630,10 @@ export function initWorkdirPicker(host = {}, env = {}) {
       name.textContent = dir.name;
       item.appendChild(icon);
       item.appendChild(name);
-      item.addEventListener("click", () => void load(dir.path));
+      item.addEventListener("click", () => {
+        pathTyped = false; // 这是用户明确要走的方向，输入框该跟着变
+        void load(dir.path);
+      });
       list.appendChild(item);
     }
   }
@@ -648,7 +666,8 @@ export function initWorkdirPicker(host = {}, env = {}) {
     setStatus("");
     renderToolbar(body.parent ?? null);
     renderDirs(Array.isArray(body.dirs) ? body.dirs : []);
-    if (path !== null) pathInput.value = currentPath ?? "";
+    // 用户动过输入框就别回写了——他正在编辑，异步的起点目录不许盖掉他
+    if (path !== null && !pathTyped) pathInput.value = currentPath ?? "";
   }
 
   /**
@@ -656,6 +675,7 @@ export function initWorkdirPicker(host = {}, env = {}) {
    * @param {string|null} [startPath]
    */
   function openPicker(startPath = null) {
+    pathTyped = false; // 新开的浮层是干净的
     if (!open) {
       open = true;
       restoreFocusTo = /** @type {HTMLElement|null} */ (doc.activeElement);
@@ -746,20 +766,31 @@ export function initWorkdirPicker(host = {}, env = {}) {
   upBtn.addEventListener("click", () => {
     // 上一级目标由最近一次应答的 parent 给出；按钮 disabled 状态已挡住 null
     const parent = upBtn.dataset.parent ?? null;
-    if (parent) void load(parent);
+    if (parent) {
+      pathTyped = false; // 这是用户明确要走的方向，输入框该跟着变
+      void load(parent);
+    }
   });
   chooseBtn.addEventListener("click", () => void chooseCurrent());
   goBtn.addEventListener("click", () => {
     const value = pathInput.value.trim();
-    if (value) void load(value);
+    if (value) {
+      pathTyped = false; // 这是用户明确要走的方向，输入框该跟着变
+      void load(value);
+    }
   });
   pathInput.addEventListener("keydown", (event) => {
     if (event.key === "Enter") {
       event.preventDefault();
       const value = pathInput.value.trim();
-      if (value) void load(value);
+      if (value) {
+        pathTyped = false; // 这是用户明确要走的方向，输入框该跟着变
+        void load(value);
+      }
     }
   });
+  // 用户动过输入框就打脏标记（计划 3 · T2）——load() 的异步回写据此收手
+  pathInput.addEventListener("input", () => { pathTyped = true; });
   // 点遮罩（panel 之外）关闭；点 panel 内部不收
   overlay.addEventListener("mousedown", (event) => {
     if (event.target === overlay) closePicker();

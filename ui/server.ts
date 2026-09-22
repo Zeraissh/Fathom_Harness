@@ -232,6 +232,7 @@ import { packAcceptsHostGithub } from "../src/mcp-github.js";
 import {
   DirtyWorktreeError,
   formatWorkspaceGitLine,
+  probeFilePatch,
   probeWorkspaceGit,
   publicWorkspaceGit,
   switchWorkspaceBranch,
@@ -374,6 +375,7 @@ import {
 import {
   assembleDescribeImageTool,
   assembleViewImageTool,
+  nameSuggestsVision,
   resolveDescribeImageBacking,
   resolveExecutorVisionSupport,
   type DescribeImageBacking,
@@ -8561,6 +8563,18 @@ export function createUiServer(options: UiServerOptions = {}): UiServerHandle {
             window: win.window,
             windowSource: win.windowSource,
           },
+          /**
+           * 这个执行模型看不看得见图（三轮走查 L2）。
+           *
+           * 换个执行者会**悄悄换掉 agent 的能力面**：`nameSuggestsVision` 说不认
+           * 的名字，`view_image` 就不进工具面，而界面当时什么也没说——委托方从
+           * `deepseek-flash` 换到 `kimi-k3` 之后，那条 run 的收尾清单写着
+           * 「篆字外皮在近景里未实测过、夜景外皮泛光未实测过」。
+           *
+           * 判据**引用同一个函数**而不是在这里抄一份名单：两处名单会各自漂移，
+           * 而漂移那天没人知道该信谁。
+           */
+          suggestsVision: nameSuggestsVision(pub.model),
         };
       }),
       roleModels: roleModelsView(),
@@ -9218,6 +9232,7 @@ export function createUiServer(options: UiServerOptions = {}): UiServerHandle {
     | { type: "workspaceFiles"; workdir: string | null; q: string | null }
     | { type: "workdirRemove" }
     | { type: "workspaceGitGet"; workdir: string | null }
+    | { type: "workspaceGitDiff"; workdir: string | null; path: string | null }
     | { type: "workspaceGitCheckout" }
     | { type: "workspaceGitPrGet"; workdir: string | null }
     | { type: "workspaceGitPrCreate" }
@@ -9449,6 +9464,11 @@ export function createUiServer(options: UiServerOptions = {}): UiServerHandle {
     }
     if (method === "POST" && url === "/api/workspace/git/pr") {
       return { type: "workspaceGitPrCreate" };
+    }
+    const workspaceGitDiffMatch = method === "GET" && url.match(/^\/api\/workspace\/git\/diff(?:\?(.*))?$/);
+    if (workspaceGitDiffMatch) {
+      const params = new URLSearchParams(workspaceGitDiffMatch[1] ?? "");
+      return { type: "workspaceGitDiff", workdir: params.get("workdir"), path: params.get("path") };
     }
 
     /**
@@ -11641,6 +11661,41 @@ export function createUiServer(options: UiServerOptions = {}): UiServerHandle {
         const listed = listedWorkdir(route.workdir);
         if (!listed.ok) return json(res, listed.status, { error: listed.error });
         return json(res, 200, publicWorkspaceGit(await probeWorkspaceGit(listed.path)));
+      }
+
+      /**
+       * T4 真 patch 端点：单个文件「工作区相对 HEAD」的行号与上下文行。
+       *
+       * 语义如实：这份 patch 是「工作区相对 HEAD」，**不是「本场 run 专属」**——
+       * 它混着用户自己的未提交改动与上一场 run 的改动。「这场 run 碰过哪些
+       * 路径」由事件流那条链（runChanges / editHunksFromTimeline）给，两条链
+       * 各有各的活：事件流给字节精确的编辑内容但没有位置、write_file 覆盖
+       * 拿不到旧版；这里给行号与上下文行（覆盖场景整个新内容都是 + 行），
+       * 但没有 run 归属，非 git 目录完全没有。git 不可用一律降级、不抛
+       * （probeFilePatch 里做）。
+       *
+       * 契约：`path` 是**相对仓库 root** 的，不是相对 workdir——workdir 可能是
+       * 仓库的子目录。圈禁双检：路径必须同时落在 root 与 workdir 之内。
+       */
+      case "workspaceGitDiff": {
+        const listed = listedWorkdir(route.workdir);
+        if (!listed.ok) return json(res, listed.status, { error: listed.error });
+        const rel = typeof route.path === "string" ? route.path.trim() : "";
+        if (!rel) return badRequest(res, "缺少路径（path）");
+        // 圈禁：path 是**相对仓库 root** 的（不是相对 workdir——workdir 可能是
+        // 仓库的子目录）。必须**同时落在 root 与 workdir 之内**：只看 root 的话，
+        // 相对 root 的 `sub/../sibling` 能通过圈禁却逃出 workdir。
+        // resolveInWorkdir 越界时是抛、不是返 null（fs-util.ts），所以包
+        // try/catch，越界返 400 而不是漏成 500。
+        const gitSnap = await probeWorkspaceGit(listed.path);
+        const root = gitSnap.present ? gitSnap.root : listed.path;
+        try {
+          const abs = resolveInWorkdir(root, rel);   // 第一道：落在 root 内
+          resolveInWorkdir(listed.path, abs);        // 第二道：同时落在 workdir 内（绝对路径受支持）
+        } catch {
+          return badRequest(res, "路径越出了工作目录");
+        }
+        return json(res, 200, await probeFilePatch(root, rel));
       }
 
       case "workspaceGitCheckout": {

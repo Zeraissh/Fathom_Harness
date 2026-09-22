@@ -21,6 +21,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createServer, type Server } from "node:http";
 import { createUiServer, type UiServerHandle } from "../ui/server.js";
+import { nameSuggestsVision } from "../src/design-image-review.js";
 import { resetObservabilityMetrics } from "../src/metrics.js";
 import { clearCapabilityCache } from "../src/model-capability.js";
 import { FakeModelClient, fakeMessage, makeTool, textBlock } from "./helpers.js";
@@ -350,5 +351,36 @@ describe("模型窗口预览与角色快捷切换", () => {
     // 注入 FakeModelClient 时执行者装配锁定——但库文件角色必须已改（重启/真宿主生效）
     const disk = JSON.parse(await readFile(storeFile, "utf8"));
     expect(disk.roles.executor).toBe("m-strong");
+  });
+
+  /**
+   * 三轮走查 L2（2026-09-19）：**换模型 = 悄悄摘掉 agent 的眼睛。**
+   *
+   * 执行者能不能看图，判据是**模型名的字符串启发式**（`src/design-image-review.ts`
+   * 的 `nameSuggestsVision`）：认 `*vision*` / `-vl-` / `claude-*` / `gpt-4o|4.1|5` /
+   * `deepseek-*flash`，其余一律 false，于是 `view_image` 不进工具面。
+   *
+   * 保守取舍本身站得住（宁可不认，也不要把只会回 `[Unsupported Image]` 的端点
+   * 当成 VL——09-16 有活探针对照）。站不住的是**换的那一刻界面上什么也没说**：
+   * 委托方从 `deepseek-flash` 换到 `kimi-k3` 之后，那条 run 以 partial 收尾，
+   * 收尾清单里写着「篆字外皮在近景里未实测过」。这个字段就是让选择器提前说话。
+   */
+  it("每条模型带 suggestsVision，且与执行者门的判据同源", async () => {
+    const { base } = await makeHost();
+    await putModels(base, modelsBody({
+      models: [
+        { id: "m-kimi", label: "kimi", provider: "anthropic", model: "kimi-k3", baseUrl: "" },
+        { id: "m-flash", label: "flash", provider: "anthropic", model: "deepseek-flash", baseUrl: "" },
+        { id: "m-claude", label: "claude", provider: "anthropic", model: "claude-opus-4-8", baseUrl: "" },
+      ],
+      roles: { executor: "m-kimi", planner: null, verifier: null, vision: null, image: null },
+    }));
+    const body = await (await fetch(`${base}/api/models`)).json() as any;
+    for (const m of body.models) expect(typeof m.suggestsVision).toBe("boolean");
+    const by = new Map<string, boolean>(body.models.map((m: any) => [m.model, m.suggestsVision]));
+    expect(by.get("kimi-k3")).toBe(false);
+    expect(by.get("deepseek-flash")).toBe(true);
+    // 同源：不许另抄一份名单——两处名单会各自漂移，而漂移的那天没人知道该信谁
+    for (const m of body.models) expect(m.suggestsVision).toBe(nameSuggestsVision(m.model));
   });
 });

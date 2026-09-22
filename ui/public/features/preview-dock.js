@@ -270,6 +270,21 @@ export function createPreviewDock(opts = {}, env = {}) {
     revealBtn.hidden = railHosted() ? true : !(open && collapsed);
     revealBtn.setAttribute("aria-expanded", String(shown));
     closeBtn.setAttribute("aria-expanded", String(shown));
+    /**
+     * ★ **内容可见性变了就告诉宿主一声**（2026-09-20，委托方实测）。
+     *
+     * 右列的宽度分配要看「坞里有没有可见内容」（`railPolicy` 的 `hasPreviewContent`）：
+     * split 档下收起之后没内容了，那一列就该收回去给树。但**收起不经过右列的
+     * 任何交互**，控制器不会自己知道要重画——少了这一声，就是委托方看到的
+     * "点了收起，那条 122px 的缝纹丝不动，跟没作用一样"。
+     *
+     * 挂在这里而不是逐个调用点，是因为**所有可见性变化都走 syncRevealChrome**
+     * （开 / 收起 / 展开 / 关闭）。`preview:open` 仍是另一个语义（切右列面板），
+     * 不并进来。
+     */
+    if (railHosted() && typeof CustomEvent === "function") {
+      root.dispatchEvent(new CustomEvent("preview:content", { bubbles: true }));
+    }
   }
 
   function cancelCloseTimer() {

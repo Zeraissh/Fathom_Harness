@@ -164,13 +164,13 @@ describe("路由编解码", () => {
   it("往返一致", () => {
     const hash = encodeArtifactHash("run-123", 4);
     expect(hash).toBe("#/run/run-123/artifact/4");
-    expect(parseArtifactRoute(hash)).toEqual({ runId: "run-123", index: 4, full: false });
+    expect(parseArtifactRoute(hash)).toEqual({ runId: "run-123", path: null, index: 4, full: false });
   });
 
   it("放大态深链：?full 往返，刷新保持形态", () => {
     const hash = encodeArtifactHash("run-123", 4, { full: true });
     expect(hash).toBe("#/run/run-123/artifact/4?full");
-    expect(parseArtifactRoute(hash)).toEqual({ runId: "run-123", index: 4, full: true });
+    expect(parseArtifactRoute(hash)).toEqual({ runId: "run-123", path: null, index: 4, full: true });
     // 停靠态深链不带 full；&full 形式同样认得
     expect(parseArtifactRoute("#/run/run-123/artifact/4")?.full).toBe(false);
     expect(parseArtifactRoute("#/run/run-123/artifact/4?x=1&full")?.full).toBe(true);
@@ -179,14 +179,14 @@ describe("路由编解码", () => {
   it("runId 含特殊字符时先编码再解码", () => {
     const hash = encodeArtifactHash("a b/c", 0);
     expect(hash).not.toContain("a b/c");
-    expect(parseArtifactRoute(hash)).toEqual({ runId: "a b/c", index: 0, full: false });
+    expect(parseArtifactRoute(hash)).toEqual({ runId: "a b/c", path: null, index: 0, full: false });
   });
 
-  it("拒绝非画布 hash", () => {
+  it("拒绝非画布 hash；数字段=旧下标形态，非数字段=路径形态（T5）", () => {
     expect(parseArtifactRoute("#/")).toBeNull();
     expect(parseArtifactRoute("#/settings")).toBeNull();
     expect(parseArtifactRoute("#/run/abc/loop")).toBeNull();
-    expect(parseArtifactRoute("#/run/abc/artifact/x")).toBeNull();
+    expect(parseArtifactRoute("#/run/abc/artifact/x")).toEqual({ runId: "abc", path: "x", index: null, full: false });
     expect(isArtifactRoute("#/run/abc/artifact/0")).toBe(true);
     expect(isArtifactRoute("#/run/abc")).toBe(false);
   });

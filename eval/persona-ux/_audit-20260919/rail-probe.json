@@ -1,0 +1,1757 @@
+{
+ "390": {
+  "rail": {
+   "rail": {
+    "w": 0,
+    "h": 0,
+    "x": 0,
+    "y": 0,
+    "display": "none",
+    "flexDir": "column",
+    "flex": "0 0 auto",
+    "pos": "absolute",
+    "ovf": "hidden"
+   },
+   "dataset": {
+    "mode": "overlay",
+    "layout": "floating",
+    "surface": "preview",
+    "collapsed": "true"
+   },
+   "directChildren": [
+    {
+     "el": "button#right-rail-collapse.right-rail-collap.e right-rail-badge",
+     "w": 0,
+     "h": 0,
+     "x": 0,
+     "y": 0,
+     "display": "inline-block",
+     "flexDir": "row",
+     "flex": "0 1 auto",
+     "pos": "relative",
+     "ovf": "visible",
+     "hidden": false,
+     "text": ""
+    },
+    {
+     "el": "div#right-rail-drag.right-rail-drag",
+     "w": 0,
+     "h": 0,
+     "x": 0,
+     "y": 0,
+     "display": "none",
+     "flexDir": "row",
+     "flex": "0 1 auto",
+     "pos": "absolute",
+     "ovf": "visible",
+     "hidden": false,
+     "text": ""
+    },
+    {
+     "el": "aside#workspace-file-tree.file.-rail work",
+     "w": 0,
+     "h": 0,
+     "x": 0,
+     "y": 0,
+     "display": "flex",
+     "flexDir": "column",
+     "flex": "1 1 auto",
+     "pos": "static",
+     "ovf": "visible",
+     "hidden": false,
+     "text": "文件文件 ⟩展开折叠_ag @_cdp 系列（4 个，已降噪折叠）_grid 系"
+    },
+    {
+     "el": "div#right-rail-preview.right-rail-preview",
+     "w": 0,
+     "h": 0,
+     "x": 0,
+     "y": 0,
+     "display": "none",
+     "flexDir": "column",
+     "flex": "1 1 auto",
+     "pos": "static",
+     "ovf": "visible",
+     "hidden": false,
+     "text": "关闭下载放大_verify/anhui-tv/verify.mj _verify"
+    },
+    {
+     "el": "div#right-rail-review.right-rail-review",
+     "w": 0,
+     "h": 0,
+     "x": 0,
+     "y": 0,
+     "display": "none",
+     "flexDir": "row",
+     "flex": "1 1 auto",
+     "pos": "static",
+     "ovf": "visible",
+     "hidden": false,
+     "text": "改文件 3 个_verify/anhui-tv/verify.mj 1 处改动_"
+    }
+   ],
+   "railWidthVar": "0px",
+   "slots": [
+    {
+     "id": "workspace-file-tree",
+     "w": 0,
+     "h": 0,
+     "x": 0,
+     "y": 0,
+     "display": "flex",
+     "flexDir": "column",
+     "flex": "1 1 auto",
+     "pos": "static",
+     "ovf": "visible",
+     "on": false
+    },
+    {
+     "id": "right-rail-preview",
+     "w": 0,
+     "h": 0,
+     "x": 0,
+     "y": 0,
+     "display": "none",
+     "flexDir": "column",
+     "flex": "1 1 auto",
+     "pos": "static",
+     "ovf": "visible",
+     "on": false
+    },
+    {
+     "id": "right-rail-review",
+     "w": 0,
+     "h": 0,
+     "x": 0,
+     "y": 0,
+     "display": "none",
+     "flexDir": "row",
+     "flex": "1 1 auto",
+     "pos": "static",
+     "ovf": "visible",
+     "on": false
+    }
+   ]
+  },
+  "sidebar": {
+   "runItemCount": 77,
+   "items": [
+    {
+     "title": "核查CLI异常终止Create 4  mall text fil…2 轮14:192",
+     "w": 0,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 0,
+     "h": null
+    },
+    {
+     "title": "核查CLI异常终止Create 4  mall text fil…1 轮13:314",
+     "w": 0,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 0,
+     "h": null
+    },
+    {
+     "title": "核查CLI异常终止Create 4  mall text fil…1 轮12:424",
+     "w": 0,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 0,
+     "h": null
+    },
+    {
+     "title": "核查CLI异常终止Create 4  mall text fil…1 轮12:096",
+     "w": 0,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 0,
+     "h": null
+    },
+    {
+     "title": "核查CLI异常终止Create 4  mall text fil…2 轮16:572",
+     "w": 0,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 0,
+     "h": null
+    },
+    {
+     "title": "核查CLI已完成做一个可交互的三维对象页：自包含 HTML， …三次失败的共同点是 ",
+     "w": 0,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 0,
+     "h": null
+    },
+    {
+     "title": "核查CLI部分完成关于合肥的特色建筑，做一个可交互的三维对象页：…核验全部跑完，且全",
+     "w": 0,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 0,
+     "h": null
+    },
+    {
+     "title": "核查CLI已完成看一眼 `_ux_probe/view-pro…`_ux_probe",
+     "w": 0,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 0,
+     "h": null
+    },
+    {
+     "title": "核查CLI未能结构化收口请参考Nord on的AGS2产品 做一个可交…我先确认几个",
+     "w": 0,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 0,
+     "h": null
+    },
+    {
+     "title": "核查CLI部分完成关于合肥的特色建筑，做一个可交互的三维对象页：…Now I hav",
+     "w": 0,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 0,
+     "h": null
+    },
+    {
+     "title": "核查CLI部分完成做一个可交互的三维对象页：自包含 HTML， …最后一次整页复核仍",
+     "w": 0,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 0,
+     "h": null
+    },
+    {
+     "title": "核查CLI已完成帮我做多个动态效果，我想要通过这些动态效果直观…识图复核暴露的压字问",
+     "w": 0,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 0,
+     "h": null
+    },
+    {
+     "title": "核查CLI已完成请你做一个鹈鹕骑自行车的动态画面The far- ide pedal",
+     "w": 0,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 0,
+     "h": null
+    },
+    {
+     "title": "核查CLI已完成帮我把数据更新，并且生成报告补回去了，并把下游全部重算。5 轮11:",
+     "w": 0,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 0,
+     "h": null
+    }
+   ],
+   "groupCount": 0,
+   "groups": [],
+   "scrollH": 387,
+   "clientH": 387
+  }
+ },
+ "1100": {
+  "rail": {
+   "rail": {
+    "w": 360,
+    "h": 846,
+    "x": 740,
+    "y": 54,
+    "display": "flex",
+    "flexDir": "column",
+    "flex": "0 0 auto",
+    "pos": "absolute",
+    "ovf": "visible"
+   },
+   "dataset": {
+    "mode": "side",
+    "layout": "floating",
+    "surface": "preview",
+    "collapsed": "false"
+   },
+   "directChildren": [
+    {
+     "el": "button#right-rail-collapse.right-rail-collap.e",
+     "w": 23,
+     "h": 26,
+     "x": 1071,
+     "y": 60,
+     "display": "block",
+     "flexDir": "row",
+     "flex": "0 1 auto",
+     "pos": "absolute",
+     "ovf": "visible",
+     "hidden": false,
+     "text": ""
+    },
+    {
+     "el": "div#right-rail-drag.right-rail-drag",
+     "w": 0,
+     "h": 0,
+     "x": 0,
+     "y": 0,
+     "display": "none",
+     "flexDir": "row",
+     "flex": "0 1 auto",
+     "pos": "absolute",
+     "ovf": "visible",
+     "hidden": false,
+     "text": ""
+    },
+    {
+     "el": "aside#workspace-file-tree.file.-rail work",
+     "w": 359,
+     "h": 846,
+     "x": 741,
+     "y": 54,
+     "display": "flex",
+     "flexDir": "column",
+     "flex": "1 1 auto",
+     "pos": "static",
+     "ovf": "visible",
+     "hidden": false,
+     "text": "文件文件 ⟩展开折叠_ag @_cdp 系列（4 个，已降噪折叠）_grid 系"
+    },
+    {
+     "el": "div#right-rail-preview.right-rail-preview",
+     "w": 0,
+     "h": 0,
+     "x": 0,
+     "y": 0,
+     "display": "none",
+     "flexDir": "column",
+     "flex": "1 1 auto",
+     "pos": "static",
+     "ovf": "visible",
+     "hidden": false,
+     "text": "关闭下载放大_verify/anhui-tv/verify.mj _verify"
+    },
+    {
+     "el": "div#right-rail-review.right-rail-review",
+     "w": 0,
+     "h": 0,
+     "x": 0,
+     "y": 0,
+     "display": "none",
+     "flexDir": "row",
+     "flex": "1 1 auto",
+     "pos": "static",
+     "ovf": "visible",
+     "hidden": false,
+     "text": "改文件 3 个_verify/anhui-tv/verify.mj 1 处改动_"
+    }
+   ],
+   "railWidthVar": "360px",
+   "slots": [
+    {
+     "id": "workspace-file-tree",
+     "w": 359,
+     "h": 846,
+     "x": 741,
+     "y": 54,
+     "display": "flex",
+     "flexDir": "column",
+     "flex": "1 1 auto",
+     "pos": "static",
+     "ovf": "visible",
+     "on": true
+    },
+    {
+     "id": "right-rail-preview",
+     "w": 0,
+     "h": 0,
+     "x": 0,
+     "y": 0,
+     "display": "none",
+     "flexDir": "column",
+     "flex": "1 1 auto",
+     "pos": "static",
+     "ovf": "visible",
+     "on": false
+    },
+    {
+     "id": "right-rail-review",
+     "w": 0,
+     "h": 0,
+     "x": 0,
+     "y": 0,
+     "display": "none",
+     "flexDir": "row",
+     "flex": "1 1 auto",
+     "pos": "static",
+     "ovf": "visible",
+     "on": false
+    }
+   ]
+  },
+  "sidebar": {
+   "runItemCount": 77,
+   "items": [
+    {
+     "title": "核查CLI异常终止Create 4  mall text fil…2 轮14:192",
+     "w": 275,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 263,
+     "h": null
+    },
+    {
+     "title": "核查CLI异常终止Create 4  mall text fil…1 轮13:314",
+     "w": 275,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 301,
+     "h": null
+    },
+    {
+     "title": "核查CLI异常终止Create 4  mall text fil…1 轮12:424",
+     "w": 275,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 338,
+     "h": null
+    },
+    {
+     "title": "核查CLI异常终止Create 4  mall text fil…1 轮12:096",
+     "w": 275,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 376,
+     "h": null
+    },
+    {
+     "title": "核查CLI异常终止Create 4  mall text fil…2 轮16:572",
+     "w": 275,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 414,
+     "h": null
+    },
+    {
+     "title": "核查CLI已完成做一个可交互的三维对象页：自包含 HTML， …三次失败的共同点是 ",
+     "w": 275,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 452,
+     "h": null
+    },
+    {
+     "title": "核查CLI部分完成关于合肥的特色建筑，做一个可交互的三维对象页：…核验全部跑完，且全",
+     "w": 275,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 490,
+     "h": null
+    },
+    {
+     "title": "核查CLI已完成看一眼 `_ux_probe/view-pro…`_ux_probe",
+     "w": 275,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 528,
+     "h": null
+    },
+    {
+     "title": "核查CLI未能结构化收口请参考Nord on的AGS2产品 做一个可交…我先确认几个",
+     "w": 275,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 566,
+     "h": null
+    },
+    {
+     "title": "核查CLI部分完成关于合肥的特色建筑，做一个可交互的三维对象页：…Now I hav",
+     "w": 275,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 603,
+     "h": null
+    },
+    {
+     "title": "核查CLI部分完成做一个可交互的三维对象页：自包含 HTML， …最后一次整页复核仍",
+     "w": 275,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 641,
+     "h": null
+    },
+    {
+     "title": "核查CLI已完成帮我做多个动态效果，我想要通过这些动态效果直观…识图复核暴露的压字问",
+     "w": 275,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 679,
+     "h": null
+    },
+    {
+     "title": "核查CLI已完成请你做一个鹈鹕骑自行车的动态画面The far- ide pedal",
+     "w": 275,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 717,
+     "h": null
+    },
+    {
+     "title": "核查CLI已完成帮我把数据更新，并且生成报告补回去了，并把下游全部重算。5 轮11:",
+     "w": 275,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 792,
+     "h": null
+    }
+   ],
+   "groupCount": 0,
+   "groups": [],
+   "scrollH": 900,
+   "clientH": 900
+  }
+ },
+ "1440": {
+  "rail": {
+   "rail": {
+    "w": 282,
+    "h": 760,
+    "x": 1158,
+    "y": 0,
+    "display": "flex",
+    "flexDir": "column",
+    "flex": "0 0 auto",
+    "pos": "relative",
+    "ovf": "visible"
+   },
+   "dataset": {
+    "mode": "side",
+    "layout": "docked",
+    "surface": "preview",
+    "collapsed": "false"
+   },
+   "directChildren": [
+    {
+     "el": "button#right-rail-collapse.right-rail-collap.e",
+     "w": 23,
+     "h": 26,
+     "x": 1411,
+     "y": 6,
+     "display": "block",
+     "flexDir": "row",
+     "flex": "0 1 auto",
+     "pos": "absolute",
+     "ovf": "visible",
+     "hidden": false,
+     "text": ""
+    },
+    {
+     "el": "div#right-rail-drag.right-rail-drag",
+     "w": 7,
+     "h": 760,
+     "x": 1156,
+     "y": 0,
+     "display": "block",
+     "flexDir": "row",
+     "flex": "0 1 auto",
+     "pos": "absolute",
+     "ovf": "visible",
+     "hidden": false,
+     "text": ""
+    },
+    {
+     "el": "aside#workspace-file-tree.file.-rail work",
+     "w": 281,
+     "h": 760,
+     "x": 1159,
+     "y": 0,
+     "display": "flex",
+     "flexDir": "column",
+     "flex": "1 1 auto",
+     "pos": "static",
+     "ovf": "visible",
+     "hidden": false,
+     "text": "文件文件 ⟩展开折叠_ag @_cdp 系列（4 个，已降噪折叠）_grid 系"
+    },
+    {
+     "el": "div#right-rail-preview.right-rail-preview",
+     "w": 0,
+     "h": 0,
+     "x": 0,
+     "y": 0,
+     "display": "none",
+     "flexDir": "column",
+     "flex": "1 1 auto",
+     "pos": "static",
+     "ovf": "visible",
+     "hidden": false,
+     "text": "关闭下载放大_verify/anhui-tv/verify.mj _verify"
+    },
+    {
+     "el": "div#right-rail-review.right-rail-review",
+     "w": 0,
+     "h": 0,
+     "x": 0,
+     "y": 0,
+     "display": "none",
+     "flexDir": "row",
+     "flex": "1 1 auto",
+     "pos": "static",
+     "ovf": "visible",
+     "hidden": false,
+     "text": "改文件 3 个_verify/anhui-tv/verify.mj 1 处改动_"
+    }
+   ],
+   "railWidthVar": "282px",
+   "slots": [
+    {
+     "id": "workspace-file-tree",
+     "w": 281,
+     "h": 760,
+     "x": 1159,
+     "y": 0,
+     "display": "flex",
+     "flexDir": "column",
+     "flex": "1 1 auto",
+     "pos": "static",
+     "ovf": "visible",
+     "on": true
+    },
+    {
+     "id": "right-rail-preview",
+     "w": 0,
+     "h": 0,
+     "x": 0,
+     "y": 0,
+     "display": "none",
+     "flexDir": "column",
+     "flex": "1 1 auto",
+     "pos": "static",
+     "ovf": "visible",
+     "on": false
+    },
+    {
+     "id": "right-rail-review",
+     "w": 0,
+     "h": 0,
+     "x": 0,
+     "y": 0,
+     "display": "none",
+     "flexDir": "row",
+     "flex": "1 1 auto",
+     "pos": "static",
+     "ovf": "visible",
+     "on": false
+    }
+   ]
+  },
+  "sidebar": {
+   "runItemCount": 77,
+   "items": [
+    {
+     "title": "核查CLI异常终止Create 4  mall text fil…2 轮14:192",
+     "w": 295,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 263,
+     "h": null
+    },
+    {
+     "title": "核查CLI异常终止Create 4  mall text fil…1 轮13:314",
+     "w": 295,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 301,
+     "h": null
+    },
+    {
+     "title": "核查CLI异常终止Create 4  mall text fil…1 轮12:424",
+     "w": 295,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 338,
+     "h": null
+    },
+    {
+     "title": "核查CLI异常终止Create 4  mall text fil…1 轮12:096",
+     "w": 295,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 376,
+     "h": null
+    },
+    {
+     "title": "核查CLI异常终止Create 4  mall text fil…2 轮16:572",
+     "w": 295,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 414,
+     "h": null
+    },
+    {
+     "title": "核查CLI已完成做一个可交互的三维对象页：自包含 HTML， …三次失败的共同点是 ",
+     "w": 295,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 452,
+     "h": null
+    },
+    {
+     "title": "核查CLI部分完成关于合肥的特色建筑，做一个可交互的三维对象页：…核验全部跑完，且全",
+     "w": 295,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 490,
+     "h": null
+    },
+    {
+     "title": "核查CLI已完成看一眼 `_ux_probe/view-pro…`_ux_probe",
+     "w": 295,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 528,
+     "h": null
+    },
+    {
+     "title": "核查CLI未能结构化收口请参考Nord on的AGS2产品 做一个可交…我先确认几个",
+     "w": 295,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 566,
+     "h": null
+    },
+    {
+     "title": "核查CLI部分完成关于合肥的特色建筑，做一个可交互的三维对象页：…Now I hav",
+     "w": 295,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 603,
+     "h": null
+    },
+    {
+     "title": "核查CLI部分完成做一个可交互的三维对象页：自包含 HTML， …最后一次整页复核仍",
+     "w": 295,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 641,
+     "h": null
+    },
+    {
+     "title": "核查CLI已完成帮我做多个动态效果，我想要通过这些动态效果直观…识图复核暴露的压字问",
+     "w": 295,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 679,
+     "h": null
+    },
+    {
+     "title": "核查CLI已完成请你做一个鹈鹕骑自行车的动态画面The far- ide pedal",
+     "w": 295,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 717,
+     "h": null
+    },
+    {
+     "title": "核查CLI已完成帮我把数据更新，并且生成报告补回去了，并把下游全部重算。5 轮11:",
+     "w": 295,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 792,
+     "h": null
+    }
+   ],
+   "groupCount": 0,
+   "groups": [],
+   "scrollH": 900,
+   "clientH": 900
+  }
+ },
+ "1600": {
+  "rail": {
+   "rail": {
+    "w": 322,
+    "h": 760,
+    "x": 1278,
+    "y": 0,
+    "display": "flex",
+    "flexDir": "column",
+    "flex": "0 0 auto",
+    "pos": "relative",
+    "ovf": "visible"
+   },
+   "dataset": {
+    "mode": "side",
+    "layout": "docked",
+    "surface": "preview",
+    "collapsed": "false"
+   },
+   "directChildren": [
+    {
+     "el": "button#right-rail-collapse.right-rail-collap.e",
+     "w": 23,
+     "h": 26,
+     "x": 1571,
+     "y": 6,
+     "display": "block",
+     "flexDir": "row",
+     "flex": "0 1 auto",
+     "pos": "absolute",
+     "ovf": "visible",
+     "hidden": false,
+     "text": ""
+    },
+    {
+     "el": "div#right-rail-drag.right-rail-drag",
+     "w": 7,
+     "h": 760,
+     "x": 1276,
+     "y": 0,
+     "display": "block",
+     "flexDir": "row",
+     "flex": "0 1 auto",
+     "pos": "absolute",
+     "ovf": "visible",
+     "hidden": false,
+     "text": ""
+    },
+    {
+     "el": "aside#workspace-file-tree.file.-rail work",
+     "w": 321,
+     "h": 760,
+     "x": 1279,
+     "y": 0,
+     "display": "flex",
+     "flexDir": "column",
+     "flex": "1 1 auto",
+     "pos": "static",
+     "ovf": "visible",
+     "hidden": false,
+     "text": "文件文件 ⟩展开折叠_ag @_cdp 系列（4 个，已降噪折叠）_grid 系"
+    },
+    {
+     "el": "div#right-rail-preview.right-rail-preview",
+     "w": 0,
+     "h": 0,
+     "x": 0,
+     "y": 0,
+     "display": "none",
+     "flexDir": "column",
+     "flex": "1 1 auto",
+     "pos": "static",
+     "ovf": "visible",
+     "hidden": false,
+     "text": "关闭下载放大_verify/anhui-tv/verify.mj _verify"
+    },
+    {
+     "el": "div#right-rail-review.right-rail-review",
+     "w": 0,
+     "h": 0,
+     "x": 0,
+     "y": 0,
+     "display": "none",
+     "flexDir": "row",
+     "flex": "1 1 auto",
+     "pos": "static",
+     "ovf": "visible",
+     "hidden": false,
+     "text": "改文件 3 个_verify/anhui-tv/verify.mj 1 处改动_"
+    }
+   ],
+   "railWidthVar": "322px",
+   "slots": [
+    {
+     "id": "workspace-file-tree",
+     "w": 321,
+     "h": 760,
+     "x": 1279,
+     "y": 0,
+     "display": "flex",
+     "flexDir": "column",
+     "flex": "1 1 auto",
+     "pos": "static",
+     "ovf": "visible",
+     "on": true
+    },
+    {
+     "id": "right-rail-preview",
+     "w": 0,
+     "h": 0,
+     "x": 0,
+     "y": 0,
+     "display": "none",
+     "flexDir": "column",
+     "flex": "1 1 auto",
+     "pos": "static",
+     "ovf": "visible",
+     "on": false
+    },
+    {
+     "id": "right-rail-review",
+     "w": 0,
+     "h": 0,
+     "x": 0,
+     "y": 0,
+     "display": "none",
+     "flexDir": "row",
+     "flex": "1 1 auto",
+     "pos": "static",
+     "ovf": "visible",
+     "on": false
+    }
+   ]
+  },
+  "sidebar": {
+   "runItemCount": 77,
+   "items": [
+    {
+     "title": "核查CLI异常终止Create 4  mall text fil…2 轮14:192",
+     "w": 295,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 263,
+     "h": null
+    },
+    {
+     "title": "核查CLI异常终止Create 4  mall text fil…1 轮13:314",
+     "w": 295,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 301,
+     "h": null
+    },
+    {
+     "title": "核查CLI异常终止Create 4  mall text fil…1 轮12:424",
+     "w": 295,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 338,
+     "h": null
+    },
+    {
+     "title": "核查CLI异常终止Create 4  mall text fil…1 轮12:096",
+     "w": 295,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 376,
+     "h": null
+    },
+    {
+     "title": "核查CLI异常终止Create 4  mall text fil…2 轮16:572",
+     "w": 295,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 414,
+     "h": null
+    },
+    {
+     "title": "核查CLI已完成做一个可交互的三维对象页：自包含 HTML， …三次失败的共同点是 ",
+     "w": 295,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 452,
+     "h": null
+    },
+    {
+     "title": "核查CLI部分完成关于合肥的特色建筑，做一个可交互的三维对象页：…核验全部跑完，且全",
+     "w": 295,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 490,
+     "h": null
+    },
+    {
+     "title": "核查CLI已完成看一眼 `_ux_probe/view-pro…`_ux_probe",
+     "w": 295,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 528,
+     "h": null
+    },
+    {
+     "title": "核查CLI未能结构化收口请参考Nord on的AGS2产品 做一个可交…我先确认几个",
+     "w": 295,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 566,
+     "h": null
+    },
+    {
+     "title": "核查CLI部分完成关于合肥的特色建筑，做一个可交互的三维对象页：…Now I hav",
+     "w": 295,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 603,
+     "h": null
+    },
+    {
+     "title": "核查CLI部分完成做一个可交互的三维对象页：自包含 HTML， …最后一次整页复核仍",
+     "w": 295,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 641,
+     "h": null
+    },
+    {
+     "title": "核查CLI已完成帮我做多个动态效果，我想要通过这些动态效果直观…识图复核暴露的压字问",
+     "w": 295,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 679,
+     "h": null
+    },
+    {
+     "title": "核查CLI已完成请你做一个鹈鹕骑自行车的动态画面The far- ide pedal",
+     "w": 295,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 717,
+     "h": null
+    },
+    {
+     "title": "核查CLI已完成帮我把数据更新，并且生成报告补回去了，并把下游全部重算。5 轮11:",
+     "w": 295,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 792,
+     "h": null
+    }
+   ],
+   "groupCount": 0,
+   "groups": [],
+   "scrollH": 900,
+   "clientH": 900
+  }
+ },
+ "1920": {
+  "rail": {
+   "rail": {
+    "w": 360,
+    "h": 760,
+    "x": 1560,
+    "y": 0,
+    "display": "flex",
+    "flexDir": "column",
+    "flex": "0 0 auto",
+    "pos": "relative",
+    "ovf": "visible"
+   },
+   "dataset": {
+    "mode": "side",
+    "layout": "docked",
+    "surface": "preview",
+    "collapsed": "false"
+   },
+   "directChildren": [
+    {
+     "el": "button#right-rail-collapse.right-rail-collap.e",
+     "w": 23,
+     "h": 26,
+     "x": 1891,
+     "y": 6,
+     "display": "block",
+     "flexDir": "row",
+     "flex": "0 1 auto",
+     "pos": "absolute",
+     "ovf": "visible",
+     "hidden": false,
+     "text": ""
+    },
+    {
+     "el": "div#right-rail-drag.right-rail-drag",
+     "w": 7,
+     "h": 760,
+     "x": 1558,
+     "y": 0,
+     "display": "block",
+     "flexDir": "row",
+     "flex": "0 1 auto",
+     "pos": "absolute",
+     "ovf": "visible",
+     "hidden": false,
+     "text": ""
+    },
+    {
+     "el": "aside#workspace-file-tree.file.-rail work",
+     "w": 359,
+     "h": 760,
+     "x": 1561,
+     "y": 0,
+     "display": "flex",
+     "flexDir": "column",
+     "flex": "1 1 auto",
+     "pos": "static",
+     "ovf": "visible",
+     "hidden": false,
+     "text": "文件文件 ⟩展开折叠_ag @_cdp 系列（4 个，已降噪折叠）_grid 系"
+    },
+    {
+     "el": "div#right-rail-preview.right-rail-preview",
+     "w": 0,
+     "h": 0,
+     "x": 0,
+     "y": 0,
+     "display": "none",
+     "flexDir": "column",
+     "flex": "1 1 auto",
+     "pos": "static",
+     "ovf": "visible",
+     "hidden": false,
+     "text": "关闭下载放大_verify/anhui-tv/verify.mj _verify"
+    },
+    {
+     "el": "div#right-rail-review.right-rail-review",
+     "w": 0,
+     "h": 0,
+     "x": 0,
+     "y": 0,
+     "display": "none",
+     "flexDir": "row",
+     "flex": "1 1 auto",
+     "pos": "static",
+     "ovf": "visible",
+     "hidden": false,
+     "text": "改文件 3 个_verify/anhui-tv/verify.mj 1 处改动_"
+    }
+   ],
+   "railWidthVar": "360px",
+   "slots": [
+    {
+     "id": "workspace-file-tree",
+     "w": 359,
+     "h": 760,
+     "x": 1561,
+     "y": 0,
+     "display": "flex",
+     "flexDir": "column",
+     "flex": "1 1 auto",
+     "pos": "static",
+     "ovf": "visible",
+     "on": true
+    },
+    {
+     "id": "right-rail-preview",
+     "w": 0,
+     "h": 0,
+     "x": 0,
+     "y": 0,
+     "display": "none",
+     "flexDir": "column",
+     "flex": "1 1 auto",
+     "pos": "static",
+     "ovf": "visible",
+     "on": false
+    },
+    {
+     "id": "right-rail-review",
+     "w": 0,
+     "h": 0,
+     "x": 0,
+     "y": 0,
+     "display": "none",
+     "flexDir": "row",
+     "flex": "1 1 auto",
+     "pos": "static",
+     "ovf": "visible",
+     "on": false
+    }
+   ]
+  },
+  "sidebar": {
+   "runItemCount": 77,
+   "items": [
+    {
+     "title": "核查CLI异常终止Create 4  mall text fil…2 轮14:192",
+     "w": 295,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 263,
+     "h": null
+    },
+    {
+     "title": "核查CLI异常终止Create 4  mall text fil…1 轮13:314",
+     "w": 295,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 301,
+     "h": null
+    },
+    {
+     "title": "核查CLI异常终止Create 4  mall text fil…1 轮12:424",
+     "w": 295,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 338,
+     "h": null
+    },
+    {
+     "title": "核查CLI异常终止Create 4  mall text fil…1 轮12:096",
+     "w": 295,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 376,
+     "h": null
+    },
+    {
+     "title": "核查CLI异常终止Create 4  mall text fil…2 轮16:572",
+     "w": 295,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 414,
+     "h": null
+    },
+    {
+     "title": "核查CLI已完成做一个可交互的三维对象页：自包含 HTML， …三次失败的共同点是 ",
+     "w": 295,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 452,
+     "h": null
+    },
+    {
+     "title": "核查CLI部分完成关于合肥的特色建筑，做一个可交互的三维对象页：…核验全部跑完，且全",
+     "w": 295,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 490,
+     "h": null
+    },
+    {
+     "title": "核查CLI已完成看一眼 `_ux_probe/view-pro…`_ux_probe",
+     "w": 295,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 528,
+     "h": null
+    },
+    {
+     "title": "核查CLI未能结构化收口请参考Nord on的AGS2产品 做一个可交…我先确认几个",
+     "w": 295,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 566,
+     "h": null
+    },
+    {
+     "title": "核查CLI部分完成关于合肥的特色建筑，做一个可交互的三维对象页：…Now I hav",
+     "w": 295,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 603,
+     "h": null
+    },
+    {
+     "title": "核查CLI部分完成做一个可交互的三维对象页：自包含 HTML， …最后一次整页复核仍",
+     "w": 295,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 641,
+     "h": null
+    },
+    {
+     "title": "核查CLI已完成帮我做多个动态效果，我想要通过这些动态效果直观…识图复核暴露的压字问",
+     "w": 295,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 679,
+     "h": null
+    },
+    {
+     "title": "核查CLI已完成请你做一个鹈鹕骑自行车的动态画面The far- ide pedal",
+     "w": 295,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 717,
+     "h": null
+    },
+    {
+     "title": "核查CLI已完成帮我把数据更新，并且生成报告补回去了，并把下游全部重算。5 轮11:",
+     "w": 295,
+     "timeRaw": null,
+     "timeTitle": null,
+     "timeDatetime": null,
+     "y": 792,
+     "h": null
+    }
+   ],
+   "groupCount": 0,
+   "groups": [],
+   "scrollH": 900,
+   "clientH": 900
+  }
+ },
+ "tree": {
+  "count": 40,
+  "rows": [
+   {
+    "name": "文件 ⟩",
+    "full": null,
+    "w": 0,
+    "nameClientW": 0,
+    "nameScrollW": 0,
+    "truncated": false,
+    "ellipsis": "clip",
+    "indent": 0
+   },
+   {
+    "name": "展开",
+    "full": "展开到第二层（整棵树是逐层拉的，真的全开会把每一层都请求一遍）",
+    "w": 32,
+    "nameClientW": 32,
+    "nameScrollW": 32,
+    "truncated": false,
+    "ellipsis": "clip",
+    "indent": 1290
+   },
+   {
+    "name": "折叠",
+    "full": "全部折叠",
+    "w": 32,
+    "nameClientW": 32,
+    "nameScrollW": 32,
+    "truncated": false,
+    "ellipsis": "clip",
+    "indent": 1558
+   },
+   {
+    "name": "_ags",
+    "full": "_ags",
+    "w": 308,
+    "nameClientW": 252,
+    "nameScrollW": 252,
+    "truncated": false,
+    "ellipsis": "clip",
+    "indent": 1286
+   },
+   {
+    "name": "",
+    "full": null,
+    "w": 22,
+    "nameClientW": 22,
+    "nameScrollW": 22,
+    "truncated": false,
+    "ellipsis": "clip",
+    "indent": 1294
+   },
+   {
+    "name": "_ags",
+    "full": null,
+    "w": 252,
+    "nameClientW": 23,
+    "nameScrollW": 23,
+    "truncated": false,
+    "ellipsis": "ellipsis",
+    "indent": 1318
+   },
+   {
+    "name": "@",
+    "full": "插入 @ 引用",
+    "w": 22,
+    "nameClientW": 22,
+    "nameScrollW": 22,
+    "truncated": false,
+    "ellipsis": "clip",
+    "indent": 1572
+   },
+   {
+    "name": "_cdp 系列（4 个，已降噪折叠）",
+    "full": null,
+    "w": 308,
+    "nameClientW": 300,
+    "nameScrollW": 300,
+    "truncated": false,
+    "ellipsis": "clip",
+    "indent": 1286
+   },
+   {
+    "name": "_cdp 系列",
+    "full": null,
+    "w": 300,
+    "nameClientW": 52,
+    "nameScrollW": 52,
+    "truncated": false,
+    "ellipsis": "ellipsis",
+    "indent": 1294
+   },
+   {
+    "name": "_grid 系列（2 个，已降噪折叠）",
+    "full": null,
+    "w": 308,
+    "nameClientW": 300,
+    "nameScrollW": 300,
+    "truncated": false,
+    "ellipsis": "clip",
+    "indent": 1286
+   },
+   {
+    "name": "_grid 系列",
+    "full": null,
+    "w": 300,
+    "nameClientW": 53,
+    "nameScrollW": 53,
+    "truncated": false,
+    "ellipsis": "ellipsis",
+    "indent": 1294
+   },
+   {
+    "name": "_gridab-profile-9924",
+    "full": "_gridab-profile-9924",
+    "w": 308,
+    "nameClientW": 252,
+    "nameScrollW": 252,
+    "truncated": false,
+    "ellipsis": "clip",
+    "indent": 1286
+   },
+   {
+    "name": "",
+    "full": null,
+    "w": 22,
+    "nameClientW": 22,
+    "nameScrollW": 22,
+    "truncated": false,
+    "ellipsis": "clip",
+    "indent": 1294
+   },
+   {
+    "name": "_gridab-profile-9924",
+    "full": null,
+    "w": 252,
+    "nameClientW": 109,
+    "nameScrollW": 109,
+    "truncated": false,
+    "ellipsis": "ellipsis",
+    "indent": 1318
+   },
+   {
+    "name": "@",
+    "full": "插入 @ 引用",
+    "w": 22,
+    "nameClientW": 22,
+    "nameScrollW": 22,
+    "truncated": false,
+    "ellipsis": "clip",
+    "indent": 1572
+   },
+   {
+    "name": "_lfchk",
+    "full": "_lfchk",
+    "w": 308,
+    "nameClientW": 252,
+    "nameScrollW": 252,
+    "truncated": false,
+    "ellipsis": "clip",
+    "indent": 1286
+   },
+   {
+    "name": "",
+    "full": null,
+    "w": 22,
+    "nameClientW": 22,
+    "nameScrollW": 22,
+    "truncated": false,
+    "ellipsis": "clip",
+    "indent": 1294
+   },
+   {
+    "name": "_lfchk",
+    "full": null,
+    "w": 252,
+    "nameClientW": 30,
+    "nameScrollW": 30,
+    "truncated": false,
+    "ellipsis": "ellipsis",
+    "indent": 1318
+   },
+   {
+    "name": "@",
+    "full": "插入 @ 引用",
+    "w": 22,
+    "nameClientW": 22,
+    "nameScrollW": 22,
+    "truncated": false,
+    "ellipsis": "clip",
+    "indent": 1572
+   },
+   {
+    "name": "_mag 系列（7 个，已降噪折叠）",
+    "full": null,
+    "w": 308,
+    "nameClientW": 300,
+    "nameScrollW": 300,
+    "truncated": false,
+    "ellipsis": "clip",
+    "indent": 1286
+   },
+   {
+    "name": "_mag 系列",
+    "full": null,
+    "w": 300,
+    "nameClientW": 56,
+    "nameScrollW": 56,
+    "truncated": false,
+    "ellipsis": "ellipsis",
+    "indent": 1294
+   },
+   {
+    "name": "_nocull-profile-9936",
+    "full": "_nocull-profile-9936",
+    "w": 308,
+    "nameClientW": 252,
+    "nameScrollW": 252,
+    "truncated": false,
+    "ellipsis": "clip",
+    "indent": 1286
+   },
+   {
+    "name": "",
+    "full": null,
+    "w": 22,
+    "nameClientW": 22,
+    "nameScrollW": 22,
+    "truncated": false,
+    "ellipsis": "clip",
+    "indent": 1294
+   },
+   {
+    "name": "_nocull-profile-9936",
+    "full": null,
+    "w": 252,
+    "nameClientW": 107,
+    "nameScrollW": 107,
+    "truncated": false,
+    "ellipsis": "ellipsis",
+    "indent": 1318
+   },
+   {
+    "name": "@",
+    "full": "插入 @ 引用",
+    "w": 22,
+    "nameClientW": 22,
+    "nameScrollW": 22,
+    "truncated": false,
+    "ellipsis": "clip",
+    "indent": 1572
+   },
+   {
+    "name": "_probe 系列（25 个，已降噪折叠）",
+    "full": null,
+    "w": 308,
+    "nameClientW": 300,
+    "nameScrollW": 300,
+    "truncated": false,
+    "ellipsis": "clip",
+    "indent": 1286
+   },
+   {
+    "name": "_probe 系列",
+    "full": null,
+    "w": 300,
+    "nameClientW": 64,
+    "nameScrollW": 64,
+    "truncated": false,
+    "ellipsis": "ellipsis",
+    "indent": 1294
+   },
+   {
+    "name": "_proj2-profile-9940",
+    "full": "_proj2-profile-9940",
+    "w": 308,
+    "nameClientW": 252,
+    "nameScrollW": 252,
+    "truncated": false,
+    "ellipsis": "clip",
+    "indent": 1286
+   },
+   {
+    "name": "",
+    "full": null,
+    "w": 22,
+    "nameClientW": 22,
+    "nameScrollW": 22,
+    "truncated": false,
+    "ellipsis": "clip",
+    "indent": 1294
+   },
+   {
+    "name": "_proj2-profile-9940",
+    "full": null,
+    "w": 252,
+    "nameClientW": 102,
+    "nameScrollW": 102,
+    "truncated": false,
+    "ellipsis": "ellipsis",
+    "indent": 1318
+   },
+   {
+    "name": "@",
+    "full": "插入 @ 引用",
+    "w": 22,
+    "nameClientW": 22,
+    "nameScrollW": 22,
+    "truncated": false,
+    "ellipsis": "clip",
+    "indent": 1572
+   },
+   {
+    "name": "_research",
+    "full": "_research",
+    "w": 308,
+    "nameClientW": 252,
+    "nameScrollW": 252,
+    "truncated": false,
+    "ellipsis": "clip",
+    "indent": 1286
+   },
+   {
+    "name": "",
+    "full": null,
+    "w": 22,
+    "nameClientW": 22,
+    "nameScrollW": 22,
+    "truncated": false,
+    "ellipsis": "clip",
+    "indent": 1294
+   },
+   {
+    "name": "_research",
+    "full": null,
+    "w": 252,
+    "nameClientW": 49,
+    "nameScrollW": 49,
+    "truncated": false,
+    "ellipsis": "ellipsis",
+    "indent": 1318
+   },
+   {
+    "name": "@",
+    "full": "插入 @ 引用",
+    "w": 22,
+    "nameClientW": 22,
+    "nameScrollW": 22,
+    "truncated": false,
+    "ellipsis": "clip",
+    "indent": 1572
+   },
+   {
+    "name": "_shoot 系列（5 个，已降噪折叠）",
+    "full": null,
+    "w": 308,
+    "nameClientW": 300,
+    "nameScrollW": 300,
+    "truncated": false,
+    "ellipsis": "clip",
+    "indent": 1286
+   },
+   {
+    "name": "_shoot 系列",
+    "full": null,
+    "w": 300,
+    "nameClientW": 62,
+    "nameScrollW": 62,
+    "truncated": false,
+    "ellipsis": "ellipsis",
+    "indent": 1294
+   },
+   {
+    "name": "_src 系列（2 个，已降噪折叠）",
+    "full": null,
+    "w": 308,
+    "nameClientW": 300,
+    "nameScrollW": 300,
+    "truncated": false,
+    "ellipsis": "clip",
+    "indent": 1286
+   },
+   {
+    "name": "_src 系列",
+    "full": null,
+    "w": 300,
+    "nameClientW": 47,
+    "nameScrollW": 47,
+    "truncated": false,
+    "ellipsis": "ellipsis",
+    "indent": 1294
+   },
+   {
+    "name": "_verify 系列（6 个，已降噪折叠）",
+    "full": null,
+    "w": 308,
+    "nameClientW": 300,
+    "nameScrollW": 300,
+    "truncated": false,
+    "ellipsis": "clip",
+    "indent": 1286
+   }
+  ]
+ }
+}

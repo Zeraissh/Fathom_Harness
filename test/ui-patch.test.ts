@@ -61,11 +61,6 @@ import {
   resolveDesignSampleChoice,
   designSampleBlockedReason,
   harnessVisionConfigured,
-  suggestNextActions,
-  renderNextActionChips,
-  readNextActionChip,
-  nextActionCapabilities,
-  NEXT_ACTION_LIMIT,
   nextDesignSampleState,
   nextDesignLookState,
   composePromptWithLook,
@@ -980,6 +975,34 @@ describe("详情页重渲染下的状态存活 (V-10)", () => {
     renderRunDetail(s, { activeTab: "overview" });
     expect(document.getElementById("main-area")!.innerHTML).toBe(html);
     expect(document.querySelector(".approval-card")).toBe(card);
+  });
+
+  it("已阅重画后「本场改动」卡的展开状态保住（T6 探针 ④ 的回归锁）", () => {
+    // T7 把卡从 details.chat-change-card 改成 div.chat-change-card >
+    // details.chat-change-card-details（a11y：summary 里嵌按钮 = nested-interactive）。
+    // 已阅会变 chatItemSig 里的 rev → 卡重画；更新路径里保住展开状态的选择器
+    // 若不同步改，点「已阅」整卡合上，刚出现的「已阅」标随之不可见。
+    let s = createInitialState("run-cc", "改文件", false);
+    s = reduceEvents(s, [
+      sse(1, "main", "tool_call", { toolUseId: "ed1", name: "edit_file", input: { path: "a.txt", old_string: "x", new_string: "y" } }),
+      sse(2, "main", "tool_result", { toolUseId: "ed1", resultIsError: false }),
+    ]);
+    renderRunDetail(s, { activeTab: "loop", changeCardReviewed: null });
+
+    const card = document.querySelector("details.chat-change-card-details");
+    const file = document.querySelector('details.chat-change-file[data-path="a.txt"]');
+    expect(card).toBeTruthy();
+    expect(file).toBeTruthy();
+    (card as HTMLDetailsElement).open = true;
+    (file as HTMLDetailsElement).open = true;
+
+    renderRunDetail(s, { activeTab: "loop", changeCardReviewed: new Map([["a.txt", 1]]) });
+
+    const cardAfter = document.querySelector("details.chat-change-card-details");
+    const fileAfter = document.querySelector('details.chat-change-file[data-path="a.txt"]');
+    expect(cardAfter?.open, "已阅重画后卡不能合上（合上=已阅标不可见，T6 探针 ④ 红）").toBe(true);
+    expect(fileAfter?.open).toBe(true);
+    expect(fileAfter?.querySelector(".chat-change-file-reviewed"), "已阅标画在文件行里").toBeTruthy();
   });
 
   // 「日志面板只追加」「1000 条事件一次渲染」随日志视图于 2026-09-18 下线
@@ -2209,8 +2232,12 @@ describe("deriveChatItems：对话从事件流派生，因此实时", () => {
     expect(items.filter((i) => i.kind === "text").map((i) => i.text)).toEqual([
       "液态动效站已写好：入口在 demo_sites/index.html。",
     ]);
-    expect(items.map((i) => i.kind)).toEqual(["user", "text", "artifacts", "verdict"]);
+    expect(items.map((i) => i.kind)).toEqual(["user", "text", "artifacts", "verdict", "changecard"]);
     expect(items.find((i) => i.kind === "artifacts")?.files?.[0]?.path).toBe("demo_sites/index.html");
+    // T6：写成功的文件进「本场改动」卡，跟在整场对话最后（key 常量，patchList 才能原地更新）
+    const card = items.find((i) => i.kind === "changecard");
+    expect(card?.files?.map((f) => f.path)).toEqual(["demo_sites/index.html"]);
+    expect(card?.key).toBe("changecard");
   });
 
   it("有 finish_task 时对话交付优先用其 summary/artifacts，而不是中间进度句", () => {
@@ -3527,6 +3554,105 @@ describe("对话贴底跟随", () => {
     expect(keepScrollAnchored(away as any, () => { away.scrollHeight = 1200; })).toBe(false);
     expect(away.scrollTop, "人往上翻了就不该动他").toBe(100);
   });
+
+  /**
+   * ★ 委托方 2026-09-19 报的 bug：`#/run/…/loop` 那场对话"一直自动往下滑动，
+   * 一上滑就被调到底部，回不去"。
+   *
+   * 根因是**判据层缺一条同步的清路**，不是竞态本身：
+   *   `__followBottom` 唯一被设成 false 的地方是那行 `scroll` 事件监听，
+   *   而**滚动事件是异步派发的**（本帧渲染步之前才发）。
+   *   于是：用户上滑 → 输入事件与 scrollTop 都是**同步**的，但 scroll 事件
+   *   还在队列里 → 一次渲染进来读到 `atBottom()` 为假、**却什么都不做**
+   *   （那行「if (atBottom()) follow = true」只会写 true）→ 照旧把他拽回底部 →
+   *   那个迟到的 scroll 事件这时才派发、读到的是"已在底部" → follow = true。
+   *   流式时渲染频率远高于滚动事件派发，**用户赢不了这场比赛**。
+   *
+   * 时序按真实浏览器写：**`wheel` 先到（比 scrollTop 变化还早），scroll 事件最后**。
+   */
+  it("★ 上滑之后、异步 scroll 事件还没派发时的一次渲染，不许把他拽回底部", () => {
+    const handlers: Record<string, Array<(ev: any) => void>> = {};
+    const s = {
+      scrollTop: 590, scrollHeight: 1000, clientHeight: 400,
+      addEventListener: (type: string, fn: (ev: any) => void) => {
+        (handlers[type] ??= []).push(fn);
+      },
+      __fire: (type: string, ev: any = {}) => (handlers[type] ?? []).forEach((fn) => fn(ev)),
+    };
+
+    // 首次：贴底，跟随到新底部
+    expect(keepScrollAnchored(s as any, () => { s.scrollHeight = 1200; })).toBe(true);
+
+    // 用户上滑：① wheel 先到（同步）② scrollTop 跟着变 ③ scroll 事件还在队列里
+    s.__fire("wheel", { deltaY: -120 });
+    s.scrollTop = 200;
+    // 此刻一次流式渲染进来：
+    const followed = keepScrollAnchored(s as any, () => { s.scrollHeight = 1400; });
+
+    expect(s.scrollTop, "★ 用户往上翻了，渲染不该把他拽回底部").toBe(200);
+    expect(followed, "★ 跟随意图应当当场被改写，不能等那个异步事件").toBe(false);
+
+    // 对照：事件迟到之后派发，也不该把跟随重新打开（人还在上面）
+    s.__fire("scroll");
+    expect(keepScrollAnchored(s as any, () => { s.scrollHeight = 1500; })).toBe(false);
+    expect(s.scrollTop, "事件派发之后仍不该动他").toBe(200);
+  });
+
+  /** 同一条路的键盘形态：PgUp / ↑ / Home 与滚轮一样是"接管"。 */
+  it("★ 键盘上翻同样当场清跟随（PgUp / ↑ / Home）", () => {
+    for (const key of ["PageUp", "ArrowUp", "Home"]) {
+      const handlers: Record<string, Array<(ev: any) => void>> = {};
+      const s = {
+        scrollTop: 590, scrollHeight: 1000, clientHeight: 400,
+        addEventListener: (type: string, fn: (ev: any) => void) => { (handlers[type] ??= []).push(fn); },
+        __fire: (type: string, ev: any = {}) => (handlers[type] ?? []).forEach((fn) => fn(ev)),
+      };
+      keepScrollAnchored(s as any, () => { s.scrollHeight = 1200; });
+      s.__fire("keydown", { key });
+      s.scrollTop = 200;
+      expect(keepScrollAnchored(s as any, () => { s.scrollHeight = 1400; }), `${key} 之后应当停止跟随`).toBe(false);
+      expect(s.scrollTop, `${key} 之后不该动他`).toBe(200);
+    }
+  });
+
+  /** 往下滚**不算**接管——那是在回底部，跟随不该被清掉（否则永远回不到跟随）。 */
+  it("往下滚不清跟随（它是在回底部）", () => {
+    const handlers: Record<string, Array<(ev: any) => void>> = {};
+    const s = {
+      scrollTop: 590, scrollHeight: 1000, clientHeight: 400,
+      addEventListener: (type: string, fn: (ev: any) => void) => { (handlers[type] ??= []).push(fn); },
+      __fire: (type: string, ev: any = {}) => (handlers[type] ?? []).forEach((fn) => fn(ev)),
+    };
+    keepScrollAnchored(s as any, () => { s.scrollHeight = 1200; });
+    s.__fire("wheel", { deltaY: 120 });     // 往下
+    s.scrollTop = 1000;                     // 已经贴近底部
+    expect(keepScrollAnchored(s as any, () => { s.scrollHeight = 1300; })).toBe(true);
+  });
+
+  /**
+   * 反向护栏：上一条修法**不许把意图态当初要解决的问题弄回来**。
+   *
+   * `dom/patch.js` 的注释记着意图态是为两件事重做的：① smooth 动画半路被读成
+   * "不在底部"；② **批准卡挂在滚动容器之外，出现时 clientHeight 突然变小**、
+   * 距底瞬间超阈——而这不产生任何 scroll 事件，用户什么都没做就被判了"上翻"。
+   * 所以任何"按几何清意图"的改法，都必须扛住 ②。
+   */
+  it("批准卡让容器变矮时，跟随不许被误判成'用户上翻'", () => {
+    const listeners: Array<() => void> = [];
+    const s = {
+      scrollTop: 600, scrollHeight: 1000, clientHeight: 400,
+      addEventListener: (type: string, fn: () => void) => { if (type === "scroll") listeners.push(fn); },
+      __dispatchScroll: () => listeners.forEach((fn) => fn()),
+    };
+    expect(keepScrollAnchored(s as any, () => {})).toBe(true);   // 贴底，跟随中
+
+    // 批准卡出现：clientHeight 变小 → 距底瞬间 600px 超阈，**但 scrollTop 没动**
+    s.clientHeight = 100;
+    expect(keepScrollAnchored(s as any, () => {}), "★ 卡出现不该把跟随关掉").toBe(true);
+    // 桩不夹取 scrollTop（真浏览器会夹到 max = scrollHeight - clientHeight），
+    // 所以这里只断言"它确实又补了一次"，不断言几何方向。
+    expect(s.scrollTop).toBe(s.scrollHeight);
+  });
 });
 
 describe("角色人名（backlog D4：显示层别名，与角色语义并列）", () => {
@@ -4219,20 +4345,6 @@ describe("空态给的是能点的例子", () => {
     expect(html).toMatch(/designModeActive:\s*officeCatalogOpen/);
   });
 
-  it("空态不再画下一步建议（二轮走查：欢迎面只留标识与输入框；建议只属于对话态）", () => {
-    paintWelcome({ workdir: "D:/proj" });
-    expect(document.querySelector(".empty-state [data-next-id]")).toBeNull();
-    expect(document.querySelector(".empty-state .next-actions")).toBeNull();
-    // 函数层仍为对话后场景服务（见「刚结束的对话露出下一步」）
-    expect(suggestNextActions({ surface: "empty", workdir: "D:/proj" }).length).toBeGreaterThanOrEqual(3);
-  });
-
-  it("设计目录打开时不画下一步芯片", () => {
-    paintWelcome({ designModeActive: true, selectedDesignTab: "Deck" });
-    expect(document.querySelector(".empty-state [data-next-id]")).toBeNull();
-    expect(document.querySelector(".empty-state .next-actions")).toBeNull();
-  });
-
   it("更多稿件打开六页签；返回只回到办公四行", () => {
     paintWelcome({ workspaceFace: "office" });
     expect(document.querySelector("[data-office-more]")).toBeTruthy();
@@ -4580,115 +4692,6 @@ describe("空态给的是能点的例子", () => {
   });
 });
 
-describe("下一步芯片只列当前装配真有的能力", () => {
-  it("识图未武装不出现看图", () => {
-    const items = suggestNextActions({
-      surface: "empty",
-      workdir: "/w",
-      harness: { describeImageBacking: "none", roleModels: { vision: { configured: false } } },
-    });
-    expect(items.some((i) => i.id === "vision")).toBe(false);
-    expect(items.map((i) => i.label).join(" ")).not.toMatch(/看一张图/);
-    renderEmptyState(false, {
-      workdir: "/w",
-      harness: { describeImageBacking: "none", roleModels: { vision: { configured: false } } },
-    });
-    expect(document.querySelector("[data-next-id='vision']")).toBeNull();
-  });
-
-  it("识图已武装才出现看图", () => {
-    const items = suggestNextActions({
-      surface: "empty",
-      workdir: "/w",
-      harness: { describeImageBacking: "executor" },
-    });
-    expect(items.some((i) => i.id === "vision")).toBe(true);
-    expect(items.find((i) => i.id === "vision")?.fill).toContain("看这张图");
-    expect(items.find((i) => i.id === "vision")?.fill).not.toMatch(/describe_image|view_image/);
-  });
-
-  it("飞书入站未开不说在群里@", () => {
-    const off = suggestNextActions({ surface: "empty", workdir: "/w", im: { feishuInbound: false } });
-    expect(off.some((i) => i.id === "feishu")).toBe(false);
-    expect(off.map((i) => i.label).join("")).not.toContain("飞书");
-    const on = suggestNextActions({ surface: "empty", workdir: "/w", im: { feishuInbound: true } });
-    expect(on.some((i) => i.id === "feishu")).toBe(true);
-    expect(on.find((i) => i.id === "feishu")?.announce).toContain("飞书入站已开");
-  });
-
-  it("没令牌 / PR 未就绪不开 PR 芯片", () => {
-    const off = suggestNextActions({ surface: "empty", workdir: "/w", githubPr: { ready: false } });
-    expect(off.some((i) => i.id === "pr")).toBe(false);
-    const on = suggestNextActions({ surface: "empty", workdir: "/w", githubPr: { ready: true } });
-    expect(on.some((i) => i.id === "pr")).toBe(true);
-    expect(on.find((i) => i.id === "pr")?.action).toBe("pr");
-  });
-
-  it("刚结束可续跑才有接着说；没有产物就不说预览/点评", () => {
-    const bare = suggestNextActions({ surface: "done", canContinue: true, workdir: "/w" });
-    expect(bare.some((i) => i.id === "continue")).toBe(true);
-    expect(bare.some((i) => i.id === "preview")).toBe(false);
-    expect(bare.some((i) => i.id === "review")).toBe(false);
-    const withPage = suggestNextActions({
-      surface: "done",
-      canContinue: true,
-      workdir: "/w",
-      artifacts: [{ path: "index.html" }],
-    });
-    expect(withPage.some((i) => i.id === "preview")).toBe(true);
-    expect(withPage.some((i) => i.id === "review")).toBe(true);
-    expect(withPage.find((i) => i.id === "preview")?.path).toBe("index.html");
-  });
-
-  it("芯片条 HTML 带 data-next-id，readNextActionChip 能读回", () => {
-    const html = renderNextActionChips([
-      { id: "plan", label: "先对齐做法", fill: "先对齐", plan: true },
-    ]);
-    document.body.insertAdjacentHTML("beforeend", html);
-    const btn = document.querySelector("[data-next-id='plan']");
-    expect(btn?.tagName).toBe("BUTTON");
-    expect(readNextActionChip(btn)).toMatchObject({
-      id: "plan",
-      fill: "先对齐",
-      plan: true,
-    });
-    expect(nextActionCapabilities({
-      harness: { describeImageBacking: "none" },
-      im: { feishuInbound: false },
-      githubPr: { ready: false },
-    })).toMatchObject({
-      vision: false,
-      feishuInbound: false,
-      prReady: false,
-    });
-  });
-
-  it("没有工作目录就不说点名文件 / 看右边", () => {
-    const items = suggestNextActions({ surface: "empty" });
-    expect(items.some((i) => i.id === "mention" || i.id === "files")).toBe(false);
-    expect(items.length).toBeGreaterThanOrEqual(3);
-    expect(items.map((i) => i.id)).toEqual(expect.arrayContaining(["plan", "schedule"]));
-  });
-
-  it("刚结束的对话露出下一步；运行中藏起来", () => {
-    let s = createInitialState("run-next", "做一页", false);
-    s = { ...s, status: "done", stopReason: "completed" };
-    renderRunDetail(s, { canContinue: true, workdir: "/w" });
-    const host = document.querySelector(".conversation-stack .next-actions");
-    expect(host?.hasAttribute("hidden")).toBe(false);
-    const chips = [...document.querySelectorAll(".conversation-stack [data-next-id]")];
-    expect(chips.length).toBeGreaterThanOrEqual(3);
-    expect(chips.some((el) => el.getAttribute("data-next-id") === "continue")).toBe(true);
-    expect(chips.some((el) => el.getAttribute("data-next-id") === "vision")).toBe(false);
-    expect(chips.some((el) => el.getAttribute("data-next-id") === "pr")).toBe(false);
-    expect(chips.some((el) => el.getAttribute("data-next-id") === "feishu")).toBe(false);
-
-    s = { ...s, status: "running" };
-    renderRunDetail(s, { canContinue: true, workdir: "/w" });
-    expect(document.querySelector(".conversation-stack .next-actions")?.hasAttribute("hidden")).toBe(true);
-    expect(document.querySelector(".conversation-stack [data-next-id]")).toBeNull();
-  });
-});
 
 describe("办公/编码脸与侧栏密度", () => {
   it("Work 只留办公对话，Code 只留编码；旧档 packName=design 算办公", () => {

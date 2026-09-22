@@ -1,0 +1,282 @@
+{
+ "会话页": {
+  "scope": {
+   "w": 1072,
+   "h": 29,
+   "x": 341,
+   "y": 778,
+   "display": "block",
+   "open": false,
+   "tag": "details"
+  },
+  "formKids": [
+   {
+    "el": "details#composer-scope.composer-scope",
+    "w": 1072,
+    "h": 29,
+    "x": 341,
+    "y": 778,
+    "display": "block"
+   },
+   {
+    "el": "div#queue-chips.queue-chips",
+    "w": 0,
+    "h": 0,
+    "x": 0,
+    "y": 0,
+    "display": "none"
+   },
+   {
+    "el": "div#cite-chips.cite-chips",
+    "w": 0,
+    "h": 0,
+    "x": 0,
+    "y": 0,
+    "display": "none"
+   },
+   {
+    "el": "div#cite-picker.cite-picker",
+    "w": 0,
+    "h": 0,
+    "x": 0,
+    "y": 0,
+    "display": "none"
+   },
+   {
+    "el": "div#composer-compose.composer-compose",
+    "w": 1072,
+    "h": 36,
+    "x": 341,
+    "y": 807,
+    "display": "flex"
+   },
+   {
+    "el": "div.composer-quickbar",
+    "w": 1072,
+    "h": 28,
+    "x": 341,
+    "y": 847,
+    "display": "flex"
+   },
+   {
+    "el": "p#design-drafts-hint.design-drafts-hint",
+    "w": 0,
+    "h": 0,
+    "x": 0,
+    "y": 0,
+    "display": "none"
+   },
+   {
+    "el": "p#composer-note.composer-note.knob-hint",
+    "w": 0,
+    "h": 0,
+    "x": 0,
+    "y": 0,
+    "display": "none"
+   },
+   {
+    "el": "p#plan-mode-hint.design-drafts-hint.plan-mode-hint",
+    "w": 0,
+    "h": 0,
+    "x": 0,
+    "y": 0,
+    "display": "none"
+   },
+   {
+    "el": "div#budget-extend-row.budget-extend-row",
+    "w": 0,
+    "h": 0,
+    "x": 0,
+    "y": 0,
+    "display": "none"
+   },
+   {
+    "el": "p#submit-error.inline-error",
+    "w": 0,
+    "h": 0,
+    "x": 0,
+    "y": 0,
+    "display": "none"
+   },
+   {
+    "el": "div#run-knobs.run-knobs",
+    "w": 0,
+    "h": 0,
+    "x": 0,
+    "y": 0,
+    "display": "none"
+   },
+   {
+    "el": "div.drop-hint",
+    "w": 0,
+    "h": 0,
+    "x": 0,
+    "y": 0,
+    "display": "none"
+   }
+  ],
+  "visibleTexts": [
+   {
+    "el": "span.composer-scope-text",
+    "text": "D:\\Work\\scratc…s\\liquid-demo · kimi-k3",
+    "y": 782
+   },
+   {
+    "el": "span.theme-select-value",
+    "text": "创建项目",
+    "y": 810
+   },
+   {
+    "el": "span#workdir-trigger-text.wd-trigger-text",
+    "text": "D:\\Work\\scratc…s\\liquid-demo",
+    "y": 812
+   },
+   {
+    "el": "span#executor-model-trigger-text.model-picker-value",
+    "text": "kimi-k3",
+    "y": 812
+   }
+  ],
+  "deriveExposed": "undefined"
+ },
+ "欢迎页": {
+  "scope": {
+   "w": 618,
+   "h": 29,
+   "x": 567,
+   "y": 1522,
+   "display": "block",
+   "open": false,
+   "tag": "details"
+  },
+  "formKids": [
+   {
+    "el": "details#composer-scope.composer-scope",
+    "w": 618,
+    "h": 29,
+    "x": 567,
+    "y": 1522,
+    "display": "block"
+   },
+   {
+    "el": "div#queue-chips.queue-chips",
+    "w": 0,
+    "h": 0,
+    "x": 0,
+    "y": 0,
+    "display": "none"
+   },
+   {
+    "el": "div#cite-chips.cite-chips",
+    "w": 0,
+    "h": 0,
+    "x": 0,
+    "y": 0,
+    "display": "none"
+   },
+   {
+    "el": "div#cite-picker.cite-picker",
+    "w": 0,
+    "h": 0,
+    "x": 0,
+    "y": 0,
+    "display": "none"
+   },
+   {
+    "el": "div#composer-compose.composer-compose",
+    "w": 618,
+    "h": 36,
+    "x": 567,
+    "y": 1551,
+    "display": "flex"
+   },
+   {
+    "el": "div.composer-quickbar",
+    "w": 618,
+    "h": 0,
+    "x": 567,
+    "y": 1591,
+    "display": "flex"
+   },
+   {
+    "el": "p#design-drafts-hint.design-drafts-hint",
+    "w": 0,
+    "h": 0,
+    "x": 0,
+    "y": 0,
+    "display": "none"
+   },
+   {
+    "el": "p#composer-note.composer-note.knob-hint",
+    "w": 0,
+    "h": 0,
+    "x": 0,
+    "y": 0,
+    "display": "none"
+   },
+   {
+    "el": "p#plan-mode-hint.design-drafts-hint.plan-mode-hint",
+    "w": 0,
+    "h": 0,
+    "x": 0,
+    "y": 0,
+    "display": "none"
+   },
+   {
+    "el": "div#budget-extend-row.budget-extend-row",
+    "w": 0,
+    "h": 0,
+    "x": 0,
+    "y": 0,
+    "display": "none"
+   },
+   {
+    "el": "p#submit-error.inline-error",
+    "w": 0,
+    "h": 0,
+    "x": 0,
+    "y": 0,
+    "display": "none"
+   },
+   {
+    "el": "div#run-knobs.run-knobs",
+    "w": 0,
+    "h": 0,
+    "x": 0,
+    "y": 0,
+    "display": "none"
+   },
+   {
+    "el": "div.drop-hint",
+    "w": 0,
+    "h": 0,
+    "x": 0,
+    "y": 0,
+    "display": "none"
+   }
+  ],
+  "visibleTexts": [
+   {
+    "el": "span.composer-scope-text",
+    "text": "D:\\Work\\scratc…s\\liquid-demo · kimi-k3",
+    "y": 1526
+   },
+   {
+    "el": "span.theme-select-value",
+    "text": "创建项目",
+    "y": 1554
+   },
+   {
+    "el": "span#workdir-trigger-text.wd-trigger-text",
+    "text": "D:\\Work\\scratc…s\\liquid-demo",
+    "y": 1555
+   },
+   {
+    "el": "span#executor-model-trigger-text.model-picker-value",
+    "text": "kimi-k3",
+    "y": 1555
+   }
+  ],
+  "deriveExposed": "undefined"
+ }
+}

@@ -2032,10 +2032,21 @@ function applyVerdict(state, event) {
  *
  * @returns {RunState}
  */
-/** done.completion 逐字段投影：blockers 不列出就会在对话面蒸发。 */
-function projectCompletion(raw) {
+/**
+ * done.completion **逐字段投影**：不列出的字段会在对话面静默蒸发（blockers 栽过一次，
+ * 注释就是那次留下的）。导出是为了能被测试直接锁住——投影漏字段这种错，
+ * 页面不报错、单测也不报错，只有用户少看见一样东西。
+ */
+export function projectCompletion(raw) {
   if (!raw || typeof raw !== "object") return null;
   const list = (v) => (Array.isArray(v) ? v.map((x) => String(x)) : []);
+  const step = raw.nextStep;
+  const nextStep =
+    step && typeof step === "object" && !Array.isArray(step) &&
+    typeof step.ask === "string" && step.ask.trim() &&
+    typeof step.reply === "string" && step.reply.trim()
+      ? { ask: step.ask.trim(), reply: step.reply.trim() }
+      : null;
   return {
     status: String(raw.status ?? ""),
     summary: String(raw.summary ?? ""),
@@ -2043,6 +2054,44 @@ function projectCompletion(raw) {
     verification: list(raw.verification),
     assumptions: list(raw.assumptions),
     blockers: list(raw.blockers),
+    ...(nextStep ? { nextStep } : {}),
+  };
+}
+
+/** 问句里那句 blocker 超过这个长度就截断——输入框那一行放不下，回复仍留全文。 */
+const NEXT_ASK_CLIP = 30;
+
+/**
+ * 收尾后输入框里那句**幽灵提议**（三轮走查 A+B）。
+ *
+ * 两路合流：
+ *   ① `completion.nextStep`——模型在收尾那轮顺手写的，它能提**新主意**
+ *      （H1 做完 → 要不要加夜景），这层只有刚做完这件事的人给得出；
+ *   ② 模型没给时从 `blockers[0]` 长一句——欠着的账至少是有内容的，
+ *      而模板化的「看右边的文件」正是委托方判为"没有用处"的那种。
+ * 两路都没有 → `null`：界面不出幽灵，**Tab 也不劫持**（键盘不能吃）。
+ *
+ * @returns {{ask: string, reply: string, source: "model"|"blocker"} | null}
+ */
+export function deriveNextSuggestion(completion) {
+  if (!completion || typeof completion !== "object") return null;
+  const step = completion.nextStep;
+  if (
+    step && typeof step === "object" &&
+    typeof step.ask === "string" && step.ask.trim() &&
+    typeof step.reply === "string" && step.reply.trim()
+  ) {
+    return { ask: step.ask.trim(), reply: step.reply.trim(), source: "model" };
+  }
+  const blocker = (Array.isArray(completion.blockers) ? completion.blockers : [])
+    .map((b) => String(b ?? "").trim())
+    .find(Boolean);
+  if (!blocker) return null;
+  const clipped = blocker.length > NEXT_ASK_CLIP ? `${blocker.slice(0, NEXT_ASK_CLIP)}…` : blocker;
+  return {
+    ask: `要不要我接着做「${clipped}」？`,
+    reply: `需要，请继续做：${blocker}`,
+    source: "blocker",
   };
 }
 
@@ -2876,6 +2925,26 @@ export function deriveScopeSummary(parts = {}) {
   return items.length ? items.join(" · ") : "选项目、目录与模型";
 }
 
+/**
+ * 现在是哪张脸（方案 A · 计划 1）。
+ *
+ * **全应用只有这一个判据。** 落成 `body[data-face]`，所有差异（git 区显隐、
+ * 左栏 tab、右栏 tab、起步卡）都读它——散落的 `if (office)` 是上一轮的病灶，
+ * 它们会各自漂移，而漂移那天没人知道该信谁。
+ * 显式脸优先于会话推断：用户切了脸就听用户的。
+ *
+ * **现状注**：这是**目标态**，不是今天的全貌——第二脸表示还在两处：
+ * `<aside#sidebar data-workspace-face>` 与两个脸按钮上的 `data-workspace-face`
+ * （JS 态标记，CSS 已不挂它，test/ui-file-tree.test.ts 负向锁着）；
+ * `designModeActive = workspaceFace === "office"` 两处（`index.html` 里 grep 即得）。
+ * **迁完之前，别把"唯一判据"当真引用。**
+ */
+export function deriveFace(input) {
+  const explicit = input?.face;
+  if (explicit === "code" || explicit === "work") return explicit;
+  return input?.workspace === "code" ? "code" : "work";
+}
+
 export function deriveComposerMode({ info, localStatus, submitting, error, stopping, workdir, draft, designMode, designTitle, planMode, delivery } = {}) {
   // runPlanned 成文仍走 runVerified。勾选只约束单轮对话，计划子任务默认仍核查。
   const planVerifiesSubtasks = Boolean(planMode) || (info?.mode === "plan" && info?.status === "running");
@@ -3588,7 +3657,7 @@ export function patchComposer(mode, root = document) {
   if (label) setText(label, mode.labelText);
   if (input) {
     setAttr(input, "placeholder", mode.placeholder);
-    setAttr(input, "title", COMPOSER_SEND_HINT);
+    setAttr(input, "title", mode.tabHint ? `${mode.tabHint} · ${COMPOSER_SEND_HINT}` : COMPOSER_SEND_HINT);
     // 说明行不是 live region，靠 aria-describedby 在聚焦输入框时被读到——
     // disabled 的按钮不可聚焦，读屏用户否则无从得知它为什么是死的
     setAttr(input, "aria-describedby", mode.note ? "composer-note" : null);
@@ -3874,8 +3943,10 @@ export function deriveOverview(state) {
 // ---------------------------------------------------------------
 
 const NEWLINE_RE = /\r?\n/;
-const ATTACH_RE = /^附件[：:]/;
-const ATTACH_CAPTURE_RE = /^附件[：:]\s*(.+)$/;
+/** 附件行的**形状**判据。新格式带编号（`附件 #3：`），旧格式没有——两种都认。 */
+const ATTACH_RE = /^附件(?:\s*#\d+)?[：:]/;
+/** 附件行的**捕获**判据。① 编号（旧格式为 undefined）② 路径。 */
+const ATTACH_CAPTURE_RE = /^附件(?:\s*#(\d+))?[：:]\s*(.+)$/;
 const IMAGE_EXT_RE = /\.(png|jpe?g|gif|webp|bmp|svg)$/i;
 const PATH_SEP_RE = /[\\/]/;
 const HEADING_RE = /^#{1,6}\s*/;
@@ -3997,8 +4068,8 @@ export function deriveRunTitle(task, max = 24) {
   // 优先取第一条**不是附件行**的内容——附件是补充材料，不是任务本身
   const meaningful = titleSourceText(raw);
   if (!meaningful) {
-    const m = ATTACH_CAPTURE_RE.exec(lines[0] ?? "");
-    const file = (m?.[1] ?? "").split(PATH_SEP_RE).pop() ?? "";
+    const parsed = parseAttachmentLine(lines[0] ?? "");
+    const file = (parsed?.path ?? "").split(PATH_SEP_RE).pop() ?? "";
     return file ? `附件 ${clip(file, max)}` : "附件";
   }
 
@@ -4424,21 +4495,56 @@ function renderFoldedToolReceiptChip(stub, raw) {
 }
 
 /**
+ * 附件行 → `{ no, path }`；不是附件行返回 null。
+ *
+ * 认两种格式：`附件：<路径>`（历史会话里的旧格式）与 `附件 #3：<路径>`（A 簇编号）。
+ * **旧格式的 `no` 是 null，不补一个顺序号**——历史消息里本来就没有编号，
+ * 编一个出来，界面上就会显示一个用户从没见过的数字。
+ */
+export function parseAttachmentLine(line) {
+  const m = String(line ?? "").match(ATTACH_CAPTURE_RE);
+  if (!m) return null;
+  return { no: m[1] === undefined ? null : Number(m[1]), path: m[2].trim() };
+}
+
+/**
+ * 从草稿文本里删掉指向某个路径的那条附件行（两种格式都认）。
+ *
+ * 从前这段逻辑内联在 `removeUploadedFile` 里，只认一种拼法；格式一变，
+ * 删除附件就会在输入框里留下一条幽灵行，模型仍然看得见已删的文件。
+ */
+export function stripAttachmentLine(text, path) {
+  return String(text ?? "")
+    .split(/\r?\n/)
+    .filter((line) => {
+      const parsed = parseAttachmentLine(line);
+      return !(parsed && parsed.path === path);
+    })
+    .join("\n");
+}
+
+/**
  * 从用户消息里拆出正文与附件行。`body` 仍含附件行（模型看到的原文）；
  * `displayBody` 去掉附件行，给气泡右侧正文用——左侧已经有预览和「附件：」标注。
+ *
+ * `attachments` 只给路径（**四个既有调用点依赖这个形状，不许改**）；
+ * 编号另走 `attachmentRefs`。
  */
 export function splitUserMessageAttachments(text) {
   const lines = String(text ?? "").split(/\r?\n/);
   /** @type {string[]} */
   const attachments = [];
+  /** @type {{no: number|null, path: string}[]} */
+  const attachmentRefs = [];
   /** @type {string[]} */
   const body = [];
   /** @type {string[]} */
   const display = [];
   for (const line of lines) {
-    const m = line.match(ATTACH_CAPTURE_RE);
-    if (m) {
-      attachments.push(m[1].trim());
+    const parsed = parseAttachmentLine(line);
+    if (parsed) {
+      attachments.push(parsed.path);
+      attachmentRefs.push(parsed);
       body.push(line);
     } else {
       body.push(line);
@@ -4449,6 +4555,7 @@ export function splitUserMessageAttachments(text) {
     body: body.join("\n"),
     displayBody: display.join("\n").trim(),
     attachments,
+    attachmentRefs,
   };
 }
 
@@ -4794,6 +4901,30 @@ export function toggleCollapsedWorkdirGroup(key, storage = globalThis.localStora
   return next;
 }
 
+/**
+ * 收起态图标条要放哪些入口（方案 A · 计划 1）。
+ *
+ * 收起态从「整个消失」改成 48px 图标条，所以这份名单是**能见度契约**：
+ * 列进来的，收起后仍够得着；没列的，收起后就没有入口了——加新入口时想清楚。
+ * 纯数据、无 DOM，方便测。
+ *
+ * **当下还没有消费者**：index.html 的控制器并不按这些 id 找按钮，收起态
+ * 真正的按钮是 `#new-chat-btn` / `#board-open-btn` / `#artifacts-open-btn` /
+ * `#schedules-open-btn` / `#memory-btn` / `#settings-open-btn`，两边各写各的
+ * id；全仓读这份名单的只有测试与这份 JSDoc。将来接线时以本表为准对齐两边，
+ * 不要让收起态漏掉任何一个列在这里的入口。
+ */
+export function sidebarRailItems() {
+  return [
+    { id: "new-chat", label: "新建", title: "新建对话" },
+    { id: "board", label: "看板", title: "指挥中心" },
+    { id: "artifacts", label: "产物", title: "本次产物" },
+    { id: "schedules", label: "日程", title: "定时任务" },
+    { id: "memory", label: "记忆", title: "记忆" },
+    { id: "settings", label: "设置", title: "设置" },
+  ];
+}
+
 export function renderRunList(runs, selectedRunId, onSelect, metaMap, onDelete, groupState) {
   const listEl = document.getElementById("run-list");
   if (!listEl) return;
@@ -5052,6 +5183,19 @@ export function formatSourceExport(rows) {
   return lines.join("\n");
 }
 
+/**
+ * 表格 → TSV。**与 `formatSourceExport` 同一族**：房子的"导出"就是
+ * 格式化成 TSV 走剪贴板（`ui/public` 里没有任何前端生成文件的做法）。
+ * 粘进 Excel 是同一条工作流，而新造一套 Blob 下载会在同一件事上留两种做法。
+ *
+ * 单元格里的制表符/换行要清掉——否则粘进 Excel 会多出一列/一行。
+ */
+export function formatTableExport(rows) {
+  return (rows ?? [])
+    .map((r) => (r ?? []).map((c) => String(c ?? "").replace(/[\t\r\n]+/g, " ")).join("\t"))
+    .join("\n");
+}
+
 /** 计划门上改过的短句。只收有改动的子任务。 */
 export function collectPlanGateEdits(root, nodes) {
   const list = Array.isArray(nodes) ? nodes : [];
@@ -5293,7 +5437,7 @@ export function renderRunDetail(state, callbacks) {
   const parts = ensureDetailSkeleton(mainEl, state, callbacks);
 
   patchDetailHeader(parts, state, isRunning, faces);
-  patchAssemblyBar(parts, state, callbacks.harness);
+  // 能力条不在这儿画——它是 composer 的事（全局，首页也在），落点见 patchCapabilityBar
   /**
    * 「需你决定」现在钉在滚动容器【之外】（#action-dock），它变高变矮只会改变
    * 滚动容器的高度，不会平移容器里的内容——所以**不再需要任何滚动补偿**。
@@ -5314,7 +5458,8 @@ export function renderRunDetail(state, callbacks) {
     { text: callbacks.liveText, thinking: callbacks.liveThinking },
     callbacks,
   );
-  patchNextActions(parts, state, callbacks);
+  // 「下一步」幽灵提议不在这儿画——它住在输入框（composer），落点见 index.html 的
+  // patchNextSuggestion。挂在 renderRunDetail 上就会重犯 L1 那条：首页不走这条路。
   patchAgentOverlay(parts, state, callbacks, {
     text: callbacks.liveText,
     thinking: callbacks.liveThinking,
@@ -5423,16 +5568,6 @@ function ensureDetailSkeleton(mainEl, state, callbacks) {
       }
     }
     mainEl.__parts.campaignStrip = mainEl.querySelector(".campaign-strip");
-    if (!mainEl.querySelector(".next-actions")) {
-      const conv = mainEl.querySelector(".conversation");
-      if (conv) {
-        const next = document.createElement("div");
-        next.className = "next-actions";
-        next.hidden = true;
-        conv.after(next);
-      }
-    }
-    mainEl.__parts.nextActions = mainEl.querySelector(".next-actions");
     return mainEl.__parts;
   }
 
@@ -5450,6 +5585,32 @@ function ensureDetailSkeleton(mainEl, state, callbacks) {
         chatHead +
         "</button>"
       : chatHead) +
+    // 召出钮行（计划 4）。一次一只；两脸各一套都在 DOM 里，靠 body[data-face] 显隐。
+    // ★ 终端是占位：宿主没有交互式终端端点，点了给一句人话（见 bindRightRail）。
+    // ★ 「更多」里本计划只放一项（文件）。★ 钮行必须住在这里（对话头部），不住在
+    //   #right-rail 里：列一关就再没有那个键，任务 4 的「再点同一个键」才可能成立。
+    '      <div class="rail-surface-bar" role="group" aria-label="右列面板">' +
+    '        <!-- Work 脸：一只（暂挂树——计划 6 换成工作台四段） -->' +
+    '        <button type="button" class="rail-surface-btn rail-surface-btn--work" data-rail-surface="tree"' +
+    '          id="rail-surface-work-tree" aria-pressed="true" aria-controls="workspace-file-tree">文件</button>' +
+    '        <!-- Code 脸：四只。图标照设计稿 §7（>_ ⊞ ▷ ⋮）；文字搬进 aria-label，读屏要听到 -->' +
+    '        <button type="button" class="rail-surface-btn rail-surface-btn--code" data-rail-surface="terminal"' +
+    '          id="rail-surface-terminal" aria-pressed="false" aria-label="终端" title="终端还没接">' +
+    '          <i class="ph ph-terminal" aria-hidden="true"></i></button>' +
+    '        <button type="button" class="rail-surface-btn rail-surface-btn--code" data-rail-surface="review"' +
+    '          id="rail-surface-review" aria-pressed="false" aria-label="改动" aria-controls="right-rail-review">' +
+    '          <i class="ph ph-squares-four" aria-hidden="true"></i></button>' +
+    '        <button type="button" class="rail-surface-btn rail-surface-btn--code" data-rail-surface="preview"' +
+    '          id="rail-surface-preview" aria-pressed="false" aria-label="预览" aria-controls="right-rail-preview">' +
+    '          <i class="ph ph-play" aria-hidden="true"></i></button>' +
+    '        <button type="button" class="rail-surface-btn rail-surface-btn--code" data-rail-surface="more"' +
+    '          id="rail-surface-more" aria-pressed="false" aria-label="更多" aria-haspopup="menu" aria-expanded="false">' +
+    '          <i class="ph ph-dots-three-vertical" aria-hidden="true"></i></button>' +
+    '        <!-- 「更多」的菜单：本计划只有一项（文件）。照 #workspace-git-menu 的既有做法 -->' +
+    '        <div class="rail-more-menu" id="rail-more-menu" role="menu" hidden>' +
+    '          <button type="button" class="rail-more-item" role="menuitem" data-rail-surface="tree">文件</button>' +
+    '        </div>' +
+    '      </div>' +
     "</div>" +
     '<h2 class="sr-only">本次对话</h2>' +
     // 兼容旧选择器：隐藏的文字水位仍挂着，归档/测试可读
@@ -5480,7 +5641,6 @@ function ensureDetailSkeleton(mainEl, state, callbacks) {
     '<div class="conversation-stack">' +
     '<div class="campaign-strip" hidden></div>' +
     '<div class="conversation" id="conversation"></div>' +
-    '<div class="next-actions" hidden></div>' +
     '<div class="agent-overlay" id="agent-overlay" hidden></div>' +
     "</div>" +
     '<aside class="detail-rail" id="detail-rail" aria-label="会话侧栏">' +
@@ -5527,8 +5687,6 @@ function ensureDetailSkeleton(mainEl, state, callbacks) {
     ctxRingArc: ctxRing?.querySelector(".ctx-ring-arc") ?? null,
     ctxUsagePanel: document.getElementById("ctx-usage-panel"),
     hint: null,
-    assembly: null,
-    assemblyWhy: null,
     // 「需你决定」在滚动容器之外（#action-dock，钉在输入框上方）——
     // 它不随内容滚走，新审批出现在哪都看得见（委托方建议的结构解法）
     ...ensureActionDock(),
@@ -5536,7 +5694,6 @@ function ensureDetailSkeleton(mainEl, state, callbacks) {
     progress: mainEl.querySelector(".chat-progress"),
     campaignStrip: mainEl.querySelector(".campaign-strip"),
     conversation: mainEl.querySelector(".conversation"),
-    nextActions: mainEl.querySelector(".next-actions"),
     agentOverlay: mainEl.querySelector("#agent-overlay"),
     rail: mainEl.querySelector(".detail-rail"),
     railBoard: mainEl.querySelector(".detail-rail .plan-board"),
@@ -5624,14 +5781,29 @@ function patchChatProgress(parts, state, isRunning) {
  * 用按钮而不是 `title` 提示：`title` 触屏上根本出不来、键盘也够不着，
  * 而这条恰恰是给"第一次用、想知道这跟别家有什么不同"的人看的。
  */
-function patchAssemblyBar(parts, state, harness) {
-  const host = parts.assembly;
-  if (!host) return;
-  const items = deriveAssemblyBar(state, harness);
+/**
+ * 能力条上屏（2026-09-19 三轮走查 L1/L2）。
+ *
+ * **落点是 composer 的同步路径，不是 `renderRunDetail`。** 输入框是全局的
+ * （首页也在），而它原来只挂在 `renderRunDetail` 上——所以只把 parts 接上线，
+ * 首页仍然一片空白。**这一条是活页验证当场抓到的，两条单测当时都绿着**：
+ * 纯函数对、挂载点也在，缝在"谁调用它"。能力跟着「换模型 / 换核查开关」变，
+ * 那两件事都发生在 composer 上，落点就该在这儿。
+ *
+ * 变更签名与当前格子都挂在**宿主元素**上（不挂模块）：同款纪律见 `host.__whyBound`，
+ * 也让同一个函数能被多份 DOM 复用与测试。
+ */
+export function patchCapabilityBar(state, harness, root = document) {
+  const host = root.getElementById("composer-capability-chips");
+  const box = root.getElementById("composer-capability-why");
+  if (!host || !box) return;
+  const items = capabilityChips(state ?? {}, harness);
+  host.__capItems = items;
   setAttr(host, "hidden", items.length > 0 ? null : "");
   const sig = signature(items.map((i) => `${i.key}:${i.chip}`));
-  if (parts.sig.assembly !== sig) {
-    parts.sig.assembly = sig;
+  if (host.__capSig !== sig) {
+    host.__capSig = sig;
+    setAttr(box, "hidden", "");
     host.innerHTML = items
       .map(
         (i) =>
@@ -5646,8 +5818,7 @@ function patchAssemblyBar(parts, state, harness) {
     const btn = e.target instanceof Element ? e.target.closest("[data-why]") : null;
     if (!btn) return;
     const key = btn.getAttribute("data-why");
-    const cur = deriveAssemblyBar(state, harness).find((i) => i.key === key);
-    const box = parts.assemblyWhy;
+    const cur = (host.__capItems ?? []).find((i) => i.key === key);
     const already = btn.getAttribute("aria-expanded") === "true";
     for (const b of host.querySelectorAll("[data-why]")) b.setAttribute("aria-expanded", "false");
     if (already || !cur) {
@@ -6193,6 +6364,35 @@ export function deriveAssemblyBar(state, harness) {
   }
 
   return items;
+}
+
+/**
+ * 能力条：**只留「这次到底能不能……」，且只在弱态占位。**
+ *
+ * 过滤而不是改写 `deriveAssemblyBar`——那份纯函数的设计意图（"条上是真实装配，
+ * 点开才是设计思想"）是对的，8+ 条单测锁着它的语义。缺的从来不是逻辑，是
+ * **接线**（见 parts.assembly）与**降噪**：常显位上铺那 19 格就成说明书了，
+ * 而二轮 `85d30ac` 刚撤掉一份。
+ *
+ * 两格，两条判据：
+ *   · `vision`——执行者自己能看图是常态，上条只是噪音；看不见图（或要绕独立
+ *     识图角色）才必须说，因为"模型说它看不到图"这个现象需要解释。
+ *   · `verify`——开着是默认，关着才有后果。
+ */
+export function capabilityChips(state, harness) {
+  const cfg = state?.runConfig ?? {};
+  const backing = cfg.describeImageBacking ?? harness?.describeImageBacking ?? null;
+  const verifyOn = state?.verify === true;
+  const byKey = new Map(deriveAssemblyBar(state, harness).map((i) => [i.key, i]));
+  /**
+   * 顺序是**故意写死**的，不跟 `deriveAssemblyBar` 内部的 push 次第走：
+   * 常显位上最左那一格最显眼，而"agent 缺了什么"比"你自己关掉了核查"更该占那儿。
+   */
+  const wanted = [
+    backing !== "executor" ? "vision" : null,
+    verifyOn ? null : "verify",
+  ];
+  return wanted.filter(Boolean).map((k) => byKey.get(k)).filter(Boolean);
 }
 
 /** 长路径只留尾部两级：状态条是一行，完整值挂 title */
@@ -7274,53 +7474,6 @@ function patchCampaignStrip(parts, state, callbacks) {
   }
 }
 
-/**
- * 刚结束的对话末尾：只在不在跑时露出真能点的下一步。
- * 运行中藏起来——那时候该看的是审批卡，不是建议条。
- */
-function patchNextActions(parts, state, callbacks = {}) {
-  const host = parts.nextActions;
-  if (!host) return;
-  if (state.status === "running") {
-    setAttr(host, "hidden", "");
-    if (parts.sig.nextActions !== "running") {
-      parts.sig.nextActions = "running";
-      host.innerHTML = "";
-    }
-    return;
-  }
-  const artifacts = Array.isArray(callbacks.threadFiles) && callbacks.threadFiles.length
-    ? callbacks.threadFiles
-    : deriveArtifacts(state);
-  const items = suggestNextActions({
-    surface: "done",
-    workdir: callbacks.workdir ?? state.workdir,
-    harness: callbacks.harness,
-    im: callbacks.im,
-    githubPr: callbacks.githubPr,
-    canContinue: callbacks.canContinue === true,
-    artifacts,
-    planUsed: callbacks.planUsed === true
-      || state.runConfig?.mode === "plan"
-      || Boolean(state.plan?.nodes?.length),
-    unsigned: deliveryFace(state.stopReason, artifacts).kind === "unsigned",
-  });
-  const html = renderNextActionChips(items, { inner: true });
-  if (parts.sig.nextActions !== html) {
-    parts.sig.nextActions = html;
-    host.innerHTML = html;
-  }
-  setAttr(host, "hidden", items.length ? null : "");
-  host.__nextCallbacks = callbacks;
-  if (!host.__nextBound) {
-    host.__nextBound = true;
-    host.addEventListener("click", (e) => {
-      const btn = e.target instanceof Element ? e.target.closest("[data-next-id]") : null;
-      if (btn) host.__nextCallbacks?.onNextAction?.(btn);
-    });
-  }
-}
-
 function patchConversation(parts, state, live, callbacks) {
   const host = parts.conversation;
   if (!host) return;
@@ -7371,23 +7524,41 @@ function patchConversation(parts, state, live, callbacks) {
     create: (it) => {
       const node = document.createElement("div");
       node.className = "chat-item";
-      node.__sig = chatItemSig(it);
-      node.innerHTML = renderChatItem(it, thinkingPrefOpen());
+      const chatEnv = { changeCardReviewed: callbacks?.changeCardReviewed ?? null };
+      node.__sig = chatItemSig(it, chatEnv);
+      node.innerHTML = renderChatItem(it, thinkingPrefOpen(), chatEnv);
       return node;
     },
     update: (node, it) => {
-      const sig = chatItemSig(it);
+      const chatEnv = { changeCardReviewed: callbacks?.changeCardReviewed ?? null };
+      const sig = chatItemSig(it, chatEnv);
       if (node.__sig === sig) return;
       const group = node.querySelector("details.chat-tool-group");
       const wasOpen = Boolean(group?.open);
+      // 「本场改动」卡的展开状态同样保住：已阅会变 sig（重画），
+      // 用户点开的文件不能跟着合上
+      // （T7 起卡的结构是 div.chat-change-card > details.chat-change-card-details——
+      //   a11y 改出来的兄弟按钮结构；选择器不跟新，已阅一按整卡就合上）
+      const cardOpen = Boolean(node.querySelector("details.chat-change-card-details")?.open);
+      const changeFileOpen = new Set();
+      for (const d of node.querySelectorAll("details.chat-change-file[data-path][open]")) {
+        changeFileOpen.add(d.getAttribute("data-path"));
+      }
       node.__sig = sig;
       // 流式那条**就地改文本**，绝不重建：它每来一个字就走一次这里，
       // 重建等于把用户刚点开的 details 一秒关上几十遍
       if (it.kind === "live" && updateLiveNode(node, it)) return;
-      node.innerHTML = renderChatItem(it, thinkingPrefOpen());
+      node.innerHTML = renderChatItem(it, thinkingPrefOpen(), chatEnv);
       if (wasOpen) {
         const next = node.querySelector("details.chat-tool-group");
         if (next) next.open = true;
+      }
+      if (it.kind === "changecard") {
+        const card = node.querySelector("details.chat-change-card-details");
+        if (card && cardOpen) card.open = true;
+        for (const d of node.querySelectorAll("details.chat-change-file[data-path]")) {
+          if (changeFileOpen.has(d.getAttribute("data-path"))) d.open = true;
+        }
       }
     },
   });
@@ -7441,6 +7612,26 @@ function patchConversation(parts, state, live, callbacks) {
             return { title: cells[0] || "", quote: cells[1] || "", url: cells[2] || "" };
           });
           cb.onCopyChat?.(formatSourceExport(rows));
+          return;
+        }
+        if (action === "copy-code") {
+          cb.onCopyChat?.(codeTextFromNode(itemNode, actionBtn));
+          return;
+        }
+        if (action === "copy-table") {
+          const block = actionBtn.closest(".md-table-block");
+          const rows = [...(block?.querySelectorAll(".md-table tr") ?? [])].map((tr) =>
+            [...tr.querySelectorAll("th, td")].map((c) => (c.textContent ?? "").trim()));
+          cb.onCopyChat?.(formatTableExport(rows));
+          return;
+        }
+        if (action === "table-more") {
+          // 折行是**显示**的开关；行一直在 DOM 里（复制要读到全部）。
+          // 开关挂在 .md-table-block 上：按钮在头部条里，横滚容器是它的兄弟，
+          // closest 只往上走，够不着兄弟
+          const block = actionBtn.closest(".md-table-block");
+          const open = block?.classList.toggle("is-open") ?? false;
+          actionBtn.textContent = open ? "收起" : (actionBtn.getAttribute("data-more") ?? "展开全部");
           return;
         }
         if (action === "fork") {
@@ -7666,7 +7857,7 @@ export function updateLiveNode(node, it) {
 }
 
 /** 一条对话条目的可变部分——只有它变了才重建那一条 */
-function chatItemSig(it) {
+function chatItemSig(it, env = {}) {
   switch (it.kind) {
     case "live":
       return `live:text:${(it.text ?? "").length}:think:${(it.thinking ?? "").length}`;
@@ -7690,6 +7881,13 @@ function chatItemSig(it) {
       return `agents:${it.folded ? 1 : 0}:${(it.agents ?? []).map((a) => `${a.id}:${a.status}:${a.pendingApprovals}:${(a.lastText ?? "").length}:${a.peek ?? ""}`).join("|")}`;
     case "text":
       return `text:${(it.text ?? "").length}:${it.at ?? ""}:${it.showActions ? 1 : 0}:${readChatRating(it.runId, it.seq)}:${(it.verification ?? []).length}:${(it.assumptions ?? []).length}`;
+    case "changecard": {
+      // 必须随"已阅集合"变化：已阅了哪几份、各自看到的是第几版——变了才重画这张卡
+      const rev = [];
+      for (const [p, s] of (env.changeCardReviewed ?? [])) rev.push(`${p}@${s}`);
+      rev.sort();
+      return `changecard:${(it.files ?? []).map((f) => `${f.path}:${f.edits}:${f.lastSeq}`).join("|")}:rev:${rev.join("|")}`;
+    }
     default:
       return `${it.kind}:${(it.text ?? "").length}:${it.at ?? ""}:${it.showActions ? 1 : 0}:${it.kind === "text" ? readChatRating(it.runId, it.seq) : ""}`;
   }
@@ -8509,6 +8707,9 @@ export function deriveThreadChatItems(runs, runStates, tipId, live, opts = {}) {
       if (skipLead && it.kind === "recap") continue;
       // 编排计划 / 子代理是整场对话一份骨架，不能每个续跑 run 再贴一张。
       if (skipLead && (it.kind === "plan" || it.kind === "agents")) continue;
+      // 「本场改动」是本场（tip）的卡：祖先 run 早收官了，贴出来既错位
+      // （已阅集合/取 patch 都只认选中 run），也是噪音。
+      if (skipLead && it.kind === "changecard") continue;
       out.push({
         ...it,
         key: (it.kind === "live" || it.kind === "activity")
@@ -8951,6 +9152,18 @@ export function deriveChatItems(state, live, opts = {}) {
     if (sourceRows.length) {
       keyed.push({ kind: "sources", rows: sourceRows, seq: Number.MAX_SAFE_INTEGER });
     }
+    // 「本场改动」卡：跟在整场对话最后（key 是常量，patchList 才会原地更新而不是
+    // 每次重造——展开/收起状态才保得住；文件明细的事件派生侧，行号得靠展开后取 git patch）
+    const touched = deriveTouchedFiles(state);
+    if (touched.length > 0) {
+      keyed.push({
+        kind: "changecard",
+        key: "changecard",
+        files: touched,
+        runId: state.runId ?? null,
+        seq: Number.MAX_SAFE_INTEGER,
+      });
+    }
   }
   for (const it of keyed) {
     it.key =
@@ -8966,6 +9179,7 @@ export function deriveChatItems(state, live, opts = {}) {
       : it.kind === "artifacts" ? "artifacts"
       : it.kind === "blocked" ? "blocked"
       : it.kind === "sources" ? "sources"
+      : it.kind === "changecard" ? it.key
       : it.kind === "plan" ? "plan"
       : it.kind === "agents" ? "agents"
       : it.kind === "tool" ? ("tool:" + (it.toolUseId ?? it.seq ?? "x"))
@@ -10025,6 +10239,120 @@ export function editHunksFromTimeline(state) {
   return out;
 }
 
+/**
+ * 本场碰过、且值得给卡片的路径（计划 3 · T6，同步纯函数）。
+ *
+ * 收法与 editHunksFromTimeline 同一口径：只收**成功**的调用——失败/等批准的
+ * 调用改了别的东西，不该算作"改了"。工具面比它多一个 `write_file`：它没有
+ * old/new 可比，但确实碰了文件，而且**正是 git patch 能补上旧版的那一类**。
+ *
+ * @param {RunState|null|undefined} state
+ * @returns {{ path: string, edits: number, lastSeq: number }[]}  按 lastSeq 升序
+ */
+export function deriveTouchedFiles(state) {
+  const results = new Map();
+  for (const e of state?.timeline ?? []) {
+    if (e.type === "tool_result") results.set(e.toolUseId, e);
+  }
+  /** @type {Map<string, {path:string, edits:number, lastSeq:number}>} */
+  const byPath = new Map();
+  for (const e of state?.timeline ?? []) {
+    if (e.type !== "tool_call") continue;
+    if (e.name !== "edit_file" && e.name !== "write_file" && e.name !== "write_pptx") continue;
+    const input = e.input && typeof e.input === "object" ? e.input : {};
+    const path = String(input.path ?? input.file_path ?? "").replace(/\\/g, "/").trim();
+    if (!path) continue;
+    const res = results.get(e.toolUseId);
+    if (!res || res.resultIsError) continue;
+    const cur = byPath.get(path) ?? { path, edits: 0, lastSeq: -1 };
+    cur.edits += 1;
+    if (typeof e.seq === "number" && e.seq > cur.lastSeq) cur.lastSeq = e.seq;
+    byPath.set(path, cur);
+  }
+  return [...byPath.values()].sort((a, b) => a.lastSeq - b.lastSeq);
+}
+
+/**
+ * 「撤掉」要发的那句话（计划 3 · T6，同步纯函数，只生成文本，**不发送**）。
+ *
+ * 从 hunk 的 `@@` 头里取**新文件起始行**（`+` 后面那个数）。取不到就**不提
+ * 行号**——**不许编一个**：这条链上"看着像真的"的假话最容易发生，而它的
+ * 代价是 agent 去改了错的地方。句子能独立发出去（不换行、有主语）。
+ *
+ * @@ 头可能带 section heading（git 2.54），所以用**前缀正则**认头部，不要求
+ * 整串以 @@ 收尾。
+ *
+ * @param {{ path:string, header:string, added:number, deleted:number }} hunk
+ * @returns {string}  例：把 ui/public/app.js 第 11456 行起新加的 12 行撤掉
+ */
+export function buildRevertMessage(hunk) {
+  const path = String(hunk?.path ?? "");
+  const header = String(hunk?.header ?? "");
+  const added = Number(hunk?.added ?? 0);
+  const deleted = Number(hunk?.deleted ?? 0);
+  const m = /^@@\s+-\d+(?:,\d+)?\s+\+(\d+)(?:,\d+)?(?:\s|$)/.exec(header);
+  const start = m ? Number(m[1]) : null;
+  if (start === null) {
+    return `把 ${path} 这几个改动撤掉`;
+  }
+  const tail = deleted > 0 ? `、删掉的 ${deleted} 行` : "";
+  return `把 ${path} 第 ${start} 行起新加的 ${added} 行${tail}撤掉`;
+}
+
+/**
+ * 工具入参路径 → **相对仓库 root** 的正斜杠路径（计划 3 · T6，契约 1 的安全绳）。
+ *
+ * `/api/workspace/git/diff` 的 `path` 是相对 root 的，而 deriveTouchedFiles 给的
+ * 是工具入参路径——相对 workdir，可能是绝对路径，还可能带 `..`。基准不同，
+ * 而服务端的双检对"落在边界内的错基准"是**静默取错文件**的；越界形状又必须
+ * 由本函数归一掉（`sub/../x.txt` 归一成 root 层的 `x.txt` 后会被第二道挡下——
+ * 归一前直接传，服务端按字面解析才危险）。
+ *
+ * 拿不到根 / 越出仓库 / 空路径 → null：调用方**宁可取不到，不猜**。
+ *
+ * @param {string} path  工具入参路径（相对 workdir 或绝对）
+ * @param {string} workdir  run 的工作目录（绝对）
+ * @param {string|null|undefined} gitRoot  /api/workspace/git 的 root（绝对）
+ * @returns {string|null}  相对 root 的正斜杠路径
+ */
+export function toRepoRootRelative(path, workdir, gitRoot) {
+  const raw = String(path ?? "").replace(/\\/g, "/").trim();
+  const root = String(gitRoot ?? "").replace(/\\/g, "/").replace(/\/+$/, "");
+  if (!raw || !root) return null;
+  const wd = workdir
+    ? String(workdir).replace(/\\/g, "/").replace(/\/+$/, "")
+    : root;
+  /** 归一化段序列；`..` 弹到根之上返回 null */
+  const norm = (p) => {
+    const out = [];
+    for (const seg of p.split("/")) {
+      if (!seg || seg === ".") continue;
+      if (seg === "..") {
+        if (out.length === 0) return null;
+        out.pop();
+      } else {
+        out.push(seg);
+      }
+    }
+    return out.length > 0 ? out.join("/") : null;
+  };
+  /** 绝对路径剥 root 前缀（Windows 盘符大小写不敏感） */
+  const stripRoot = (abs) => {
+    const a = abs.toLowerCase();
+    const r = root.toLowerCase();
+    if (a === r) return null;
+    if (!a.startsWith(r + "/")) return null;
+    return norm(abs.slice(root.length + 1));
+  };
+  const isAbs = /^[A-Za-z]:\//.test(raw) || raw.startsWith("/");
+  if (isAbs) return stripRoot(raw);
+  // 相对路径：workdir 必须落在 root 内，否则无从换算；workdir 恰为 root 时前缀为空
+  if (wd.toLowerCase() === root.toLowerCase()) return norm(raw);
+  const wdRel = stripRoot(wd);
+  if (wdRel === null) return null;
+  return norm(`${wdRel}/${raw}`);
+}
+
 /** 会引起"换段"的事件类型：turn_start 这类噪声不该产生分界 */
 const CHAT_SOURCED = new Set([
   "user_message", "assistant_text", "assistant_thinking", "tool_call", "approval_request",
@@ -10321,9 +10649,10 @@ function renderThinkingDetails(text, { open = false, live = false, redacted = fa
  *
  * @param {any} it
  * @param {boolean} [thinkingOpen] 思考块是否默认展开——见 `THINKING_PREF_KEY`
+ * @param {{changeCardReviewed?: Map<string, number>|null}} [env] 宿主侧会话状态（如「本场改动」的已阅集合）
  * @returns {string}
  */
-export function renderChatItem(it, thinkingOpen = false) {
+export function renderChatItem(it, thinkingOpen = false, env = {}) {
   {
     let html = "";
     switch (it.kind) {
@@ -10530,12 +10859,154 @@ export function renderChatItem(it, thinkingOpen = false) {
           `</div>`;
         break;
       }
+      case "changecard":
+        html += renderChangeCard(it, env);
+        break;
       default:
         break;
     }
     if ((it.kind === "user" || it.kind === "text") && it.showActions) html += renderChatMsgActions(it);
     return html;
   }
+}
+
+/**
+ * 「本场改动」的文件清单行（计划 3 · T6 画法，T7 抽出共享）。
+ *
+ * 卡片与右栏「改动」面板**都只调这一份**——两边的 `data-*` 挂钩名必须一致，
+ * 否则探针在面板里点「撤掉」会点空（本计划最怕的就是抽出第二份画法）。
+ * hunk 的画法不在这里：展开后由宿主调 renderPatchHunksHtml（同一份导出）
+ * 填进 `.chat-change-file-body`。
+ */
+function renderChangeFileRows(files, env = {}) {
+  const reviewed = env.reviewed instanceof Map ? env.reviewed : null;
+  return files.map((f) => {
+    const seen = reviewed?.get(f.path);
+    const done = seen != null && seen === f.lastSeq;
+    return (
+      `<details class="chat-change-file" data-path="${esc(f.path)}">` +
+      `<summary class="chat-change-file-head">` +
+      `<span class="chat-change-file-path">${esc(f.path)}</span>` +
+      `<span class="chat-change-file-meta">${Number(f.edits ?? 1)} 处改动</span>` +
+      (done ? `<span class="chat-change-file-reviewed" title="这一版已阅">已阅</span>` : "") +
+      `</summary>` +
+      `<div class="chat-change-file-body" data-path="${esc(f.path)}" data-last-seq="${esc(String(f.lastSeq ?? ""))}"></div>` +
+      `</details>`
+    );
+  }).join("");
+}
+
+/**
+ * 「本场改动」卡（计划 3 · T6）。
+ *
+ * 收着时只有文件清单（事件派生侧：路径 + 改动次数——行数在这里拿不到，
+ * 那是 git 侧的东西）；展开一个文件，宿主才去取真正的 patch 填进
+ * `.chat-change-file-body`（renderPatchHunksHtml 是导出函数，T7 右栏审阅复用）。
+ * 「已阅」标只认这一版：lastSeq 对不上就不画。
+ *
+ * 卡头的「在右栏审阅 →」是 T7 的入口：宿主收到 `open-review-panel` 后
+ * showRailSurface({ surface: "review" })——本函数只画按钮与挂钩，不自己开门。
+ * ★ 按钮不在 <summary> 里：summary 本身是可交互控件，按钮嵌进去会被
+ * axe 判 nested-interactive（serious，26 条测试红过一轮）。结构是
+ * 外层 .chat-change-card（定位上下文）+ details + 兄弟按钮，按钮
+ * 用绝对定位落在头行右侧——外观与"按钮在头行里"相同，语义上两个
+ * 交互控件互不嵌套。
+ */
+export function renderChangeCard(it, env = {}) {
+  const files = Array.isArray(it.files) ? it.files : [];
+  return (
+    `<div class="chat-change-card">` +
+    `<details class="chat-change-card-details">` +
+    `<summary class="chat-change-card-head">` +
+    `<span class="chat-change-card-title">改文件 ${files.length} 个</span>` +
+    `</summary>` +
+    `<div class="chat-change-card-body">${renderChangeFileRows(files, { reviewed: env.changeCardReviewed })}</div>` +
+    `</details>` +
+    `<button type="button" class="chat-change-open-review" data-change-action="open-review-panel" ` +
+    `title="在右栏的「改动」面板里逐文件审阅">在右栏审阅 →</button>` +
+    `</div>`
+  );
+}
+
+/**
+ * 右栏「改动」审阅面板（计划 3 · T7）——设计案 态 3 的右栏，只在召出时存在。
+ *
+ * 面板本体**不做内部页签**：设计案画的是「改动 / PR / 进度」三只，本计划只做
+ * 「改动」（PR 与进度归计划 4），一只页签的页签条是噪音。
+ * 与卡同一份文件行（renderChangeFileRows）、同一份 hunk 画法（宿主填
+ * renderPatchHunksHtml）、同一个已阅容器——只共享，不复制。
+ *
+ * @param {{path:string, edits:number, lastSeq:number}[]} files deriveTouchedFiles 形状
+ * @param {{runId?: string|null, reviewed?: Map<string, number>|null}} [env]
+ */
+export function renderReviewPanel(files, env = {}) {
+  const list = Array.isArray(files) ? files : [];
+  if (list.length === 0) {
+    return `<p class="chat-change-note">本场还没碰过任何文件。</p>`;
+  }
+  return (
+    `<div class="right-rail-review-head">` +
+    `<span class="chat-change-card-title">改文件 ${list.length} 个</span>` +
+    `</div>` +
+    `<div class="right-rail-review-list">${renderChangeFileRows(list, { reviewed: env.reviewed })}</div>`
+  );
+}
+
+/**
+ * 把 git 侧取到的 FilePatch 画成 hunks 清单（契约 2 的"展开侧"）。
+ * 导出：T7 的右栏审阅面板复用同一份渲染，不写第二份。
+ *
+ * @@ 头可能带 section heading（git 2.54），这里原样展示、不解析——
+ * 行号只由 buildRevertMessage 的前缀正则去取。
+ *
+ * @param {object|null} patch FilePatch（src/workspace-git.ts 形状）或 null
+ * @param {{runId?: string|null, path?: string, lastSeq?: number|string|null}} [opts]
+ */
+export function renderPatchHunksHtml(patch, opts = {}) {
+  const runId = opts.runId ?? null;
+  const path = String(patch?.path ?? opts.path ?? "");
+  const lastSeq = opts.lastSeq ?? null;
+  if (!patch || patch.present !== true) {
+    return `<p class="chat-change-note">${esc(String(patch?.note ?? "取不到这个文件的改动（可能不在 git 工作区里）"))}</p>`;
+  }
+  const hunks = Array.isArray(patch.hunks) ? patch.hunks : [];
+  if (hunks.length === 0) {
+    return `<p class="chat-change-note">${esc(String(patch.note ?? "这个文件没有可见的改动"))}</p>`;
+  }
+  const html = hunks.map((h, i) => {
+    const lines = Array.isArray(h.lines) ? h.lines : [];
+    // hunk 级的增删行数：FilePatch 只在文件级给 added/deleted，这里按行号数——
+    // buildRevertMessage 说"新加的 N 行、删掉的 M 行"要的是这一个 hunk 的数
+    const added = lines.filter((l) => l.sign === "+").length;
+    const deleted = lines.filter((l) => l.sign === "-").length;
+    const lineRows = lines.map((l) => {
+      const cls = l.sign === "+" ? "chat-hunk-line--add" : l.sign === "-" ? "chat-hunk-line--del" : "chat-hunk-line--ctx";
+      return `<div class="chat-hunk-line ${cls}">${esc(l.text ?? "")}</div>`;
+    }).join("");
+    const reviewBtn =
+      `<button type="button" class="chat-hunk-action chat-hunk-action--review" ` +
+      `data-change-action="review" data-run-id="${esc(String(runId ?? ""))}" data-path="${esc(path)}" ` +
+      `data-last-seq="${esc(String(lastSeq ?? ""))}">` +
+      `<span class="chat-hunk-icon chat-hunk-icon--review" aria-hidden="true"></span>已阅</button>`;
+    const revertBtn =
+      `<button type="button" class="chat-hunk-action chat-hunk-action--revert" ` +
+      `data-change-action="revert" data-run-id="${esc(String(runId ?? ""))}" data-path="${esc(path)}" ` +
+      `data-header="${esc(h.header ?? "")}" data-added="${added}" data-deleted="${deleted}">` +
+      `<span class="chat-hunk-icon chat-hunk-icon--revert" aria-hidden="true"></span>撤掉</button>`;
+    const nextBtn =
+      `<button type="button" class="chat-hunk-action chat-hunk-action--next" ` +
+      `data-change-action="next-hunk" data-hunk-idx="${i}"${i >= hunks.length - 1 ? " disabled" : ""}>` +
+      `<span class="chat-hunk-icon chat-hunk-icon--next" aria-hidden="true"></span>下一个 hunk</button>`;
+    return (
+      `<section class="chat-hunk" data-hunk-idx="${i}">` +
+      `<div class="chat-hunk-head">${esc(h.header ?? "")}</div>` +
+      `<div class="chat-hunk-lines">${lineRows}</div>` +
+      `<div class="chat-hunk-actions">${reviewBtn}${revertBtn}${nextBtn}</div>` +
+      `</section>`
+    );
+  }).join("");
+  const tail = patch.truncated ? `<p class="chat-change-note">改动太多，只显示了前一部分。</p>` : "";
+  return html + tail;
 }
 
 /**
@@ -11421,253 +11892,6 @@ export function harnessVisionConfigured(harness) {
   return Boolean(harness?.roleModels?.vision?.configured);
 }
 
-/** 对话「下一步」最多露出几条。多了就不像建议，像目录。 */
-export const NEXT_ACTION_LIMIT = 6;
-
-export function artifactPathOf(item) {
-  if (typeof item === "string") return item.trim();
-  return String(item?.path ?? "").trim();
-}
-
-/** 点了真能打开预览坞 / 产物画布的扩展名（与现有预览分派对齐）。 */
-export function isPreviewablePath(p) {
-  const clean = String(p ?? "").split(/[?#]/)[0] ?? "";
-  if (isImagePath(clean)) return true;
-  return /\.(html?|md|txt|pdf|docx?|pptx?|csv)$/i.test(clean);
-}
-
-/** 预览坞上有「点评」键的种类：整站 HTML 与 Office。 */
-export function isReviewablePath(p) {
-  const clean = String(p ?? "").split(/[?#]/)[0] ?? "";
-  return /\.(html?|docx?|pptx?)$/i.test(clean);
-}
-
-/**
- * 当前装配下哪些下一步是真的。只认已有快照，不猜。
- * 飞书看入站（/api/im.feishuInbound），不是出站 webhook。
- * 开 PR 看 githubPr.ready，没令牌 / 不在可开分支 → 假。
- */
-export function nextActionCapabilities(ctx = {}) {
-  const harness = ctx.harness ?? null;
-  const im = ctx.im ?? harness?.im ?? null;
-  const artifacts = Array.isArray(ctx.artifacts) ? ctx.artifacts : [];
-  const paths = artifacts.map(artifactPathOf).filter(Boolean);
-  return {
-    surface: ctx.surface === "done" ? "done" : "empty",
-    workdir: Boolean(String(ctx.workdir ?? "").trim()),
-    vision: harnessVisionConfigured(harness) === true,
-    feishuInbound: im?.feishuInbound === true,
-    prReady: ctx.githubPr?.ready === true,
-    canContinue: ctx.canContinue === true,
-    previewPath: paths.find(isPreviewablePath) || "",
-    reviewPath: paths.find(isReviewablePath) || "",
-    imagePath: paths.find(isImagePath) || "",
-    planUsed: ctx.planUsed === true,
-    unsigned: ctx.unsigned === true,
-  };
-}
-
-/**
- * 空态 / 刚结束的对话：3–6 条可点下一步。
- * 每条要么写入输入框，要么触发已经存在的动作。未武装的能力不出现。
- *
- * @param {{
- *   surface?: "empty"|"done",
- *   workdir?: string|null,
- *   harness?: object|null,
- *   im?: {feishuInbound?: boolean}|null,
- *   githubPr?: {ready?: boolean}|null,
- *   canContinue?: boolean,
- *   artifacts?: Array<{path?: string}|string>,
- *   planUsed?: boolean,
- *   unsigned?: boolean,
- * }} [ctx]
- * @returns {Array<{
- *   id: string,
- *   label: string,
- *   hint?: string,
- *   fill?: string,
- *   plan?: boolean,
- *   action?: string,
- *   path?: string,
- *   announce?: string,
- * }>}
- */
-export function suggestNextActions(ctx = {}) {
-  const cap = nextActionCapabilities(ctx);
-  /** @type {Array<{id:string,label:string,hint?:string,fill?:string,plan?:boolean,action?:string,path?:string,announce?:string}>} */
-  const picked = [];
-  const take = (item) => {
-    if (!item || picked.some((x) => x.id === item.id)) return;
-    if (picked.length >= NEXT_ACTION_LIMIT) return;
-    picked.push(item);
-  };
-
-  const plan = {
-    id: "plan",
-    label: "先对齐做法",
-    hint: "先列出改什么、怎么验收，等你同意再动手",
-    fill: "先对齐做法再动手：看清现状后列出你打算改什么、怎么验收，等我同意再动手。",
-    plan: true,
-  };
-  const mention = cap.workdir
-    ? {
-        id: "mention",
-        label: "点名一个文件",
-        hint: "输入 @ 按文件名找这个文件夹里的文件",
-        action: "mention",
-      }
-    : null;
-  const files = cap.workdir
-    ? {
-        id: "files",
-        label: "看右边的文件",
-        hint: "展开右侧文件栏",
-        action: "files",
-      }
-    : null;
-  const vision = cap.vision
-    ? {
-        id: "vision",
-        label: "看一张图",
-        hint: "把图里的内容说清楚",
-        fill: cap.imagePath
-          ? `看 @${cap.imagePath}，告诉我里面有什么。`
-          : "看这张图，告诉我里面有什么。",
-      }
-    : null;
-  const pr = cap.prReady
-    ? {
-        id: "pr",
-        label: "开成 PR",
-        hint: "用已配好的 GitHub 令牌开到远程",
-        action: "pr",
-      }
-    : null;
-  const feishu = cap.feishuInbound
-    ? {
-        id: "feishu",
-        label: "到飞书群里 @ 我",
-        hint: "入站已开，到群里发指令即可",
-        action: "announce",
-        announce: "飞书入站已开。到群里 @ 我就能下指令。",
-      }
-    : null;
-  const schedule = {
-    id: "schedule",
-    label: "设个定时",
-    hint: "打开已有的定时任务页",
-    action: "schedules",
-  };
-  const focus = {
-    id: "focus",
-    label: "先说要做什么",
-    hint: "点一下回到输入框",
-    action: "focus",
-  };
-  const cont = cap.unsigned
-    ? {
-        id: "continue",
-        label: "接着改已有页面",
-        hint: "这一轮已经停了，产物还在",
-        fill: "接着改已有页面。",
-        action: "focus",
-      }
-    : {
-        id: "continue",
-        label: "接着说",
-        hint: "在下面继续写下一句",
-        action: "focus",
-      };
-  const preview = cap.previewPath
-    ? {
-        id: "preview",
-        label: "预览刚才那页",
-        hint: "在预览坞打开已写出的文件",
-        action: "preview",
-        path: cap.previewPath,
-      }
-    : null;
-  const review = cap.reviewPath
-    ? {
-        id: "review",
-        label: "点评这一页",
-        hint: "打开预览并进入点评",
-        action: "review",
-        path: cap.reviewPath,
-      }
-    : null;
-
-  if (cap.surface === "done") {
-    if (cap.canContinue) take(cont);
-    take(preview);
-    take(review);
-    take(vision);
-    if (!cap.planUsed) take(plan);
-    take(pr);
-    take(mention);
-    take(files);
-    take(schedule);
-    take(feishu);
-    if (picked.length < 3) take(focus);
-    return picked.slice(0, NEXT_ACTION_LIMIT);
-  }
-
-  take(plan);
-  take(mention);
-  take(files);
-  take(vision);
-  take(pr);
-  take(feishu);
-  take(schedule);
-  if (picked.length < 3) take(focus);
-  return picked.slice(0, NEXT_ACTION_LIMIT);
-}
-
-/**
- * 芯片条 HTML。空数组 → 空串（调用方据此隐藏）。
- * @param {ReturnType<typeof suggestNextActions>} actions
- * @param {{ inner?: boolean }} [opts]
- */
-export function renderNextActionChips(actions, opts = {}) {
-  const items = Array.isArray(actions) ? actions : [];
-  if (!items.length) return "";
-  const buttons = items.map((a) => {
-    const attrs = [
-      `type="button"`,
-      `class="next-action-chip"`,
-      `data-next-id="${esc(a.id)}"`,
-    ];
-    if (a.fill) attrs.push(`data-next-fill="${esc(a.fill)}"`);
-    if (a.plan) attrs.push(`data-next-plan="1"`);
-    if (a.action) attrs.push(`data-next-action="${esc(a.action)}"`);
-    if (a.path) attrs.push(`data-next-path="${esc(a.path)}"`);
-    if (a.announce) attrs.push(`data-next-announce="${esc(a.announce)}"`);
-    if (a.hint) attrs.push(`title="${esc(a.hint)}"`);
-    return `<li><button ${attrs.join(" ")}>${esc(a.label)}</button></li>`;
-  });
-  const inner =
-    `<p class="next-actions-kicker">下一步</p>` +
-    `<ul class="next-actions-list">${buttons.join("")}</ul>`;
-  if (opts.inner) return inner;
-  return `<div class="next-actions" role="group" aria-label="下一步">${inner}</div>`;
-}
-
-/** 从芯片按钮读出动作。控制器只执行已有入口，不在这里发明能力。 */
-export function readNextActionChip(btn) {
-  if (!btn || typeof btn.getAttribute !== "function") return null;
-  const id = btn.getAttribute("data-next-id") || "";
-  if (!id) return null;
-  return {
-    id,
-    fill: btn.getAttribute("data-next-fill") || "",
-    action: btn.getAttribute("data-next-action") || "",
-    path: btn.getAttribute("data-next-path") || "",
-    announce: btn.getAttribute("data-next-announce") || "",
-    plan: btn.hasAttribute("data-next-plan"),
-  };
-}
-
 export function designSampleBlockedReason(sample, visionConfigured) {
   if (!sample?.needsImages || visionConfigured !== false) return "";
   return "未配置识图，这类要配图的样例不能空跑";
@@ -12037,7 +12261,41 @@ export function chatPlainText(it) {
 export function chatTextFromNode(node) {
   if (!node) return "";
   const scoped = node.querySelector(".chat-msg-user-copy .chat-body") || node.querySelector(".chat-body");
-  return String(scoped?.innerText ?? scoped?.textContent ?? "").trim();
+  if (!scoped) return "";
+  /**
+   * 复制/打分要**全文**，而直接 innerText 有两处与全文相悖（Task 5 review）：
+   * ① 关着的 <details> 与 display:none 的 .md-table-rest 不在 innerText 里——
+   *    长代码块只剩看得见的 24 行、长表丢 40 行，打分还把截断文本发给服务端；
+   * ② 头部条（语言名、N 行、复制/再展按钮）是界面 chrome，会被织进正文。
+   * 做法：克隆一份，摘掉 chrome、强制展开折叠，挂进文档读 innerText 再弃掉。
+   * 必须挂进文档：detached 节点上 innerText 退化成 textContent，块间换行全没。
+   * 宽度沿用原节点的渲染宽度——折行位置与用户所见一致。
+   */
+  const clone = scoped.cloneNode(true);
+  for (const el of clone.querySelectorAll(".md-block-head, .md-code-rest summary")) el.remove();
+  for (const d of clone.querySelectorAll("details.md-code-rest")) d.open = true;
+  for (const t of clone.querySelectorAll("tbody.md-table-rest")) t.style.display = "table-row-group";
+  const rect = scoped.getBoundingClientRect();
+  clone.style.cssText = `position:fixed;left:${rect.left}px;top:${rect.top}px;width:${rect.width || 800}px;`;
+  document.body.appendChild(clone);
+  try {
+    const text = String(clone.innerText ?? clone.textContent ?? "").trim(); // jsdom 没有 innerText，测试走 textContent 退路
+    return text;
+  } finally {
+    // innerText 万一抛（浏览器 getter 不是不抛的），也别把一个 fixed 定位的
+    // 全尺寸副本永久留在 document.body 上——遮在最上层挡住整个界面。
+    clone.remove();
+  }
+}
+
+/**
+ * 复制某一段代码块。**两段都要**：长代码折起来之后 DOM 里有两个 `<pre>`，
+ * 只取第一个就只复制了看得见的那半——而"复制"恰恰是为了把整段拿走。
+ */
+export function codeTextFromNode(node, btn) {
+  const block = btn?.closest?.(".md-code-block") ?? node?.querySelector?.(".md-code-block") ?? node;
+  const parts = [...(block?.querySelectorAll?.("pre.md-code > code") ?? [])];
+  return parts.map((c) => String(c.textContent ?? "")).join("\n").trim();
 }
 
 /**

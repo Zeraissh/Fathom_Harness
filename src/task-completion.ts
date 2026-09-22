@@ -75,7 +75,32 @@ export function taskCompletionFromObject(input: unknown): TaskCompletion | undef
   if (status === "completed" && blockers.length > 0) return undefined;
   if ((status === "partial" || status === "blocked") && blockers.length === 0) return undefined;
 
-  return { status, summary, artifacts, verification, assumptions, blockers };
+  const nextStep = nextStepFrom(raw.nextStep);
+  return {
+    status,
+    summary,
+    artifacts,
+    verification,
+    assumptions,
+    blockers,
+    ...(nextStep ? { nextStep } : {}),
+  };
+}
+
+/**
+ * 可选字段的**宽松**解析：形状不对 → undefined，只丢这一项。
+ *
+ * 与上面五个数组的严校验**有意不同**：那五个是交付的实质，缺一个委托方就没法接手；
+ * 这一项只是输入框里的一句提议。为它否决整条完成声明，等于拿落款去陪绑——
+ * 而"整场运行收不了尾"的代价，跟"少一句幽灵问句"完全不成比例。
+ */
+function nextStepFrom(value: unknown): { ask: string; reply: string } | undefined {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return undefined;
+  const o = value as Record<string, unknown>;
+  const ask = typeof o.ask === "string" ? o.ask.trim() : "";
+  const reply = typeof o.reply === "string" ? o.reply.trim() : "";
+  if (!ask || !reply) return undefined;
+  return { ask, reply };
 }
 
 export function createFinishTaskTool(opts: { describeImageOnFace?: boolean } = {}): Tool {
@@ -89,6 +114,7 @@ export function createFinishTaskTool(opts: { describeImageOnFace?: boolean } = {
       "completed=全部完成并已给出验证证据；partial=交付了可用部分但仍有未完成项；" +
       "blocked=因明确外部条件无法继续。若缺少只有委托方知道的事实且 ask_user 可用，" +
       "应先调用 ask_user，不能把一个可以提问解决的问题直接伪装成完成。" +
+      "收尾时若对下一步有明确建议，填 nextStep：它会成为输入框里一句按 Tab 即可采纳的提议。" +
       imageGate,
     inputSchema: {
       type: "object",
@@ -123,6 +149,24 @@ export function createFinishTaskTool(opts: { describeImageOnFace?: boolean } = {
           type: "array",
           items: { type: "string" },
           description: "未完成项或外部阻塞；completed 必须 []，partial/blocked 必须非空",
+        },
+        nextStep: {
+          type: "object",
+          properties: {
+            ask: {
+              type: "string",
+              description: "一句问委托方要不要接着做某件事的话，如「要不要帮你做 H1？」",
+            },
+            reply: {
+              type: "string",
+              description: "上面那句的肯定回答；用户会直接把它发出去，所以要能独立成指令，如「需要，请做 H1」",
+            },
+          },
+          required: ["ask", "reply"],
+          description:
+            "可选：收尾后显示在输入框里的一句下一步提议，按 Tab 即可采纳。" +
+            "写**你自己**建议的下一步——可以是新主意，不必是 blockers 里的欠账；" +
+            "没有值得提的就别给这个字段（缺席是常态，不是失败）。",
         },
       },
       required: ["status", "summary", "artifacts", "verification", "assumptions", "blockers"],

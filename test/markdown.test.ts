@@ -15,6 +15,9 @@ import {
   renderMarkdown,
   renderMarkdownInline,
 } from "../ui/public/core/markdown.js";
+// 格式化与取文两个纯函数住在 app.js（剪贴板通道那一侧），不在 markdown.js——
+// 文件名容易让人以为该从 markdown 导
+import { chatTextFromNode, codeTextFromNode, formatTableExport } from "../ui/public/app.js";
 
 /** 把 HTML 串挂进真实 DOM 再断言——比字符串包含更能反映浏览器实际怎么解析 */
 function mount(html: string): HTMLElement {
@@ -421,5 +424,109 @@ describe("代码高亮（委托方：用 VS 那种代码主题）", () => {
     const host = mount(renderMarkdown("用 `const x = 1` 表示"));
     expect(host.querySelector("code")!.textContent).toBe("const x = 1");
     expect(host.querySelector(".hl-kw")).toBeNull();
+  });
+});
+
+describe("长代码块：折叠 + 语言 + 行数 + 复制（B6）", () => {
+  const code = (n) => "```ts\n" + Array.from({ length: n }, (_, i) => `const x${i} = ${i};`).join("\n") + "\n```";
+
+  it("短的照旧原样渲染——多数代码块不该被套上一层折叠壳", () => {
+    const html = renderMarkdown("```ts\nconst a = 1;\n```");
+    expect(html).toContain("md-code--ts");
+    expect(html).not.toContain("md-code-rest");
+  });
+
+  it("长的折起来：露出前 N 行，其余进 details，并写明还剩几行", () => {
+    const host = mount(renderMarkdown(code(60)));
+    expect(host.querySelector(".md-code-rest")).toBeTruthy();
+    expect(host.textContent).toMatch(/再展 \d+ 行/);
+    const head = host.querySelector(".md-code-block > pre code")!;
+    expect(head.textContent).toContain("const x0");
+    expect(head.textContent).not.toContain("x59");
+    expect(host.querySelector(".md-code-rest code")!.textContent).toContain("x59");
+  });
+
+  it("头部有语言与行数，复制按钮挂 data-chat-action（派发在 app.js 的聊天宿主上）", () => {
+    const host = mount(renderMarkdown("```python\nprint(1)\n```"));
+    expect(host.querySelector(".md-block-lang")!.textContent).toBe("python");
+    expect(host.querySelector(".md-block-count")!.textContent).toBe("1 行");
+    expect(host.querySelector('[data-chat-action="copy-code"]')).toBeTruthy();
+  });
+
+  it("★ 安全纪律不许破：语言名是用户可控的，必须转义", () => {
+    // 载荷不许带空格：围栏正则只认 \S*，带空格整行就不是围栏了，
+    // 那这条测的就是段落转义而不是头部条的转义
+    const html = renderMarkdown("```<script>alert(1)</script>\nbody\n```");
+    expect(html).not.toContain("<script>");
+    expect(html).toContain("&lt;script&gt;");
+    expect(hasExecutableInjection(mount(html))).toBe(false);
+  });
+});
+
+describe("长表格：自身横滚 + 折行 + 复制为 TSV（B5）", () => {
+  const table = (n) =>
+    ["| # | 值 |", "| --- | --- |", ...Array.from({ length: n }, (_, i) => `| ${i} | ${i * 2} |`)].join("\n");
+
+  it("折起来时**全部行仍然在 DOM 里**（否则复制出来的只有看得见的那半）", () => {
+    const html = renderMarkdown(table(60));
+    const rows = (html.match(/<tr/g) ?? []).length;
+    expect(rows).toBeGreaterThanOrEqual(60); // 表头 + 60 行
+    expect(html).toContain("md-table-rest");
+  });
+
+  it("有复制为 TSV 的按钮", () => {
+    expect(renderMarkdown(table(5))).toContain('data-chat-action="copy-table"');
+  });
+
+  it("短的表格不加折叠壳", () => {
+    expect(renderMarkdown(table(3))).not.toContain("md-table-rest");
+  });
+});
+
+describe("导出的格式化（纯函数）", () => {
+  it("formatTableExport：制表符拼接，换行分列", () => {
+    expect(formatTableExport([["a", "b"], ["1", "2"]])).toBe("a\tb\n1\t2");
+  });
+
+  it("单元格里的制表符要清掉——否则粘进 Excel 会多出一列", () => {
+    expect(formatTableExport([["a\tb", "c"]])).toBe("a b\tc");
+  });
+
+  it("codeTextFromNode：折叠时两段代码要接起来，不能只复制看得见的那段", () => {
+    document.body.innerHTML =
+      '<div class="md-code-block"><pre class="md-code"><code>L1\nL2</code></pre>' +
+      '<details class="md-code-rest"><pre class="md-code"><code>L3\nL4</code></pre></details></div>';
+    const btn = document.querySelector(".md-code-block");
+    expect(codeTextFromNode(btn, btn)).toBe("L1\nL2\nL3\nL4");
+  });
+});
+
+describe("消息级复制（copy 通道，Task 5 review 的补锁）", () => {
+  /**
+   * 块级复制走 textContent 所以折叠无损，但整条消息的复制与打分走 innerText：
+   * 关着的 <details> 与 display:none 的 .md-table-rest 都不在 innerText 里，
+   * 60 行代码块只剩 24 行、60 行表格丢 40 行；头部条的 chrome（语言名、
+   * 行数、复制/再展按钮）还会被织进正文。这一条锁的就是这条通道。
+   */
+  it("消息级复制：拿到全部行（含折起的）且不含头部条文字", () => {
+    const src =
+      "```typescript\n" +
+      Array.from({ length: 60 }, (_, i) => `const x${i} = ${i};`).join("\n") +
+      "\n```\n\n" +
+      ["| 值 |", "| --- |", ...Array.from({ length: 60 }, (_, i) => `| 值${String(i).padStart(2, "0")} |`)].join("\n");
+    const host = mount(
+      `<div class="chat-item"><div class="chat-body chat-body--text md">${renderMarkdown(src)}</div></div>`,
+    );
+    const text = chatTextFromNode(host.firstElementChild);
+    // 全文：60 行代码一行不少，60 行表格一个不少。
+    // 表格只用一列：jsdom 的 textContent 把相邻单元格无分隔地接起来，
+    // 多列会让跨单元格的数字连片、正则计数失真（多列几何已由 live 探针的 14 列 payload 覆盖）
+    expect((text.match(/const x\d+ = \d+;/g) ?? []).length).toBe(60);
+    expect((text.match(/值\d\d/g) ?? []).length).toBe(60);
+    // 无 chrome：头部条的语言名、行数、按钮与折叠提示不得进正文
+    expect(text).not.toContain("复制");
+    expect(text).not.toContain("再展");
+    expect(text).not.toContain("60 行");
+    expect(text).not.toContain("typescript");
   });
 });

@@ -1,0 +1,62 @@
+{
+ "390": {
+  "barHiddenAttr": false,
+  "barBox": {
+   "x": 21,
+   "w": 350,
+   "h": 62
+  },
+  "barClientW": 350,
+  "barScrollW": 350,
+  "barOverflowX": "visible",
+  "barFlexWrap": "wrap",
+  "chipCount": 0,
+  "chips": [],
+  "hasScroll": false
+ },
+ "1100": {
+  "barHiddenAttr": false,
+  "barBox": {
+   "x": 321,
+   "w": 752,
+   "h": 28
+  },
+  "barClientW": 752,
+  "barScrollW": 752,
+  "barOverflowX": "visible",
+  "barFlexWrap": "wrap",
+  "chipCount": 0,
+  "chips": [],
+  "hasScroll": false
+ },
+ "1440": {
+  "barHiddenAttr": false,
+  "barBox": {
+   "x": 341,
+   "w": 1232,
+   "h": 28
+  },
+  "barClientW": 1072,
+  "barScrollW": 1072,
+  "barOverflowX": "visible",
+  "barFlexWrap": "nowrap",
+  "chipCount": 0,
+  "chips": [],
+  "hasScroll": false
+ },
+ "1600": {
+  "barHiddenAttr": false,
+  "barBox": {
+   "x": 341,
+   "w": 1232,
+   "h": 28
+  },
+  "barClientW": 1232,
+  "barScrollW": 1232,
+  "barOverflowX": "visible",
+  "barFlexWrap": "nowrap",
+  "chipCount": 0,
+  "chips": [],
+  "hasScroll": false
+ }
+}

@@ -29,6 +29,7 @@ import {
   deliveryFace,
   deriveArtifacts,
   deriveProgressFace,
+  deriveFace,
   deriveComposerMode,
   deriveContextUsage,
   markApprovalResolved,
@@ -82,6 +83,7 @@ import {
   formatSourceExport,
   suggestPlainModeInsteadOfPlan,
   pickWelcomeWorkdir,
+  sidebarRailItems,
 } from "../ui/public/app.js";
 import { plannedStopReason } from "../src/orchestrate.js";
 import { STOP_REASONS } from "../src/types.js";
@@ -665,11 +667,6 @@ describe("reduceEvent", () => {
     expect(appSrc).not.toContain("设计模板 · 开会话时选");
     expect(appSrc).toContain("DESIGN_STARTER_TEMPLATES");
     expect(appSrc).toContain("renderStarterGallery");
-    // 欢迎面不再渲染下一步 chip（函数仍在，服务对话后场景）
-    expect(appSrc).toMatch(/export function renderEmptyState[\s\S]{0,1400}?\n\}/);
-    const welcomeBody = appSrc.slice(appSrc.indexOf("export function renderEmptyState"));
-    const bodyEnd = welcomeBody.indexOf("\n}");
-    expect(welcomeBody.slice(0, bodyEnd)).not.toContain("renderNextActionChips");
   });
 
   it("14b. FATHOM 眉标：去连字符后取前 6 位大写", () => {
@@ -2941,7 +2938,8 @@ describe("附件清单可删除（壳侧接线）", () => {
     const body = fn[0];
     expect(body).toContain("uploaded.splice(index, 1)");
     expect(body).toContain("URL.revokeObjectURL(u.previewUrl)");
-    expect(body).toContain("附件：${u.path}");
+    // 输入框那行删掉走纯函数（计划 2 起两种附件行格式并存，内联过滤必然漂移）
+    expect(body).toContain("stripAttachmentLine(taskInput.value, u.path)");
   });
 
   it("删盘走 DELETE /api/upload；失败只移清单并在状态条说明取舍", () => {
@@ -3470,5 +3468,31 @@ describe("P4 editHunksFromTimeline", () => {
     const win = `a${String.fromCharCode(92)}b.ts`;
     const st = makeState({ timeline: [editCall("t1", win, "x", "y"), res("t1")] });
     expect(editHunksFromTimeline(st).has("a/b.ts")).toBe(true);
+  });
+});
+
+describe("sidebarRailItems：收起态图标条上放什么", () => {
+  it("只放『收起后仍要够得着』的入口，且每个都有可读的标签", () => {
+    const items = sidebarRailItems();
+    const ids = items.map((i) => i.id);
+    expect(ids).toEqual(["new-chat", "board", "artifacts", "schedules", "memory", "settings"]);
+    for (const i of items) {
+      expect(i.label.length, `${i.id} 缺 label`).toBeGreaterThan(0);
+      expect(i.title.length, `${i.id} 缺 title`).toBeGreaterThan(0);
+    }
+  });
+});
+
+describe("deriveFace：两脸只有一个判据", () => {
+  it("office 与缺省都算 Work；只有明确的 code 才是 Code", () => {
+    expect(deriveFace({ workspace: "office" })).toBe("work");
+    expect(deriveFace({ workspace: "code" })).toBe("code");
+    expect(deriveFace({})).toBe("work");
+    expect(deriveFace(null)).toBe("work");
+  });
+
+  it("显式脸优先于会话推断（用户切了脸就听用户的）", () => {
+    expect(deriveFace({ face: "code", workspace: "office" })).toBe("code");
+    expect(deriveFace({ face: "work", workspace: "code" })).toBe("work");
   });
 });

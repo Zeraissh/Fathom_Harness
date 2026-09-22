@@ -310,3 +310,84 @@ describe("挂载：右侧栏，不在左栏，不绑 Code 脸", () => {
     expect(readFilesRailCollapsed(storage)).toBe(false);
   });
 });
+
+describe("A6 补拉的过期与自愈锁（2026-09-20 review）", () => {
+  it("非根层在飞应答跨工作目录切换后落地必须被弃，不得写进新目录的 cache", async () => {
+    // 失败场景（review 的 Important）：A 的 sub 在飞（gate 卡住）时切到 B，
+    // reload 的 cache.clear 发生在旧应答落地之前——旧应答落地会把 A 的
+    // 内容以相对路径为键写进 B 的 cache；B 下再展开同名目录就看到 A 的内容。
+    let wd = "D:/A";
+    let releaseOld;
+    const gate = new Promise((r) => { releaseOld = r; });
+    const fetchFn = vi.fn(async (url) => {
+      const u = String(url);
+      if (u.includes("q=sub%2F")) {
+        if (wd === "D:/A") {
+          await gate; // A 的 sub 在飞时被切走——这份应答必须被弃
+          return mockResponse(200, {
+            files: [{ name: "a-old.txt", relative: "sub/a-old.txt", kind: "file" }],
+          });
+        }
+        return mockResponse(200, {
+          files: [{ name: "b-new.txt", relative: "sub/b-new.txt", kind: "file" }],
+        });
+      }
+      return mockResponse(200, {
+        files: [{ name: "sub", relative: "sub", kind: "directory" }],
+      });
+    });
+    const { root } = mountTree({ getWorkdir: () => wd }, { fetch: fetchFn });
+    await root.__fileTreeApi.reload();
+    await flush();
+    root.querySelector('.ft-row[data-path="sub"] .ft-twist').click(); // A 的 sub 在飞
+    await flush();
+    wd = "D:/B";
+    await root.__fileTreeApi.reload(); // 切到 B
+    await flush();
+    releaseOld(); // 旧应答此刻才落地
+    await flush();
+    await flush();
+    // B 根下展开 sub：旧应答若落了地，cache.has("sub") 为真 → 直接画 A 的内容
+    root.querySelector('.ft-row[data-path="sub"] .ft-twist').click();
+    await flush();
+    await flush();
+    await flush();
+    expect(root.querySelector('.ft-row[data-path="sub/b-new.txt"]')).toBeTruthy();
+    expect(root.querySelector('.ft-row[data-path="sub/a-old.txt"]')).toBeNull();
+  });
+
+  it("组展开后，记忆里展开的成员缓存缺失时补拉子层（不静默空转）", async () => {
+    // review 的 Minor-1：上一会话展开过 _probe2-p1 → 刷新后组回到折叠、
+    // 成员仍在 expanded → 点开组后成员 twist 朝下却没有子行、也不发请求。
+    const fetchFn = vi.fn(async (url) => {
+      const u = String(url);
+      if (u.includes("q=_probe2-p1%2F")) {
+        return mockResponse(200, {
+          files: [{ name: "x.txt", relative: "_probe2-p1/x.txt", kind: "file" }],
+        });
+      }
+      return mockResponse(200, {
+        files: [
+          { name: "_probe2-p1", relative: "_probe2-p1", kind: "directory" },
+          { name: "_probe3-p2", relative: "_probe3-p2", kind: "directory" },
+        ],
+      });
+    });
+    const storage = {
+      getItem: (k) => (k === "agent.ui.pref.treeExpanded"
+        ? JSON.stringify({ "D:/proj": ["_probe2-p1"] })
+        : null),
+      setItem: () => {},
+      removeItem: () => {},
+    };
+    const { root } = mountTree({ getWorkdir: () => "D:/proj" }, { fetch: fetchFn, storage });
+    await root.__fileTreeApi.reload();
+    await flush();
+    root.querySelector(".ft-group-name").click(); // 展开组：成员渲染，_probe2-p1 在记忆里展开
+    await flush();
+    await flush();
+    await flush();
+    expect(root.querySelector('.ft-row[data-path="_probe2-p1/x.txt"]')).toBeTruthy();
+    expect(fetchFn.mock.calls.some((c) => String(c[0]).includes("q=_probe2-p1%2F"))).toBe(true);
+  });
+});

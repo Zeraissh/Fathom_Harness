@@ -18,6 +18,13 @@ describe("summarizeTitle", () => {
     expect(summarizeTitle("写一个函数\n附件：uploads/a.png")).toBe("写一个函数");
   });
 
+  it("新格式（带编号）的附件行同样拿文件名、不铺路径（A 簇同口径锁）", () => {
+    const t = summarizeTitle("附件 #1：uploads/pasted-1788941218235.png");
+    expect(t.startsWith("附件 ")).toBe(true);
+    expect(t).not.toContain("uploads/");
+    expect(summarizeTitle("看一下 Image #1\n附件 #1：uploads/a.png")).toBe("看一下 Image #1");
+  });
+
   it("剥 Markdown 行首", () => {
     expect(summarizeTitle("## 三、四线制 PT1000 测量原理")).toBe("三、四线制 PT1000 测量原理");
     expect(summarizeTitle("- 做一件事")).toBe("做一件事");

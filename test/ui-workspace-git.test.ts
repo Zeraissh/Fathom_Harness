@@ -2,6 +2,7 @@
 // @ts-nocheck
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  fetchFilePatch,
   formatGitTitle,
   formatGitTriggerLabel,
   githubMcpConnected,
@@ -244,5 +245,26 @@ describe("renderGitMenu / initWorkspaceGitChip", () => {
     expect(menu.querySelector(".git-dirty-title")?.textContent).toBe("有未提交的改动");
     expect(menu.innerHTML).not.toContain("<script>");
     expect(menu.textContent).toContain("feat/<script>");
+  });
+});
+
+describe("fetchFilePatch", () => {
+  it("地址编码正确：workdir 与 path 都过 encodeURIComponent", async () => {
+    const body = { present: true, path: "src/a b.js", hunks: [] };
+    const fetchFn = vi.fn(async () => ({ ok: true, json: async () => body }));
+    const patch = await fetchFilePatch("/repo dir", "src/a b.js", fetchFn);
+    expect(fetchFn).toHaveBeenCalledWith(
+      "/api/workspace/git/diff?workdir=%2Frepo%20dir&path=src%2Fa%20b.js",
+    );
+    expect(patch).toEqual(body);
+  });
+
+  it("!res.ok 与抛错都返回 null；workdir/path 缺失直接 null，不打请求", async () => {
+    expect(await fetchFilePatch("", "a", vi.fn())).toBeNull();
+    expect(await fetchFilePatch("/repo", "", vi.fn())).toBeNull();
+    const fetchFn = vi.fn(async () => ({ ok: false, json: async () => ({ error: "x" }) }));
+    expect(await fetchFilePatch("/repo", "a", fetchFn)).toBeNull();
+    const boom = vi.fn(async () => { throw new Error("boom"); });
+    expect(await fetchFilePatch("/repo", "a", boom)).toBeNull();
   });
 });
