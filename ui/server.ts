@@ -1397,24 +1397,80 @@ export interface RunChangeEntry {
   git: ChangeGitInfo | null;
 }
 
-/** 从事件流聚合写盘工具的触碰路径。事件形状见 pushEvent：{ seq, source, ts, event } 包络。 */
+/**
+ * 来源是否属于 verifier（编排来源形如 "s1/verifier"）。
+ * 与 `ui/public/app.js` 的同名内部函数逐字同义——T28 的两侧口径靠它对齐。
+ */
+function isVerifierEventSource(source: unknown): boolean {
+  return source === "verifier" || (typeof source === "string" && source.endsWith("/verifier"));
+}
+
+/**
+ * 工具入参路径 → 归一路径（T28）。与 `deriveTouchedFiles` 同一行写法：
+ * `path` 缺了认 `file_path`，反斜杠一律折成正斜杠，再 trim。
+ *
+ * **已知代价**：POSIX 上文件名里真带反斜杠（合法但近乎不存在）会被折成目录分隔。
+ * 这是"与客户端同一口径"的必然结果——客户端一直这么折，两边要么一起折、
+ * 要么两个数字继续打架。
+ */
+function normalizeTouchedPath(input: unknown): string {
+  const raw = (input as { path?: unknown; file_path?: unknown } | null | undefined);
+  const pick = typeof raw?.path === "string" ? raw.path
+    : typeof raw?.file_path === "string" ? raw.file_path
+    : null;
+  if (pick === null) return "";
+  return pick.replace(/\\/g, "/").trim();
+}
+
+/**
+ * 从事件流聚合写盘工具**成功**触碰的路径。事件形状见 pushEvent：{ seq, source, ts, event } 包络。
+ *
+ * ★ T28 事实源：**只收成功的调用**，且**不收 verifier 段**——与客户端
+ * `app.js` 的 `deriveTouchedFiles` 逐条同义（那边是 `state.timeline` +
+ * `resultIsError` 过滤，verifier 事件压根不进 `timeline`）。
+ *
+ * 此前本函数收下了全部 `tool_call`（含失败的、含等批准被拒的、含还没回结果的、
+ * 含 verifier 段的），于是同一个 run 在 T8「变更」分区与 T7「改动」面板给出
+ * 两个不同的数字（现场是 25 对 12），而两处都写着「改文件 N 个」——界面在
+ * 说谎。定这一侧作事实源的理由：失败的写入**没有改变磁盘**，把它算进"碰过"
+ * 会让审查者去找一个并不存在的改动；仓库里同族的三个派生函数
+ * （`deriveArtifacts`「没成的不是产物」、`deriveWrittenPaths`「只信成功的
+ * tool_result」、`editHunksFromTimeline`）本来就都是这个口径，服务端是唯一的异类。
+ *
+ * 想看"试过但失败了"是另一个概念（`deriveToolsFace` 的 errors 已经在给），
+ * 不许再叫"改了 N 个文件"。
+ */
 export function collectTouchedPaths(
   events: unknown[],
 ): { input: string; ops: Set<string>; count: number; lastAt: number | null }[] {
+  // 先收一遍结果：toolUseId → 这次调用成不成。没有结果的（在飞 / 等批准 / 被拒）
+  // 一律不算——tool_call 只是"打算写"，磁盘上还什么都没有。
+  const ok = new Map<string, boolean>();
+  for (const envelope of events) {
+    if (isVerifierEventSource((envelope as { source?: unknown } | null)?.source)) continue;
+    const ev = (envelope as { event?: unknown } | null)?.event as
+      | { type?: unknown; toolUseId?: unknown; result?: unknown }
+      | undefined;
+    if (!ev || ev.type !== "tool_result" || typeof ev.toolUseId !== "string") continue;
+    const isError = Boolean((ev.result as { isError?: unknown } | null | undefined)?.isError);
+    ok.set(ev.toolUseId, !isError);
+  }
+
   const groups = new Map<
     string,
     { input: string; ops: Set<string>; count: number; lastAt: number | null }
   >();
   for (const envelope of events) {
+    if (isVerifierEventSource((envelope as { source?: unknown } | null)?.source)) continue;
     const ev = (envelope as { event?: unknown } | null)?.event as
-      | { type?: unknown; name?: unknown; input?: unknown }
+      | { type?: unknown; name?: unknown; input?: unknown; toolUseId?: unknown }
       | undefined;
     if (!ev || ev.type !== "tool_call" || typeof ev.name !== "string") continue;
     const op = CHANGE_TOOL_OPS[ev.name];
     if (!op) continue;
-    const raw = (ev.input as { path?: unknown } | null | undefined)?.path;
-    if (typeof raw !== "string" || !raw.trim()) continue;
-    const input = raw.trim();
+    const input = normalizeTouchedPath(ev.input);
+    if (!input) continue;
+    if (ok.get(typeof ev.toolUseId === "string" ? ev.toolUseId : "") !== true) continue;
     const ts = (envelope as { ts?: unknown } | null)?.ts;
     const at = typeof ts === "number" && Number.isFinite(ts) ? ts : null;
     let group = groups.get(input);
@@ -12090,11 +12146,15 @@ export function createUiServer(options: UiServerOptions = {}): UiServerHandle {
       }
 
       /**
-       * T8 变更审查：这次运行触碰了哪些文件。
+       * T8 变更审查：这次运行**成功**触碰了哪些文件。
        *
        * 数据源是 run 的事件流（在飞 run 的内存缓冲 / 归档 run 的 events.jsonl，
        * hydrateArchive 统一成同一份），只聚合 write_file / write_pptx / edit_file 的 tool_call
        * 入参路径——bash 写盘从入参读不出路径，宁缺勿假。
+       *
+       * ★ T28：口径与客户端 `deriveTouchedFiles` 逐条同义（成功才算、verifier 段
+       * 不算、路径归一），理由见 collectTouchedPaths 的注释。此前两侧不同，
+       * 同一个 run 在 T8 与 T7 上给出两个数字而两处都写"改了 N 个文件"。
        *
        * 圈禁与产物取件同一条纪律：路径按**该 run 自己的 workdir** 用
        * resolveInWorkdir 解析；越界路径（含 workdir 已被删导致无法校验）标

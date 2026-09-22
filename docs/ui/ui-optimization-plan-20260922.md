@@ -107,6 +107,29 @@
 
 ## 三、P1 —— 压密度、给到“可放心委托”及格线（两周内）
 
+### T28 「这次 run 碰过哪些文件」两套口径合一（委托方点名，优先于 T17）
+
+- **问题**（P0 收工时发现，见文末第七节第 3 条）：服务端 `collectTouchedPaths` 收全部 `tool_call`（含失败的），客户端 `deriveTouchedFiles` 只收成功的，同一个 run 在 T8 变更面板与 T7 审阅面板显示不同数字（现场 25 对 12），而两处文案都在说"改了 N 个文件"。
+- **改法**：现场读码确认两侧真实差异 → 定一侧当事实源并写清理由 → 两侧同提交改 → 加一条跨两侧的一致性锁（同一份事件流，两条路径给出同一个清单）。
+
+> **✅ 已完成（2026-09-23，提交 `b2235ba`）**
+>
+> - **★ 真实差异有四条，不是一条**（现场读码所得，转述里只有第一条）：
+>   ① **失败的调用**：服务端收，客户端不收（`resultIsError` 过滤）；
+>   ② **还没回结果的调用**（在飞 / 等批准 / 被拒）：服务端收，客户端不收（没有 result 直接 `continue`）；
+>   ③ **verifier 段**：服务端收（它压根不看 `source`），客户端不收——verifier 事件被 `reduceEvent` 分流进 `verifierTimeline`，而 `deriveTouchedFiles` 只读 `timeline`；
+>   ④ **路径形态**：客户端 `input.path ?? input.file_path` 且把 `\` 折成 `/`，服务端只认 `input.path` 且按原文分组——Windows 上 `src\a.txt` 与 `src/a.txt` 在服务端是两条、客户端是一条，而响应里的 `path` 又被 `relative()` 归一，于是**两条重复行同名**。
+> - **事实源 = 客户端那一侧（成功才算碰过）**，三条理由：① 失败的写入**没有改变磁盘**，把它算进"碰过"会把审查者指去找一个不存在的改动；② 仓库里同族的三个派生函数本来就都是这个口径（`deriveArtifacts`「没成的不是产物」、`deriveWrittenPaths`「只信成功的 tool_result」、`editHunksFromTimeline`），**服务端是唯一的异类**；③ **`collectTouchedPaths` 只有一个调用方**（`/api/runs/:id/changes`），没有别的依赖方需要"含失败"的语义，所以不必拆成两个概念。"试过但失败了"这件事由 Tools 面的 errors 负责，不许再叫"改了 N 个文件"。
+> - **落点**：
+>   - `ui/server.ts`：`collectTouchedPaths` 先收一遍 `tool_result` 建 `toolUseId → 成不成` 表，再收调用；新增 `isVerifierEventSource`（与 `app.js` 同名内部函数逐字同义）与 `normalizeTouchedPath`（`path ?? file_path` + 反斜杠归一）；endpoint 文档注释同步。
+>   - `ui/public/features/changes-panel.js`：模块头写清两处口径的边界；分区标签 `变更` → **`本轮变更`** + `summary.title`。
+>   - **客户端一行没改**——它本来就是事实源。
+> - **★ 现场撞到的第二条轴（范围），按"不许两个数字同名"处理**：T14 把对话卡与右栏「改动」面板都改成了**整条谱系**（`deriveThreadTouchedFiles`），而 T8 那个分区读 `/api/runs/:id/changes`，永远只是**选中那一个 run**。有追问的对话里两个数字**本就该不同**，不是 bug。所以没去动架构（让端点吃谱系是另一件事），而是把范围写进标签：一个 run 那侧叫「本轮变更」，整场对话那两侧保持「改文件 N 个」。这条**守不住**"用户真的会注意到标签差异"——只是消除了"两个数字都自称同一件事"。
+> - **测试**：`test/ui-touched-files-parity.test.ts`（新增 14 条）——★ 同一份事件流两侧逐字段相同 / ★ 这份清单就是"成功才算"那一份（防两边一起错）/ 轴 ① 失败不收 / 轴 ② 无回执不收 / 轴 ③ verifier 段不收 / **轴 ③a main 调用 + verifier 回执** / **轴 ③b verifier 调用 + main 回执** / 轴 ④ 反斜杠与 `file_path` 归一 / rework 与子任务段照旧算进来（收窄的只有 verifier）/ 空流两侧都空 / ★ 走真实 HTTP 端点：`changes.length` 与逐路径 `count` 都等于客户端派生 / 三条命名锁。`test/ui-changes-endpoint.test.ts`：夹具改造（`rawCall`/`rawResult`/`okCall`/`failedCall`，旧夹具只发 `tool_call` 现在正确地收不到文件）+ 新增 4 条口径用例。
+> - **变异验证（7 次，每个可变异形态逐一跑）**：① 删成功过滤 → 红 6 条；② 删「收调用那遍跳过 verifier」→ **第一次绿！**；③ 删「收结果那遍跳过 verifier」→ 也绿。**两个守卫互相兜底，"verifier 调用 + verifier 回执"这一种夹具分不开它们**——补了轴 ③a/③b 两条跨段夹具后，②→红 1（③b）、③→红 1（③a）；④a 删 `file_path` 别名 → 红 4；④b 删反斜杠归一 → 红 4；⑤ 把"没有回执"当成功（`!== true` 改 `=== false`）→ 红 5；⑥ 标签退回「变更」→ 红 1。
+>   **教训重演**："抓到一个变异"不等于覆盖——这里是**两个冗余守卫**的形态，第一版测试对它们完全不敏感。
+> - **已知余留**：`changes-panel` 的 `knownWrites` 兜底（API 列表为空时用 `conversationArtifactFiles` 顶上）走的是 `deriveArtifacts`，工具面多一个 `memory_write`，且是**谱系**范围——空态兜底路径上口径仍不同。它只在"档案取不到"时出现且不显示数字之外的断言，列进 backlog。另：`index.html` 深链直达那条路径 `changesApi.setRun(selectedRunId)` 漏传第二参数（不发 `?workdir=`，少一道服务端核对），也列进 backlog。
+
 ### T17 对话流默认“聚焦”阅读模式
 
 - **现状**：T12 已做双模式，但默认仍是“完整”，链接墙刷屏（证据 `02-chat-code-rail-collapsed-1440.png`）。

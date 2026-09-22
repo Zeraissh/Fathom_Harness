@@ -84,8 +84,45 @@ function metaShape(runId: string, overrides: Record<string, unknown> = {}): Reco
 }
 
 /** 造一条 tool_call 事件包络（与 pushEvent 落盘形状一致：{ seq, source, ts, event }） */
-function toolCall(seq: number, name: string, input: unknown, ts = 1_500 + seq): unknown {
-  return { seq, source: "main", ts, event: { type: "tool_call", toolUseId: `tu_${seq}`, name, input } };
+function rawCall(
+  seq: number,
+  name: string,
+  input: unknown,
+  ts = 1_500 + seq,
+  source = "main",
+): unknown {
+  return { seq, source, ts, event: { type: "tool_call", toolUseId: `tu_${seq}`, name, input } };
+}
+
+/** 造一条 tool_result 包络，配对 `tu_${seq}` */
+function rawResult(seq: number, isError: boolean, ts = 1_500 + seq, source = "main"): unknown {
+  return {
+    seq: seq + 0.5,
+    source,
+    ts,
+    event: {
+      type: "tool_result",
+      toolUseId: `tu_${seq}`,
+      result: { content: isError ? "boom" : "ok", isError },
+      durationMs: 5,
+    },
+  };
+}
+
+/**
+ * **成功**的一次调用 = tool_call + 成功的 tool_result 两条包络。
+ *
+ * ★ T28 起服务端只把"有成功回执"的调用算作碰过文件（与客户端
+ * `deriveTouchedFiles` 同一口径），所以夹具必须把回执也摆上——
+ * 只发 tool_call 的旧夹具现在（正确地）一个文件都收不到。
+ */
+function okCall(seq: number, name: string, input: unknown, ts = 1_500 + seq): unknown[] {
+  return [rawCall(seq, name, input, ts), rawResult(seq, false, ts)];
+}
+
+/** 失败的一次调用：磁盘没被改，不算碰过 */
+function failedCall(seq: number, name: string, input: unknown, ts = 1_500 + seq): unknown[] {
+  return [rawCall(seq, name, input, ts), rawResult(seq, true, ts)];
 }
 
 async function seedRun(
@@ -97,7 +134,8 @@ async function seedRun(
   const dir = join(root, runId);
   await mkdir(dir, { recursive: true });
   await writeFile(join(dir, "meta.json"), JSON.stringify(metaShape(runId, meta)), "utf8");
-  const lines = events.map((e) => (typeof e === "string" ? e : JSON.stringify(e)));
+  // okCall/failedCall 各产两条包络，摊平后再逐行落盘
+  const lines = events.flat(Infinity).map((e) => (typeof e === "string" ? e : JSON.stringify(e)));
   await writeFile(join(dir, "events.jsonl"), `${lines.join("\n")}\n`, "utf8");
 }
 
@@ -153,8 +191,8 @@ describe("T8 /api/runs/:id/changes 变更审查端点", () => {
 
   it("b. 无写盘事件的 run → 200 空列表", async () => {
     await seedRun(historyRoot, "run-readonly", { workdir }, [
-      toolCall(0, "read_file", { path: "a.txt" }),
-      toolCall(1, "bash", { command: "echo hi > sneaky.txt" }), // bash 写盘入参读不出路径，不计入
+      okCall(0, "read_file", { path: "a.txt" }),
+      okCall(1, "bash", { command: "echo hi > sneaky.txt" }), // bash 写盘入参读不出路径，不计入
       { seq: 2, source: "main", ts: 1_502, event: { type: "text", text: "done" } },
     ]);
     const base = await boot();
@@ -169,12 +207,12 @@ describe("T8 /api/runs/:id/changes 变更审查端点", () => {
   it("c. 聚合：同路径 write+edit 合并，ops/count/lastAt 正确，memory_write 不计入", async () => {
     await writeFile(join(workdir, "app.ts"), "export {}\n", "utf8");
     await seedRun(historyRoot, "run-writes", { workdir }, [
-      toolCall(0, "write_file", { path: "app.ts", content: "v1" }, 1_600),
-      toolCall(1, "read_file", { path: "app.ts" }, 1_601),
-      toolCall(2, "edit_file", { path: "app.ts", old_string: "a", new_string: "b" }, 1_602),
-      toolCall(3, "edit_file", { path: "app.ts", old_string: "c", new_string: "d" }, 1_603),
-      toolCall(4, "memory_write", { name: "note.md", content: "x" }, 1_604),
-      toolCall(5, "write_file", { path: "docs/new.md", content: "# n" }, 1_605),
+      okCall(0, "write_file", { path: "app.ts", content: "v1" }, 1_600),
+      okCall(1, "read_file", { path: "app.ts" }, 1_601),
+      okCall(2, "edit_file", { path: "app.ts", old_string: "a", new_string: "b" }, 1_602),
+      okCall(3, "edit_file", { path: "app.ts", old_string: "c", new_string: "d" }, 1_603),
+      okCall(4, "memory_write", { name: "note.md", content: "x" }, 1_604),
+      okCall(5, "write_file", { path: "docs/new.md", content: "# n" }, 1_605),
     ]);
     const base = await boot();
     const res = await fetch(`${base}/api/runs/run-writes/changes`);
@@ -192,8 +230,8 @@ describe("T8 /api/runs/:id/changes 变更审查端点", () => {
     const content = "hello 世界\n";
     await writeFile(join(workdir, "kept.txt"), content, "utf8");
     await seedRun(historyRoot, "run-stat", { workdir }, [
-      toolCall(0, "write_file", { path: "kept.txt", content }, 1_600),
-      toolCall(1, "write_file", { path: "gone.txt", content: "x" }, 1_601), // 盘上并不存在
+      okCall(0, "write_file", { path: "kept.txt", content }, 1_600),
+      okCall(1, "write_file", { path: "gone.txt", content: "x" }, 1_601), // 盘上并不存在
     ]);
     const base = await boot();
     const res = await fetch(`${base}/api/runs/run-stat/changes`);
@@ -217,8 +255,8 @@ describe("T8 /api/runs/:id/changes 变更审查端点", () => {
     // 圈外真有一个文件：若圈禁失效它会带着 exists=true 漏出来
     await writeFile(join(baseDir, "outside-secret.txt"), "secret\n", "utf8");
     await seedRun(historyRoot, "run-escape", { workdir }, [
-      toolCall(0, "write_file", { path: "../outside-secret.txt", content: "pwn" }, 1_600),
-      toolCall(1, "write_file", { path: "inside.txt", content: "ok" }, 1_601),
+      okCall(0, "write_file", { path: "../outside-secret.txt", content: "pwn" }, 1_600),
+      okCall(1, "write_file", { path: "inside.txt", content: "ok" }, 1_601),
     ]);
     await writeFile(join(workdir, "inside.txt"), "ok\n", "utf8");
     const base = await boot();
@@ -250,9 +288,9 @@ describe("T8 /api/runs/:id/changes 变更审查端点", () => {
     await writeFile(join(workdir, "untracked.txt"), "brand new\n", "utf8");
 
     await seedRun(historyRoot, "run-git", { workdir }, [
-      toolCall(0, "edit_file", { path: "tracked.txt" }, 1_600),
-      toolCall(1, "write_file", { path: "untracked.txt", content: "brand new\n" }, 1_601),
-      toolCall(2, "write_file", { path: "clean.txt", content: "clean\n" }, 1_602),
+      okCall(0, "edit_file", { path: "tracked.txt" }, 1_600),
+      okCall(1, "write_file", { path: "untracked.txt", content: "brand new\n" }, 1_601),
+      okCall(2, "write_file", { path: "clean.txt", content: "clean\n" }, 1_602),
     ]);
     const base = await boot();
     const res = await fetch(`${base}/api/runs/run-git/changes`);
@@ -277,9 +315,9 @@ describe("T8 /api/runs/:id/changes 变更审查端点", () => {
 
   it("g. 排序：lastAt 降序（最近触碰在前）", async () => {
     await seedRun(historyRoot, "run-order", { workdir }, [
-      toolCall(0, "write_file", { path: "first.txt", content: "1" }, 1_100),
-      toolCall(1, "write_file", { path: "last.txt", content: "2" }, 1_900),
-      toolCall(2, "write_file", { path: "mid.txt", content: "3" }, 1_500),
+      okCall(0, "write_file", { path: "first.txt", content: "1" }, 1_100),
+      okCall(1, "write_file", { path: "last.txt", content: "2" }, 1_900),
+      okCall(2, "write_file", { path: "mid.txt", content: "3" }, 1_500),
     ]);
     const base = await boot();
     const res = await fetch(`${base}/api/runs/run-order/changes`);
@@ -298,7 +336,7 @@ describe("T8 /api/runs/:id/changes 变更审查端点", () => {
     async function seedOne(): Promise<void> {
       await writeFile(join(workdir, "a.txt"), "v1\n", "utf8");
       await seedRun(historyRoot, "run-wd", { workdir }, [
-        toolCall(0, "write_file", { path: "a.txt", content: "v1" }, 1_600),
+        okCall(0, "write_file", { path: "a.txt", content: "v1" }, 1_600),
       ]);
     }
 
@@ -366,14 +404,14 @@ describe("T8 /api/runs/:id/changes 变更审查端点", () => {
 describe("collectTouchedPaths 事件聚合", () => {
   it("只收 write_file / edit_file 的字符串 path；同路径合并计数与 ops", () => {
     const out = collectTouchedPaths([
-      toolCall(0, "write_file", { path: "a.txt", content: "x" }, 100),
-      toolCall(1, "edit_file", { path: "a.txt" }, 200),
-      toolCall(2, "read_file", { path: "a.txt" }, 300),
-      toolCall(3, "write_file", { path: "  " }, 400), // 空路径丢弃
-      toolCall(4, "write_file", { noPath: true }, 500), // 缺 path 丢弃
+      okCall(0, "write_file", { path: "a.txt", content: "x" }, 100),
+      okCall(1, "edit_file", { path: "a.txt" }, 200),
+      okCall(2, "read_file", { path: "a.txt" }, 300),
+      okCall(3, "write_file", { path: "  " }, 400), // 空路径丢弃
+      okCall(4, "write_file", { noPath: true }, 500), // 缺 path 丢弃
       { seq: 5, source: "main", ts: 600, event: { type: "text", text: "hi" } },
       "garbage-line", // 坏行不炸
-    ]);
+    ].flat(Infinity));
     expect(out).toHaveLength(1);
     expect(out[0]!.input).toBe("a.txt");
     expect([...out[0]!.ops].sort()).toEqual(["edit", "write"]);
@@ -382,9 +420,9 @@ describe("collectTouchedPaths 事件聚合", () => {
   });
 
   it("write_pptx 的 path 计入 write 变更", () => {
-    const out = collectTouchedPaths([
-      toolCall(0, "write_pptx", { path: "talk.pptx", slides: [{ title: "Hi" }] }, 100),
-    ]);
+    const out = collectTouchedPaths(
+      okCall(0, "write_pptx", { path: "talk.pptx", slides: [{ title: "Hi" }] }, 100),
+    );
     expect(out).toHaveLength(1);
     expect(out[0]!.input).toBe("talk.pptx");
     expect([...out[0]!.ops]).toEqual(["write"]);
@@ -392,9 +430,51 @@ describe("collectTouchedPaths 事件聚合", () => {
 
   it("事件无 ts 时 lastAt 保持 null 而不是污染成 NaN", () => {
     const out = collectTouchedPaths([
-      { seq: 0, source: "main", event: { type: "tool_call", name: "write_file", input: { path: "x" } } },
+      { seq: 0, source: "main", event: { type: "tool_call", toolUseId: "tu_0", name: "write_file", input: { path: "x" } } },
+      { seq: 1, source: "main", event: { type: "tool_result", toolUseId: "tu_0", result: { content: "ok", isError: false } } },
     ]);
     expect(out[0]!.lastAt).toBeNull();
+  });
+
+  // ---- ★ T28：事实源就是"成功才算碰过" ----
+
+  it("★ T28 失败的写入不算碰过——磁盘没变，审查者不该被指去找一个不存在的改动", () => {
+    const out = collectTouchedPaths([
+      okCall(0, "write_file", { path: "ok.txt", content: "x" }, 100),
+      failedCall(1, "write_file", { path: "boom.txt", content: "y" }, 200),
+      failedCall(2, "edit_file", { path: "ok.txt" }, 300), // 同路径失败：不加计数
+    ].flat(Infinity));
+    expect(out.map((g) => g.input)).toEqual(["ok.txt"]);
+    expect(out[0]!.count).toBe(1);
+  });
+
+  it("★ T28 还没回结果的调用不算碰过（在飞 / 等批准 / 被拒都落这里）", () => {
+    const out = collectTouchedPaths([
+      rawCall(0, "write_file", { path: "pending.txt", content: "x" }, 100),
+    ]);
+    expect(out).toEqual([]);
+  });
+
+  it("★ T28 verifier 段的写入不进这份清单——与客户端 timeline 分流同源", () => {
+    const out = collectTouchedPaths([
+      rawCall(0, "write_file", { path: "v.txt", content: "x" }, 100, "verifier"),
+      rawResult(0, false, 100, "verifier"),
+      rawCall(1, "write_file", { path: "v2.txt", content: "x" }, 110, "s1/verifier"),
+      rawResult(1, false, 110, "s1/verifier"),
+      ...okCall(2, "write_file", { path: "m.txt", content: "x" }, 120),
+    ]);
+    expect(out.map((g) => g.input)).toEqual(["m.txt"]);
+  });
+
+  it("★ T28 path 缺了认 file_path，反斜杠折成正斜杠后与正斜杠同组", () => {
+    const out = collectTouchedPaths([
+      okCall(0, "write_file", { path: "src\\a.txt", content: "x" }, 100),
+      okCall(1, "edit_file", { path: "src/a.txt" }, 200),
+      okCall(2, "edit_file", { file_path: "src/a.txt" }, 300),
+    ].flat(Infinity));
+    expect(out).toHaveLength(1);
+    expect(out[0]!.input).toBe("src/a.txt");
+    expect(out[0]!.count).toBe(3);
   });
 });
 

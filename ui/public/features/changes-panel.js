@@ -2,8 +2,17 @@
  * features/changes-panel — 变更审查视图（T8）。
  *
  * 监督式产品最关键的缺口：产物面板只列"最终交付了什么"，这里回答的是
- * "agent 这次运行**碰了**哪些文件"——新建还是修改、碰了几次、现状如何，
+ * "agent **本轮运行**成功碰了哪些文件"——新建还是修改、碰了几次、现状如何，
  * 有 git 仓库时再带上 M/A/?? 状态与 +x/-y 摘要。
+ *
+ * ★ T28 两处口径的边界，别再混：
+ *   · 本分区 = **这一个 run**，且**只算成功的写入**（失败 / 在飞 / 等批准 / 被拒
+ *     / verifier 段都不算，服务端 collectTouchedPaths 与客户端 deriveTouchedFiles
+ *     现在逐条同义）；
+ *   · 对话里那张「改文件 N 个」卡与右栏「改动」面板 = **整场对话的谱系**
+ *     （deriveThreadTouchedFiles，T14）。
+ *   两个数字在有追问的对话里本就该不同，所以标签写「本轮变更」把范围说明白，
+ *   而不是两处都叫"改了 N 个文件"。
  *
  * 与 command-palette / memory-panel 同一约定：
  *   1) 纯函数层（响应整形 / 徽章派生 / 预览截取）——可单测；
@@ -253,7 +262,9 @@ export function initChangesPanel(host = {}, env = {}) {
   summaryIcon.className = "ph ph-files";
   summaryIcon.setAttribute("aria-hidden", "true");
   const summaryText = doc.createElement("span");
-  summaryText.textContent = " 变更 ";
+  // T28：「本轮」不是修饰语，是范围声明——对话卡那个数字算的是整场对话
+  summaryText.textContent = " 本轮变更 ";
+  summary.title = "本轮运行成功写入或修改过的文件。失败、等批准、被拒的调用不算。";
   const countPeek = doc.createElement("span");
   countPeek.className = "aside-peek";
   countPeek.hidden = true;
