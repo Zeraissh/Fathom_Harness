@@ -203,6 +203,20 @@
   - 有待决项时给召回条加呼吸点（用 `--status-warning` token，不用彩色 emoji）。
 - **验收**：同时跑 2 个 run 制造待决事件，不打开会话也能在侧栏看到数量并一键跳转。
 
+> **✅ 已完成（2026-09-23，提交哈希见第八节 P1 提交表）**
+>
+> - **先读 T4 再动手，结论是复用而不是重写**：`features/notifications.js` 里已经有全部要件——五类分类（`approval` / `question` / `plan_gate` / `run_end` / `budget`，与计划点名的五类一一对上）、同 run 同类叠条（`collapseDecisionItems`）、已读语义、**待决条目在 `approval_resolved` / `user_question_resolved` / `plan_approval_resolved` / `run_end` 时被移出 store**（所以"还剩几条待决"直接就是真相，不用另算）。宿主也早就把 `getStore()` 暴露给指挥中心用了。**本轮没有建第二份账本。**
+> - **落点**：
+>   - `ui/public/features/notifications.js`：新增两个纯函数 `deriveAttentionSummary(store)`（decision 走叠条口径、finished/attention 只数未读、`top` 给"点一下去哪儿"）与 `attentionBarCopy(summary)`（零条目返回 `null`，有待决/全是回执两种说法）。
+>   - `ui/public/features/attention-bar.js`（新建）：纯呈现 + 直达，不解析事件、不持有状态；签名不变不动 DOM。
+>   - `ui/public/index.html`：侧栏 `.workspace-face` 之后加 `#attention-mount`（在新建钮之前 = 顶部）；在**通知中心就绪之后**挂（没 store 可读时白挂一次）；`attentionBarApi?.refresh()` 与 `boardApi?.refresh()` **三处紧邻配对**（loadRuns 对账 / batcher 里 ingest 之后 / 生命周期流）。
+>   - `ui/public/styles.css`：`.attn-*` 一段，零裸色值。
+> - **直达语义**：待决类点进去落到**干预点**（`selectRun` + `revealDecisionDock`），回执类只选中会话不闪决定坞——否则用户还得自己在长对话里找那张卡。
+> - **与计划原文的偏差（两处，都小）**：① 计划写呼吸点用 `--status-warning`，仓库里实际的令牌叫 **`--status-warn`**（经 `--p-warn` 在四主题各有值），取实存的那个；② 「召回条」这个词在仓库里没有对应物（`.rail-surface-bar` 是"召出钮"），按"常驻入口自己给呼吸点"落地——呼吸点做在聚合条上，**有待决才呼吸，只有回执不闪**（跑完的回执一直闪就是狼来了）。动画外面包了 `prefers-reduced-motion: no-preference`。
+> - **测试**：`test/ui-attention-bar.test.ts`（新增 **27 条**）。纯函数 8 条：★ 五类逐一计入 / ★ **叠条口径与面板逐条同源**（同时与 `collapseDecisionItems` 和 `groupStoreItems` 的 decision 组比对，证明不是第二套算法）/ 已读语义（读过 ≠ 处理过：待决不受已读影响）/ 解决后从聚合消失（走 T4 自己的 resolved 归约）/ ★ top 优先级 / 空与畸形输入 / 文案零即 null / 两种说法。DOM 11 条：零条目整条隐藏 / ★ 有待决时条数·待决数·呼吸点·五类 chip / ★ 只剩回执不呼吸 / ★ 点击直达（item 带 `category=decision`）/ 回执类不带 decision / 「全部」开通知中心 / 可及名称说清去哪儿 / 幂等与签名不变不重建节点 / store 拿不到恒隐藏 / mount 为 null 返回 null。样式 4 条：★ 呼吸点走 `--status-warn` 且零裸色值 / ★ **四主题程序化解析出真实色值**（沿用 P0 T13 的令牌链解析手法）/ ★ 动画受 reduced-motion 约束 / 无彩色 emoji。接线 5 条（挂载点在顶部、数据源是通知 store、挂载排在通知中心之后、★ 三处紧邻配对刷新、待决才 revealDock）。
+> - **变异验证（6 次，其中一次打脸）**：① 不叠条 → 红 1；② 忽略已读 → 红 1；③ 回执也呼吸 → 红 1；④ top 优先级反过来 → 红 3；⑤ 呼吸点写死颜色 → 红 1；⑥ 删掉 ingest 那处的刷新 → **第一次全绿**：原判据数的是 `attentionBarApi?.refresh()` **出现几次**（断 ≥3），而模块初始化那段本身就有一次，删一处仍有 3 次——**数个数测不出"漏了哪一处"**。改成查 `boardApi?.refresh();` 后**紧邻配对**（恰好 3 对）后 → 红 1。
+> - **判据守不住什么**：① 「不打开会话也能看到」这条**没有真机验证**——jsdom 里断言的是 DOM 结构与数字，不是浏览器里的真实可见性（侧栏折叠/窄屏下这条会不会被挤掉，本轮量不出来）；② 呼吸动画的观感（频率是否恰当、会不会烦人）是主观项，只锁了"令牌对、受 reduced-motion 约束"；③ 同时跑 2 个 run 的真实并发场景没跑过，靠的是"喂 T4 自己的归约造 store"这条等价路径。
+
 ### T21 错误卡增加动作入口
 
 - **现状**：整屏两行红字（“限流，SDK 重试已耗尽”），没有下一步（证据 `14-audit-code-rail-collapsed-1440.png`）。
@@ -316,4 +330,5 @@ P2:  T22 → T23 → T24              （按原计划顺序）
 | `79c553a` | T28 「碰过哪些文件」两侧口径合一 + 跨两侧一致性锁 |
 | `d00f64c` | T17 对话流缺省切到「聚焦」（顺带修掉让「记住偏好」形同虚设的两处） |
 | `1e695d0` | T18 同类型重复折叠成组（新模块 `features/transcript-grouping.js`） |
+| `9e93a5f` | T19 命令面板：主题压到最后 + 补两条真缺的命令 + 关键词别名 |
 

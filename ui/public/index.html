@@ -105,6 +105,9 @@
     <button type="button" class="workspace-face-tab" role="radio" id="workspace-face-code"
       data-workspace-face="code" aria-checked="false">Code</button>
   </div>
+  <!-- T20「待你处理」跨会话聚合条：常驻侧栏顶部，数据来自 T4 通知中心的 store
+       （features/attention-bar.js 负责填充；无事可办时整条 hidden） -->
+  <div class="attn-mount" id="attention-mount"></div>
   <div class="sidebar-search">
     <button type="button" class="btn btn--primary new-chat-btn" id="new-chat-btn">
       <i class="ph ph-plus" aria-hidden="true"></i>
@@ -717,6 +720,11 @@ let eventSources = /** @type {Map<string, EventSource>} */ (new Map());
 /** 通知中心（T4）实例，由文件末尾的动态 import 赋值；未加载时为 null，所有调用点可选链 */
 let notificationsApi = /** @type {null|{ ingest:(runId:string, sseEvent:any)=>void, syncRuns:()=>void, removeRun:(runId:string)=>void }} */ (null);
 let memoryPanelApi = /** @type {null|{ open:()=>void, close:()=>void, isOpen:()=>boolean }} */ (null);
+/**
+ * T20「待你处理」聚合条实例。数据读通知中心 store，所以在它就绪后才挂。
+ * 刷新时机与 boardApi 完全一致（同一份 store，同一节拍）。
+ */
+let attentionBarApi = /** @type {null|{ refresh:()=>void }} */ (null);
 /** @type {string|null} */
 let pendingDraftsWorkdir = null;
 /** @type {string[]} */
@@ -1854,6 +1862,7 @@ async function loadRuns() {
     notificationsApi?.syncRuns();
     // 指挥中心随列表对账一起刷新（运行中/最近完成两栏的数据源就是这份列表）
     boardApi?.refresh();
+    attentionBarApi?.refresh(); // T20：同一份 store，同一节拍
     void refreshUsageSpend();
     void refreshCiteCandidates();
   } catch {
@@ -3444,6 +3453,7 @@ function applySseBatch(runId, queue) {
     // 指挥中心（T11）：同一节拍末尾刷新——它读的是通知 store 与 run 列表，
     // 必须在 notifications.ingest 之后调，待决栏才不吃上一节的旧账。
     boardApi?.refresh();
+    attentionBarApi?.refresh(); // T20：同理，必须排在 ingest 之后
 
     // 文本阶段的边界：新一轮开始、模型转去调工具、或整段结束——
     // 三者都意味着"正在流入的那段文本"已经不是此刻在发生的事了，让位给
@@ -4754,6 +4764,7 @@ function subscribeLifecycle() {
       notificationsApi?.syncRuns();
       // 指挥中心随生命周期流一起刷新（待决/运行中/最近完成三栏都依赖这份列表）
       boardApi?.refresh();
+      attentionBarApi?.refresh(); // T20：run 被删/收工后聚合条要立刻掉数
     } catch {
       // 解析失败静默
     }
@@ -6472,6 +6483,22 @@ import("./features/notifications.js").then((notifications) => {
   }));
   // 初始化时 run 列表多半已经就位：立刻播种基线（不生成历史条目）
   notificationsApi.syncRuns();
+  // T20「待你处理」聚合条：数据源就是上面这个 store，不建第二份账本。
+  // 必须等通知中心就绪再挂——它没 store 可读时只会恒隐藏，白挂一次。
+  import("./features/attention-bar.js").then((attn) => {
+    attentionBarApi = attn.initAttentionBar(document.getElementById("attention-mount"), {
+      getStore: () => notificationsApi?.getStore?.() ?? null,
+      // 待决类要落到**干预点**，不是只把会话打开：否则用户还得自己在长对话里找那张卡
+      onOpenItem: (item) => {
+        if (!item?.runId) return;
+        selectRun(item.runId);
+        if (item.category === "decision") revealDecisionDock(item.runId);
+      },
+      onOpenPanel: () => notificationsApi?.open?.(),
+      onAnnounce: (msg) => announceStatus(msg),
+    });
+    attentionBarApi?.refresh();
+  }).catch(() => { /* 聚合条是增强项，加载失败静默降级 */ });
 }).catch(() => { /* 通知中心是增强项，加载失败静默降级 */ });
 
 // ---- 记忆面板（T5）----

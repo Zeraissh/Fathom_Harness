@@ -381,6 +381,70 @@ export function groupStoreItems(store) {
   ];
 }
 
+/**
+ * 「待你处理」跨会话聚合（T20）。
+ *
+ * **复用 T4 的账本，不建第二份**：口径与通知面板逐条同源——
+ * decision 类走 `collapseDecisionItems`（同一 run 同一类叠一条，与面板一致），
+ * finished / attention 类只数**未读**（读过就不该继续催）。
+ *
+ * 计划点名的五类与 store 的 kind 一一对上：
+ *   审批待决 → approval | ask_user → question | 计划门 → plan_gate
+ *   运行完成 → run_end  | 预算耗尽 → budget
+ * （`error` 也落 attention 档，一起计入 total，但不占五类之一。）
+ *
+ * `top` 是"点一下去哪儿"：待决优先、其次未读的注意项、最后未读的完成项，
+ * 同档内取最新。**不猜**——没有任何条目时返回 null，呈现层据此不给动作。
+ *
+ * @param {NotificationStore} store
+ * @returns {{ total:number, pending:number, byKind:Record<string,number>,
+ *             top:NotificationItem|null, items:NotificationItem[] }}
+ */
+export function deriveAttentionSummary(store) {
+  const all = Array.isArray(store?.items) ? store.items : [];
+  const decisions = collapseDecisionItems(all);
+  const unreadOf = (category) => all.filter((i) => i.category === category && !i.read);
+  const attention = unreadOf("attention");
+  const finished = unreadOf("finished");
+
+  const byKind = { approval: 0, question: 0, plan_gate: 0, run_end: 0, budget: 0 };
+  for (const item of [...decisions, ...attention, ...finished]) {
+    if (item.kind in byKind) byKind[item.kind] += 1;
+  }
+
+  const newestFirst = (a, b) => Number(b.at) - Number(a.at);
+  const ordered = [
+    ...[...decisions].sort(newestFirst),
+    ...[...attention].sort(newestFirst),
+    ...[...finished].sort(newestFirst),
+  ];
+  return {
+    total: ordered.length,
+    pending: decisions.length,
+    byKind,
+    top: ordered[0] ?? null,
+    items: ordered,
+  };
+}
+
+/**
+ * 「待你处理」条的文案。**零不显示**（呈现层据此隐藏整条），
+ * 有待决时把待决数单独说出来——「待你处理（5）」里有 2 条要人决定和
+ * 5 条都是"跑完了"，紧迫程度完全不同。
+ *
+ * @param {{ total:number, pending:number }} summary
+ * @returns {{ title:string, detail:string }|null}
+ */
+export function attentionBarCopy(summary) {
+  const total = Number(summary?.total) || 0;
+  const pending = Number(summary?.pending) || 0;
+  if (total <= 0) return null;
+  return {
+    title: `待你处理（${total}）`,
+    detail: pending > 0 ? `${pending} 条等你决定` : "都是已跑完的回执",
+  };
+}
+
 /** @returns {NotificationStore} */
 export function markRead(store, id) {
   return {

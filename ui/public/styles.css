@@ -10589,6 +10589,109 @@ button.cc-card:hover { border-color: var(--border-2); }
 .rm-hidden { display: none !important; }
 
 /* ===================================================================
+   features/attention-bar — 侧栏顶部「待你处理（N）」聚合条（T20）
+   呼吸点用 --status-warn 语义令牌（计划写的是 --status-warning，仓库里
+   实际叫 --status-warn，取实存的那个）；无彩色 emoji，图标走 Phosphor。
+   =================================================================== */
+
+.attn-mount:empty { display: none; }
+.attn-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  margin: 0 var(--space-md) var(--space-sm);
+  padding: 2px;
+  border: 1px solid var(--border-1);
+  border-radius: var(--radius);
+  background: var(--surface-1);
+}
+.attn-bar[hidden] { display: none; }
+/* 有待决时整条转暖：边框与底色都走 warn 语义 */
+.attn-bar--pending {
+  border-color: var(--status-warn);
+  background: var(--yellow-bg);
+}
+.attn-main {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: var(--space-xs) var(--space-sm);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-1);
+  font-family: var(--font-ui);
+  text-align: left;
+  cursor: pointer;
+}
+.attn-main:hover { background: var(--surface-0); }
+.attn-main:disabled { cursor: default; opacity: 0.7; }
+.attn-copy {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.attn-title {
+  font-size: var(--font-sm);
+  font-weight: 600;
+  color: var(--text-1);
+}
+.attn-detail {
+  font-size: var(--font-xs);
+  color: var(--text-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* 呼吸点：纯色圆点 + 脉冲，不用彩色 emoji */
+.attn-dot {
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--status-warn);
+}
+.attn-dot[hidden] { display: none; }
+@media (prefers-reduced-motion: no-preference) {
+  .attn-bar--pending .attn-dot { animation: attn-breathe 2.4s ease-in-out infinite; }
+}
+@keyframes attn-breathe {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.45; transform: scale(0.82); }
+}
+.attn-kinds {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  flex: 0 0 auto;
+}
+.attn-kind {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: var(--text-3);
+  font-size: var(--font-xs);
+}
+.attn-bar--pending .attn-kind--approval,
+.attn-bar--pending .attn-kind--question,
+.attn-bar--pending .attn-kind--plan_gate { color: var(--status-warn); }
+.attn-all {
+  flex: 0 0 auto;
+  padding: var(--space-xs) var(--space-sm);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-3);
+  font-size: var(--font-xs);
+  font-family: var(--font-ui);
+  cursor: pointer;
+}
+.attn-all:hover { color: var(--text-1); background: var(--surface-0); }
+
+/* ===================================================================
    features/transcript-grouping — 同类型重复折叠成组（T18）
    摘要行沿用 reading-mode 的 .rm-summary 视觉语言（同一条后处理链上的
    邻居，长得不一样反而像两套东西）。只用语义令牌，无裸色值。
