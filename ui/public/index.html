@@ -750,6 +750,11 @@ let unregisterChangesCommand = /** @type {null|(() => void)} */ (null);
  * 每次 renderDetailWithState 后调 update(backBar, conversation) 做 DOM 后处理。
  */
 let readingModeApi = /** @type {null|{ update:(backBar:Element|null, conversation:Element|null)=>void, syncFromStorage:()=>void, setMode:(m:string)=>void }} */ (null);
+/**
+ * 同类型重复折叠成组（T18）实例，由文件末尾的动态 import 赋值；未加载时为 null。
+ * 后处理排在 readingModeApi.update 之后——两者在同一个 #conversation 上干活。
+ */
+let transcriptGroupingApi = /** @type {null|{ update:(conversation:Element|null)=>void }} */ (null);
 
 /** 「查看本次变更」只在打开会话时出现在命令面板里 */
 function syncChangesCommand() {
@@ -2373,6 +2378,11 @@ function renderDetailWithState(state) {
       document.querySelector("#main-area .back-bar"),
       document.querySelector("#main-area #conversation"),
     );
+  }
+  // T18 同类型重复折叠成组。**必须排在 reading-mode 之后**：两个后处理器
+  // 在同一个容器上干活，本模块要绕开它已经藏掉的东西（.rm-hidden）。
+  if (transcriptGroupingApi) {
+    transcriptGroupingApi.update(document.querySelector("#main-area #conversation"));
   }
   // T10 产物画布：深链直达时 state 可能此刻才流到产物——补开挂账的画布；
   // 命令随产物有无注册/注销（产物是流式到达的，不能只挂选中态）
@@ -6710,6 +6720,18 @@ import("./features/reading-mode.js").then((reading) => {
     );
   }
 }).catch(() => { /* 阅读模式是增强项，加载失败静默降级 */ });
+
+// ---- 同类型重复折叠成组（T18）----
+// 与阅读模式同一条后处理链，排在它之后（见 renderDetailWithState 里的调用点）。
+// 纯 DOM 变换，不动事件流与 transcript 格式；加载失败静默降级。
+import("./features/transcript-grouping.js").then((grouping) => {
+  transcriptGroupingApi = grouping.initTranscriptGrouping({
+    onAnnounce: (msg) => announceStatus(msg),
+  });
+  if (selectedRunId) {
+    transcriptGroupingApi.update(document.querySelector("#main-area #conversation"));
+  }
+}).catch(() => { /* 折叠成组是增强项，加载失败静默降级 */ });
 
 // ---- 产物画布（T10）----
 // 模块是静态 import（路由判定启动就要用 parseArtifactRoute），初始化失败不挡主流程。

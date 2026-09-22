@@ -10588,6 +10588,68 @@ button.cc-card:hover { border-color: var(--border-2); }
 /* 聚焦模式下被折叠的过程元素 */
 .rm-hidden { display: none !important; }
 
+/* ===================================================================
+   features/transcript-grouping — 同类型重复折叠成组（T18）
+   摘要行沿用 reading-mode 的 .rm-summary 视觉语言（同一条后处理链上的
+   邻居，长得不一样反而像两套东西）。只用语义令牌，无裸色值。
+   =================================================================== */
+
+.tg-box {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  width: 100%;
+}
+.tg-summary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  width: 100%;
+  padding: 2px var(--space-sm);
+  border: 1px dashed var(--border-1);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-3);
+  font-size: var(--font-sm);
+  font-family: var(--font-ui);
+  text-align: left;
+  cursor: pointer;
+}
+.tg-summary:hover {
+  border-color: var(--border-2);
+  color: var(--text-2);
+}
+.tg-summary[aria-expanded="true"] {
+  border-style: solid;
+  background: var(--surface-1);
+  color: var(--text-2);
+}
+.tg-summary i { flex: 0 0 auto; }
+
+/* 组内搜索：只在展开时出现 */
+.tg-search {
+  width: 100%;
+  padding: var(--space-xs) var(--space-sm);
+  border: 1px solid var(--border-1);
+  border-radius: var(--radius-sm);
+  background: var(--surface-0);
+  color: var(--text-1);
+  font-size: var(--font-sm);
+  font-family: var(--font-ui);
+}
+.tg-search[hidden] { display: none; }
+.tg-empty {
+  margin: 0;
+  padding: var(--space-xs) var(--space-sm);
+  color: var(--text-3);
+  font-size: var(--font-sm);
+}
+.tg-empty[hidden] { display: none; }
+
+/* 被折叠的成员。与 .rm-hidden 同款 !important：作者写的 display 优先级
+   压得过 UA 的 [hidden]，这条坑在 v2 真机上栽过一次 */
+.tg-hidden { display: none !important; }
+
 /* 设置中心「外观」分组里的阅读模式选项（与主题卡片同形态） */
 .settings-reading-mode {
   margin: var(--space-md) 0 0;
