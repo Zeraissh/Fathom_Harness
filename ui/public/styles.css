@@ -1810,6 +1810,43 @@ body[data-face="code"] .rail-surface-btn--code {
 .rail-more-item:hover { background: var(--surface-2); }
 .rail-more-item:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 1px; }
 
+/* ---- T15 窄屏（<1024px）：召出钮自成一行，不和标题/阅读模式抢位置 ----
+   现场（900px 实拍 10-chat-code-900-floating.png）：标题被四只钮挤到截断并
+   与钮重叠，「聚焦/完整」还被压成两行——用户分不清哪些是页面操作、哪些是
+   右列开关。
+
+   ★ 与计划原文的偏差，如实记：计划写的是"移出 .back-bar，改右下角悬浮按钮组"。
+     这里改成**在 .back-bar 内换行成独立一行 + 上方分隔线**，理由三条：
+     ① 右下角已经被占满——composer 的三只动作钮（＋/对话/发送）与 .scroll-nav
+        的回到最新钮都钉在那儿，再叠一组必然打架；
+     ② 钮行的 DOM 位置是 plan 4 的成果，有专门的锁盯着（ui-rail-policy 的
+        3-H「不在右列里」与 G1「钮行闭串邻接 .back-bar 闭串」）。真把节点搬出去
+        就得改那两条锁 = 回退 plan 4 的骨架；
+     ③ `--rail-float-top` 量的是 .back-bar 的下沿：换行后头部自然变高，浮层
+        自动往下让，钮不会被浮层盖住——不需要任何额外接线。
+     审视报告原话也正是"窄屏时给召出钮单独一行"；计划的验收「召出钮与标题/
+     阅读模式不再混行」由此满足。
+
+   同键开/关、浮层↔占宽列、两脸钮差异全程没碰（都在 JS 与上面的基线规则里）。 */
+@media (max-width: 1024px) {
+  .back-bar { flex-wrap: wrap; }
+  /* 标题行仍是 [标题][聚焦/完整]；order 让钮行落到第二行——
+     DOM 顺序是 标题 → 钮行 → 开关（开关由 reading-mode.js 事后 append），
+     不排序的话开关会被挤到第三行 */
+  .back-bar > .back-btn,
+  .back-bar > .chat-head { order: 0; }
+  .back-bar > .rm-switch { order: 1; }
+  .rail-surface-bar {
+    order: 2;
+    flex-basis: 100%;
+    margin-left: 0;
+    justify-content: flex-end;
+    margin-top: 2px;
+    padding-top: 6px;
+    border-top: 1px solid var(--border-1);
+  }
+}
+
 /* ---- 窄档的重开入口与层级（二轮走查 2026-09-18 夜）----
    实测：收起后右列 0 宽消失、全站没有第二个入口（断头路）；
    打开时 240px 浮层盖住内容区 61% 且压输入框。修法：
