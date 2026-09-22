@@ -15,8 +15,10 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import {
   READING_MODE_KEY,
+  READING_MODE_DEFAULT,
   readReadingMode,
   writeReadingMode,
+  hasReadingModePref,
   classifyUnit,
   clusterUnits,
   formatDuration,
@@ -40,11 +42,33 @@ function memStorage() {
 // 纯函数层
 // ---------------------------------------------------------------
 describe("readReadingMode / writeReadingMode 偏好读写", () => {
-  it("未设偏好默认完整（保守上线）；非法值回退完整", () => {
+  it("★ T17：未设偏好 → 缺省聚焦；非法残值同样回落缺省", () => {
     const s = memStorage();
-    expect(readReadingMode(s)).toBe("full");
+    expect(READING_MODE_DEFAULT).toBe("focus");
+    expect(readReadingMode(s)).toBe("focus");
     s.setItem(READING_MODE_KEY, "weird");
+    expect(readReadingMode(s)).toBe("focus");
+  });
+
+  it("★ T17：显式选过「完整」必须照办——缺省改了不许连带覆盖用户的选择", () => {
+    const s = memStorage();
+    s.setItem(READING_MODE_KEY, "full");
     expect(readReadingMode(s)).toBe("full");
+    // 这一条才是三态的意义：两态实现（"是不是 focus"）在这里必然给 focus
+    expect(writeReadingMode(s, "full")).toBe("full");
+    expect(readReadingMode(s)).toBe("full");
+  });
+
+  it("★ T17：hasReadingModePref 分得开「从没选过」与「选过」", () => {
+    const s = memStorage();
+    expect(hasReadingModePref(s)).toBe(false);
+    s.setItem(READING_MODE_KEY, "weird");
+    expect(hasReadingModePref(s), "非法残值不算表达过").toBe(false);
+    s.setItem(READING_MODE_KEY, "full");
+    expect(hasReadingModePref(s)).toBe(true);
+    s.setItem(READING_MODE_KEY, "focus");
+    expect(hasReadingModePref(s)).toBe(true);
+    expect(hasReadingModePref(null)).toBe(false);
   });
 
   it("写入后读回同值；非法写入按 full 落盘", () => {
@@ -55,8 +79,8 @@ describe("readReadingMode / writeReadingMode 偏好读写", () => {
     expect(s.getItem(READING_MODE_KEY)).toBe("full");
   });
 
-  it("storage 不可用时读回完整、写入不抛", () => {
-    expect(readReadingMode(null)).toBe("full");
+  it("storage 不可用时读回缺省、写入不抛", () => {
+    expect(readReadingMode(null)).toBe("focus");
     expect(writeReadingMode(null, "focus")).toBe("focus");
   });
 });
@@ -207,14 +231,75 @@ describe("initReadingMode DOM 后处理", () => {
   const hiddenCount = () => conversation.querySelectorAll(".rm-hidden:not(.chat-item)").length;
   const summaries = () => [...conversation.querySelectorAll(".rm-summary")];
 
-  it("完整模式（默认）不做任何处理；开关挂进 back-bar 且可见", () => {
+  it("完整模式不做任何处理；开关挂进 back-bar 且可见", () => {
     seedConversation();
+    api.setMode("full"); // ★ T17 起缺省是聚焦，要看完整模式得显式切
     api.update(backBar, conversation);
     expect(api.getMode()).toBe("full");
     expect(backBar.contains(api.element)).toBe(true);
     expect(api.element.hidden).toBe(false);
     expect(hiddenCount()).toBe(0);
     expect(summaries()).toHaveLength(0);
+  });
+
+  /**
+   * ★ T17 行为锁（走真实控制器，不只看纯函数）。
+   *
+   * 纪律：`readReadingMode` 的返回值会驱动 `initReadingMode` 的初始 mode，
+   * 再驱动 `apply()` 去改 DOM。纯函数返回 "focus" 不等于界面真的进了聚焦——
+   * 这一条从空 storage 起真实初始化，只调宿主会调的 `update()`，
+   * 断言过程元素真被藏了、摘要行真插进来了。
+   */
+  it("★ T17 空 storage（新用户/新会话）首次渲染就是聚焦：过程真被藏、摘要行真插入", () => {
+    document.body.innerHTML = "";
+    const freshStorage = memStorage();
+    backBar = document.createElement("div");
+    backBar.className = "back-bar";
+    conversation = document.createElement("div");
+    conversation.id = "conversation";
+    document.body.appendChild(backBar);
+    document.body.appendChild(conversation);
+    const fresh = initReadingMode({}, { doc: document, storage: freshStorage });
+    seedConversation();
+
+    fresh.update(backBar, conversation); // 宿主每次渲染后就调这一个
+    expect(fresh.getMode()).toBe("focus");
+    expect(conversation.querySelectorAll(".rm-hidden:not(.chat-item)").length).toBe(4);
+    expect(conversation.querySelectorAll(".rm-summary").length).toBe(2);
+    // 而且没有偷偷把缺省写成用户的选择——用户仍然"没表达过"
+    expect(freshStorage.getItem(READING_MODE_KEY)).toBeNull();
+    expect(hasReadingModePref(freshStorage)).toBe(false);
+  });
+
+  it("★ T17 显式选过完整的老用户：初始化就是完整，缺省改动不回头覆盖他", () => {
+    document.body.innerHTML = "";
+    const chosen = memStorage();
+    chosen.setItem(READING_MODE_KEY, "full");
+    backBar = document.createElement("div");
+    backBar.className = "back-bar";
+    conversation = document.createElement("div");
+    conversation.id = "conversation";
+    document.body.appendChild(backBar);
+    document.body.appendChild(conversation);
+    const kept = initReadingMode({}, { doc: document, storage: chosen });
+    seedConversation();
+
+    kept.update(backBar, conversation);
+    expect(kept.getMode()).toBe("full");
+    expect(conversation.querySelectorAll(".rm-hidden").length).toBe(0);
+    expect(conversation.querySelectorAll(".rm-summary").length).toBe(0);
+  });
+
+  it("★ T17 切换后记住：聚焦→完整落盘，下一个会话的新实例读回完整", () => {
+    seedConversation();
+    api.update(backBar, conversation);
+    expect(api.getMode()).toBe("focus"); // 缺省
+    api.setMode("full");
+    expect(storage.getItem(READING_MODE_KEY)).toBe("full");
+
+    document.body.innerHTML = "";
+    const next = initReadingMode({}, { doc: document, storage });
+    expect(next.getMode()).toBe("full");
   });
 
   it("空对话不渲染开关", () => {
@@ -321,6 +406,7 @@ describe("initReadingMode DOM 后处理", () => {
 
   it("syncFromStorage：设置中心写入后详情侧对齐", () => {
     seedConversation();
+    api.setMode("full"); // 缺省已是聚焦，先落到完整才看得出对齐
     api.update(backBar, conversation);
     expect(api.getMode()).toBe("full");
     storage.setItem(READING_MODE_KEY, "focus");
@@ -400,10 +486,25 @@ describe("initReadingMode DOM 后处理", () => {
     expect(api.element.getAttribute("role")).toBe("radiogroup");
     const radios = [...api.element.querySelectorAll('[role="radio"]')];
     expect(radios.map((r) => r.textContent)).toEqual(["聚焦", "完整"]);
+    // ★ T17：缺省聚焦，所以第一颗一开始就是选中态
+    expect(radios.map((r) => r.getAttribute("aria-checked"))).toEqual(["true", "false"]);
+    radios[1].click();
+    expect(api.getMode()).toBe("full");
     expect(radios.map((r) => r.getAttribute("aria-checked"))).toEqual(["false", "true"]);
     radios[0].click();
     expect(api.getMode()).toBe("focus");
     expect(radios.map((r) => r.getAttribute("aria-checked"))).toEqual(["true", "false"]);
+  });
+
+  it("★ T17 点「聚焦」即使值没变也落盘——显式选择不许与「从没选过」同形", () => {
+    seedConversation();
+    api.update(backBar, conversation);
+    expect(storage.getItem(READING_MODE_KEY)).toBeNull(); // 还没选过
+    const radios = [...api.element.querySelectorAll('[role="radio"]')];
+    radios[0].click(); // 点的是已经生效的「聚焦」
+    expect(api.getMode()).toBe("focus");
+    expect(storage.getItem(READING_MODE_KEY)).toBe("focus");
+    expect(hasReadingModePref(storage)).toBe(true);
   });
 });
 

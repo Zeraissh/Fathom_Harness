@@ -4,8 +4,8 @@
  * 问题：对话主列把思考过程、每次工具调用、审批痕迹按时刻全部织进时间流。
  * 长任务（70+ 轮）时真正有价值的助手正文/结论被同质的过程卡片淹没。
  *
- * 两种模式：
- *   「完整」——现状，一字不动；
+ * 两种模式（★ T17 起**缺省是「聚焦」**，见 READING_MODE_DEFAULT）：
+ *   「完整」——旧缺省，主列一字不动；
  *   「聚焦」——主列只留：用户消息、助手正文、结果/产物卡、审批·裁决·返工等
  *     **决策类痕迹**（监督语义，不能藏）、段分界卡。思考与常规工具调用折叠为
  *     段间一条细摘要行（如「3 次思考 · 7 个工具调用 · 12s」），点击展开还原。
@@ -44,16 +44,49 @@ export const READING_MODE_COPY = {
 };
 
 /**
- * 读偏好。未设 / 非法值 / storage 不可用 → "full"（保守默认：完整模式是现状）。
+ * 缺省阅读模式（T17）。
+ *
+ * ★ 从 "full" 改成 "focus"：T12 上线时保守取了"现状"，而审视报告的证据
+ * （`02-chat-code-rail-collapsed-1440.png`）就是链接墙刷屏——默认值本身
+ * 就是那个问题。**只改缺省**，不碰用户已表达过的选择。
+ */
+export const READING_MODE_DEFAULT = "focus";
+
+/**
+ * 读偏好。三态，不是两态：
+ *   · `"full"`  → 用户**显式**选过完整，照办；
+ *   · `"focus"` → 用户显式选过聚焦，照办；
+ *   · 未设 / 非法值 / storage 不可用 → 缺省（T17 起是 `"focus"`）。
+ *
+ * 三态是 T17 的要害：两态实现（"是不是 focus"）把"从没选过"与"选了完整"
+ * 折成同一个值，改缺省就必然连带覆盖显式选择。
+ *
  * @param {Storage|null} [storage]
  * @returns {"full"|"focus"}
  */
 export function readReadingMode(storage) {
   try {
     const raw = (storage ?? safeLocalStorage())?.getItem(READING_MODE_KEY);
-    return raw === "focus" ? "focus" : "full";
+    if (raw === "full") return "full";
+    if (raw === "focus") return "focus";
+    return READING_MODE_DEFAULT;
   } catch {
-    return "full";
+    return READING_MODE_DEFAULT;
+  }
+}
+
+/**
+ * 用户有没有**显式**表达过偏好。只认两个合法值；非法残值算没表达过。
+ * 存在的理由：呈现层要能说清"这是缺省还是你选的"，别把缺省说成用户的选择。
+ * @param {Storage|null} [storage]
+ * @returns {boolean}
+ */
+export function hasReadingModePref(storage) {
+  try {
+    const raw = (storage ?? safeLocalStorage())?.getItem(READING_MODE_KEY);
+    return raw === "full" || raw === "focus";
+  } catch {
+    return false;
   }
 }
 
@@ -415,12 +448,18 @@ export function initReadingMode(host = {}, env = {}) {
   }
 
   /**
-   * 切模式。persist 默认 true（用户显式选择）；设置中心改动走同一入口。
+   * 切模式（用户显式选择；设置中心改动走同一入口）。
+   *
+   * ★ T17：**无论值变没变都落盘**。缺省是 focus 之后，点「聚焦」常常是
+   * "值没变"——旧实现在这里早退、一个字都不写，于是用户的显式选择与
+   * "从没选过"在 storage 里长得一模一样，缺省再改一次就把他的选择冲掉。
+   * 值没变时只是不重算 DOM、不重复播报。
    * @param {string} next
    */
   function setMode(next) {
     const normalized = next === "focus" ? "focus" : "full";
     if (normalized === mode) {
+      writeReadingMode(storage, normalized);
       syncSwitch();
       return;
     }
