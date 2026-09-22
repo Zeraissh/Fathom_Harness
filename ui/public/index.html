@@ -5788,6 +5788,53 @@ if (workdirSelect) {
   } catch { /* 目录选择器是增强项，初始化失败静默降级 */ }
 }
 
+/**
+ * T19 补两条高频命令：**面板里此前真正缺的就这两条**。
+ *
+ * 复核过一遍：计划点名的六条里，「打开设置」「停止当前运行」「跳运行指挥中心」
+ * 「查看记忆面板」四条早就在（open-settings / stop-run / open-board /
+ * view-memory），缺的是「切换工作目录」与「切换 Work/Code 脸」。
+ * 审视报告说的"只有 4 条"是**排序问题**（5 条主题挤在外部命令之前、列表限高
+ * 滚动），已在 command-palette.js 用 PALETTE_PRIORITY 把主题压到最后。
+ */
+import("./features/command-palette.js").then((palette) => {
+  palette.registerPaletteCommand({
+    id: "switch-workdir",
+    label: "切换工作目录",
+    hint: "展开目录菜单，改这次写到哪个文件夹",
+    icon: "ph-folder",
+    keywords: ["workdir", "cwd", "gongzuomulu", "目录", "文件夹", "folder", "路径"],
+    priority: palette.PALETTE_PRIORITY.action,
+    run: () => {
+      if (workdirComboboxApi) {
+        workdirComboboxApi.open();
+        announceStatus("已展开工作目录菜单");
+        return;
+      }
+      // 没有自定义菜单（窄档/降级）时退回原生 select 的焦点，别静默无反应
+      if (workdirSelect) {
+        workdirSelect.focus();
+        announceStatus("已聚焦工作目录选择");
+        return;
+      }
+      workdirPickerApi?.open(null);
+    },
+  });
+  palette.registerPaletteCommand({
+    id: "toggle-workspace-face",
+    label: "切换 Work / Code 脸",
+    hint: "在两种门面之间来回切（各自记住自己的工作目录）",
+    icon: "ph-arrows-left-right",
+    keywords: ["face", "work", "code", "qiehuan", "门面", "切脸", "工作台"],
+    priority: palette.PALETTE_PRIORITY.action,
+    run: () => {
+      const next = workspaceFace === "work" ? "code" : "work";
+      applyWorkspaceFace(next);
+      announceStatus(next === "work" ? "已切到 Work 脸" : "已切到 Code 脸");
+    },
+  });
+}).catch(() => { /* 命令面板注册失败不影响这两个入口本体 */ });
+
 try {
   const fileTreeMount = document.getElementById("workspace-file-tree");
   if (fileTreeMount) {

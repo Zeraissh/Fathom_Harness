@@ -19,7 +19,13 @@ import {
   executeItem,
   SHORTCUTS,
   initCommandPalette,
+  PALETTE_PRIORITY,
+  registerPaletteCommand,
+  listExternalCommands,
 } from "../ui/public/features/command-palette.js";
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 // ---------------------------------------------------------------
 // 模糊评分
@@ -205,6 +211,143 @@ describe("buildPaletteItems 分组扁平列表", () => {
 });
 
 // ---------------------------------------------------------------
+// T19 高频命令补全 + 排序 + 关键词
+// ---------------------------------------------------------------
+
+/**
+ * ★ 真因与计划原文不同，如实记：
+ *
+ * 计划与审视报告都说"面板只有 4 条命令（新建对话 / 搜索对话 / 快捷键帮助 /
+ * 主题切换）"。读码后不成立——`currentItems()` 一直在 merge
+ * `listExternalCommands()`，而宿主早就注册了十几条（设置 / 模型设置 / 消耗 /
+ * 指挥中心 / 产物 / 定时任务 / 记忆 / 全局搜索 / 本次变更 / 预览产物 /
+ * 打开网页 / 新手引导）。
+ *
+ * 真问题是**排序 + 限高滚动**：`staticCommands` 把 **5 条主题**排在全部外部
+ * 命令之前，面板列表限高可滚动（截图里「主题：高对比」正卡在下边缘被截断）
+ * ——于是首屏只看得见 3 条动作 + 5 条主题，报告据此判"只有 4 条"。
+ *
+ * 所以本项做三件事：① 主题压到最后（PALETTE_PRIORITY）；② 补计划点名里
+ * **真正缺的那两条**（切换工作目录 / 切换 Work-Code 脸，其余四条早在）；
+ * ③ 给每条命令加模糊搜索别名（英文 / 拼音 / 同义词）。
+ */
+describe("T19 命令面板：排序、条数与关键词", () => {
+  const here = dirname(fileURLToPath(import.meta.url));
+  const indexHtml = readFileSync(join(here, "..", "ui", "public", "index.html"), "utf8");
+
+  /** 从 index.html 里把宿主注册的外部命令 id 全抓出来（静态分析——它们在单测里不会真跑） */
+  function hostRegisteredIds() {
+    const ids = [];
+    const re = /registerPaletteCommand\(\{\s*[\s\S]{0,200}?id:\s*"([^"]+)"/g;
+    let m;
+    while ((m = re.exec(indexHtml))) ids.push(m[1]);
+    return ids;
+  }
+
+  it("★ 排序：空查询下，任何主题项都不许排在功能入口之前", () => {
+    const all = [
+      ...staticCommands({ currentRunId: "r1", currentRunStatus: "running" }),
+      { id: "open-settings", label: "打开设置", priority: PALETTE_PRIORITY.entry },
+      { id: "open-board", label: "指挥中心", priority: PALETTE_PRIORITY.entry },
+    ];
+    const ordered = matchCommands("", all);
+    const firstTheme = ordered.findIndex((c) => c.id.startsWith("theme-"));
+    const lastEntry = ordered.map((c) => c.priority).lastIndexOf(PALETTE_PRIORITY.entry);
+    expect(firstTheme).toBeGreaterThan(-1);
+    expect(lastEntry).toBeGreaterThan(-1);
+    expect(firstTheme, "主题必须在全部功能入口之后").toBeGreaterThan(lastEntry);
+    // 高频动作仍在最前
+    expect(ordered[0].id).toBe("new-chat");
+    expect(ordered.slice(0, 3).map((c) => c.id)).toContain("stop-run");
+  });
+
+  it("★ 排序只在空查询下生效——有查询时相关性说话，不许被档位压过", () => {
+    const all = staticCommands({ currentTheme: "auto" });
+    const hits = matchCommands("暖炭", all);
+    expect(hits[0].id).toBe("theme-dark"); // chrome 档，但它最相关
+  });
+
+  it("★ 计划点名的六条能力，面板里都有（四条早在、两条本轮补）", () => {
+    const hostIds = hostRegisteredIds();
+    const staticIds = staticCommands({ currentRunId: "r1", currentRunStatus: "running" }).map((c) => c.id);
+    const has = (id) => hostIds.includes(id) || staticIds.includes(id);
+    expect(has("switch-workdir"), "切换工作目录（本轮补）").toBe(true);
+    expect(has("toggle-workspace-face"), "切换 Work/Code 脸（本轮补）").toBe(true);
+    expect(has("open-settings"), "打开设置（早在）").toBe(true);
+    expect(has("stop-run"), "停止当前运行（早在）").toBe(true);
+    expect(has("open-board"), "跳运行指挥中心（早在）").toBe(true);
+    expect(has("view-memory"), "查看记忆面板（早在）").toBe(true);
+  });
+
+  it("★ 命令总条数 ≥ 10（不含主题——主题凑数不算高频命令）", () => {
+    const nonTheme = staticCommands({ currentRunId: "r1", currentRunStatus: "running" })
+      .filter((c) => !c.id.startsWith("theme-"));
+    const total = nonTheme.length + new Set(hostRegisteredIds()).size;
+    expect(total).toBeGreaterThanOrEqual(10);
+  });
+
+  it("★ 每条命令都有可命中的模糊搜索关键词：拿自己的标题去搜必须搜得到自己", () => {
+    const all = staticCommands({ currentRunId: "r1", currentRunStatus: "running" });
+    for (const cmd of all) {
+      const hits = matchCommands(cmd.label, all);
+      expect(hits.map((c) => c.id), `搜「${cmd.label}」搜不到自己`).toContain(cmd.id);
+    }
+  });
+
+  it("★ 关键词（英文/拼音/同义词）参与匹配，且不压过正牌标题", () => {
+    const all = staticCommands({ currentRunId: "r1", currentRunStatus: "running" });
+    expect(matchCommands("stop", all).map((c) => c.id)).toContain("stop-run");
+    expect(matchCommands("tingzhi", all).map((c) => c.id)).toContain("stop-run");
+    expect(matchCommands("中止", all).map((c) => c.id)).toContain("stop-run");
+    expect(matchCommands("theme", all).every((c) => c.id.startsWith("theme-"))).toBe(true);
+  });
+
+  /**
+   * ★ 变异验证逼出来的一条：原本想用「搜标题时标题那条排第一」证明"别名打 1 折"，
+   * 但静态清单里没有任何命令的**别名**会撞上另一条的**标题**，所以把折扣改成
+   * 加成（`k - 1` → `k + 20`）照样全绿——判据对这个形态完全不敏感。
+   * 这里把冲突显式造出来：甲的标题 = 乙的别名，同一个查询下甲必须在前。
+   */
+  it("★ 别名打折是可判的：标题命中必须压过同字面的别名命中", () => {
+    const pair = [
+      { id: "t19-title", label: "打开设置" },
+      { id: "t19-alias", label: "无关命令", keywords: ["打开设置"] },
+    ];
+    const hits = matchCommands("打开设置", pair);
+    expect(hits.map((c) => c.id)).toEqual(["t19-title", "t19-alias"]);
+  });
+
+  it("宿主注册的两条新命令带了关键词与动作档位（不是光有 label）", () => {
+    for (const id of ["switch-workdir", "toggle-workspace-face"]) {
+      const at = indexHtml.indexOf(`id: "${id}"`);
+      expect(at, id).toBeGreaterThan(-1);
+      const block = indexHtml.slice(at, at + 700);
+      expect(block, `${id} 缺 keywords`).toMatch(/keywords:\s*\[/);
+      expect(block, `${id} 缺 priority`).toMatch(/priority:\s*palette\.PALETTE_PRIORITY\.action/);
+      expect(block, `${id} 缺 run`).toMatch(/run:\s*\(\)\s*=>/);
+    }
+  });
+
+  it("registerPaletteCommand 透传 keywords；priority 缺省落 entry 档", () => {
+    const off1 = registerPaletteCommand({ id: "t19-a", label: "甲", keywords: ["alpha"] });
+    const off2 = registerPaletteCommand({ id: "t19-b", label: "乙" });
+    try {
+      const list = listExternalCommands();
+      const a = list.find((c) => c.id === "t19-a");
+      const b = list.find((c) => c.id === "t19-b");
+      expect(a.keywords).toEqual(["alpha"]);
+      expect(a.priority).toBe(PALETTE_PRIORITY.entry);
+      expect(b.keywords).toBeUndefined();
+      expect(b.priority).toBe(PALETTE_PRIORITY.entry);
+      expect(matchCommands("alpha", list).map((c) => c.id)).toContain("t19-a");
+    } finally {
+      off1();
+      off2();
+    }
+  });
+});
+
+// ---------------------------------------------------------------
 // 键盘导航状态机
 // ---------------------------------------------------------------
 describe("导航状态机 moveActiveIndex / clampActiveIndex", () => {
@@ -357,6 +500,44 @@ describe("initCommandPalette DOM 行为", () => {
     expect(labels).not.toContain("继续当前对话");
     const current = document.querySelector(".palette-item-current");
     expect(current).not.toBeNull();
+  });
+
+  /**
+   * ★ T19「键盘全程可达」的行为锁。
+   *
+   * 纯函数验的是 moveActiveIndex 的环形算术；这一条走真实 DOM：注册两条
+   * 外部命令让列表足够长（≥10），只用 ArrowDown 一路走到最后一项，
+   * 再 Enter 执行——证明**排在主题之后的外部命令也能只靠键盘摸到并触发**
+   * （面板限高滚动，鼠标看不见的那些正是这些）。
+   */
+  it("★ T19 键盘全程可达：ArrowDown 能走到主题之后的外部命令并 Enter 执行", () => {
+    const ran = vi.fn();
+    const off = registerPaletteCommand({
+      id: "t19-kbd",
+      label: "键盘可达探针",
+      hint: "只靠方向键应当摸得到",
+      keywords: ["kbd"],
+      run: ran,
+    });
+    try {
+      initCommandPalette(host);
+      keydown(document.body, { key: "k", ctrlKey: true });
+      const { input, list } = paletteEls();
+      const options = () => [...list.querySelectorAll("[role=option]")];
+      expect(options().length).toBeGreaterThanOrEqual(10);
+
+      // 只用方向键：一路走到那条外部命令
+      const targetAt = options().findIndex((el) => el.textContent.includes("键盘可达探针"));
+      expect(targetAt, "外部命令没进列表").toBeGreaterThan(-1);
+      for (let i = 0; i < targetAt; i++) keydown(input, { key: "ArrowDown" });
+      expect(options()[targetAt].getAttribute("aria-selected")).toBe("true");
+
+      keydown(input, { key: "Enter" });
+      expect(ran).toHaveBeenCalledTimes(1);
+      expect(paletteEls().overlay.hidden).toBe(true);
+    } finally {
+      off();
+    }
   });
 
   it("输入关键词 → 出现「对话」分组，Enter 派发到 onOpenConversation", () => {

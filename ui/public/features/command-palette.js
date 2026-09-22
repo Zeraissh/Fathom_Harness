@@ -46,9 +46,28 @@ export function fuzzyScore(query, text) {
   return score;
 }
 
-/** @typedef {{ id:string, label:string, hint?:string, icon?:string, kbd?:string, themeId?:string, current?:boolean }} CommandSpec */
+/** @typedef {{ id:string, label:string, hint?:string, icon?:string, kbd?:string, themeId?:string, current?:boolean, keywords?:string[], priority?:number }} CommandSpec */
 /** @typedef {{ runId:string, title:string, workdir?:string|null, status?:string }} ConversationSpec */
 /** @typedef {{ kind:string, group:"command"|"conversation", id:string, label:string, hint?:string, icon?:string, kbd?:string, themeId?:string, current?:boolean, runId?:string }} PaletteItem */
+
+/**
+ * 空查询时的排序档位（数字小的在前）。**只在空查询下生效**——有查询时
+ * 模糊分数说话，档位不该压过相关性。
+ *
+ * ★ T19 的真问题就在这儿，不在"命令太少"：面板本来就有十几条（`currentItems`
+ * 一直在 merge `listExternalCommands()`），但 `staticCommands` 把**5 条主题**
+ * 排在全部外部命令之前，面板列表又是限高滚动的——于是首屏只看得见
+ * 新建对话 / 搜索对话 / 快捷键帮助 + 5 条主题，审视报告据此判"只有 4 条"。
+ * 主题是低频操作，占掉 5 个首屏槽位是排序错误。
+ */
+export const PALETTE_PRIORITY = {
+  /** 高频动作：开新对话、停/继续、搜索 */
+  action: 0,
+  /** 功能入口：设置、指挥中心、记忆、产物、定时任务…（外部注册的默认档） */
+  entry: 1,
+  /** 低频：帮助与主题 —— 一律排到最后 */
+  chrome: 2,
+};
 
 /**
  * 静态命令清单。run 状态决定"停止/继续"哪一条在场。
@@ -58,16 +77,53 @@ export function fuzzyScore(query, text) {
 export function staticCommands(ctx = {}) {
   const { currentRunId = null, currentRunStatus = null, currentTheme = "auto" } = ctx;
   const commands = [
-    { id: "new-chat", label: "新建对话", hint: "清空输入，开始新任务", icon: "ph-plus", kbd: "" },
+    {
+      id: "new-chat",
+      label: "新建对话",
+      hint: "清空输入，开始新任务",
+      icon: "ph-plus",
+      kbd: "",
+      keywords: ["new", "xinjian", "新任务", "开始"],
+      priority: PALETTE_PRIORITY.action,
+    },
   ];
   if (currentRunId && currentRunStatus === "running") {
-    commands.push({ id: "stop-run", label: "停止当前运行", hint: "向当前对话发送停止指令", icon: "ph-stop" });
+    commands.push({
+      id: "stop-run",
+      label: "停止当前运行",
+      hint: "向当前对话发送停止指令",
+      icon: "ph-stop",
+      keywords: ["stop", "tingzhi", "中止", "取消", "abort"],
+      priority: PALETTE_PRIORITY.action,
+    });
   } else if (currentRunId) {
-    commands.push({ id: "continue-run", label: "继续当前对话", hint: "聚焦输入框，追加指令", icon: "ph-chat-centered-dots" });
+    commands.push({
+      id: "continue-run",
+      label: "继续当前对话",
+      hint: "聚焦输入框，追加指令",
+      icon: "ph-chat-centered-dots",
+      keywords: ["continue", "jixu", "追问", "追加"],
+      priority: PALETTE_PRIORITY.action,
+    });
   }
   commands.push(
-    { id: "focus-search", label: "搜索对话", hint: "跳到侧栏搜索框", icon: "ph-magnifying-glass" },
-    { id: "help", label: "快捷键帮助", hint: "查看全部快捷键", icon: "ph-keyboard", kbd: "?" },
+    {
+      id: "focus-search",
+      label: "搜索对话",
+      hint: "跳到侧栏搜索框",
+      icon: "ph-magnifying-glass",
+      keywords: ["search", "sousuo", "查找", "filter"],
+      priority: PALETTE_PRIORITY.action,
+    },
+    {
+      id: "help",
+      label: "快捷键帮助",
+      hint: "查看全部快捷键",
+      icon: "ph-keyboard",
+      kbd: "?",
+      keywords: ["help", "kuaijiejian", "shortcut", "帮助"],
+      priority: PALETTE_PRIORITY.chrome,
+    },
   );
   const themes = [
     ["auto", "跟随系统"],
@@ -84,27 +140,45 @@ export function staticCommands(ctx = {}) {
       icon: "ph-palette",
       themeId,
       current: themeId === currentTheme,
+      keywords: ["theme", "zhuti", "配色", "外观", "深色", "浅色"],
+      priority: PALETTE_PRIORITY.chrome,
     });
   }
   return commands;
 }
 
 /**
- * 过滤静态命令：空查询全量返回；否则对 label + hint 取最高分子序列匹配，按分排序。
+ * 过滤静态命令。
+ *
+ * 空查询：全量返回，但**按 priority 稳定排序**（档位内保持声明次序）——
+ * 见 PALETTE_PRIORITY 的说明，这是 T19 的实际修点。
+ * 有查询：对 label + hint + keywords 取最高分子序列匹配，按分排序；
+ * **关键词按分打 1 折**（`- 1`），免得别名压过正牌标题。
+ *
  * @param {string} query
  * @param {CommandSpec[]} commands
  * @returns {CommandSpec[]}
  */
 export function matchCommands(query, commands) {
+  const list = Array.isArray(commands) ? commands : [];
   const q = String(query ?? "").trim();
-  if (!q) return [...commands];
+  if (!q) {
+    return [...list]
+      .map((cmd, i) => ({ cmd, i, p: Number.isFinite(cmd.priority) ? cmd.priority : PALETTE_PRIORITY.entry }))
+      .sort((x, y) => x.p - y.p || x.i - y.i)
+      .map((r) => r.cmd);
+  }
   const scored = [];
-  for (const cmd of commands) {
+  for (const cmd of list) {
     const a = fuzzyScore(q, cmd.label);
     const b = cmd.hint ? fuzzyScore(q, cmd.hint) : null;
-    const s = Math.max(a ?? -Infinity, b ?? -Infinity);
-    if (s === -Infinity) continue;
-    scored.push({ cmd, s });
+    let best = Math.max(a ?? -Infinity, b ?? -Infinity);
+    for (const kw of cmd.keywords ?? []) {
+      const k = fuzzyScore(q, kw);
+      if (k !== null) best = Math.max(best, k - 1);
+    }
+    if (best === -Infinity) continue;
+    scored.push({ cmd, s: best });
   }
   scored.sort((x, y) => y.s - x.s);
   return scored.map((r) => r.cmd);
@@ -189,7 +263,12 @@ const RESERVED_COMMAND_IDS = new Set(["new-chat", "stop-run", "continue-run", "f
 
 /**
  * 注册一条外部命令。spec.run 在执行时被调用（面板随后关闭）。
- * @param {{ id:string, label:string, hint?:string, icon?:string, kbd?:string, run?:() => void }} spec
+ *
+ * `keywords` 是模糊搜索的别名（英文 / 拼音 / 同义词），不显示在界面上；
+ * `priority` 缺省 entry 档（功能入口），只影响空查询下的排序。
+ *
+ * @param {{ id:string, label:string, hint?:string, icon?:string, kbd?:string,
+ *   keywords?:string[], priority?:number, run?:() => void }} spec
  * @returns {() => void} 注销函数（测试隔离用）
  */
 export function registerPaletteCommand(spec) {
@@ -199,7 +278,16 @@ export function registerPaletteCommand(spec) {
   if (RESERVED_COMMAND_IDS.has(id) || id.startsWith("theme-")) {
     throw new Error(`registerPaletteCommand: "${id}" 与内置命令撞名`);
   }
-  externalCommands.set(id, { id, label, hint: spec.hint, icon: spec.icon, kbd: spec.kbd, run: spec.run });
+  externalCommands.set(id, {
+    id,
+    label,
+    hint: spec.hint,
+    icon: spec.icon,
+    kbd: spec.kbd,
+    keywords: Array.isArray(spec.keywords) ? spec.keywords.map(String) : undefined,
+    priority: Number.isFinite(spec.priority) ? spec.priority : PALETTE_PRIORITY.entry,
+    run: spec.run,
+  });
   return () => { externalCommands.delete(id); };
 }
 
