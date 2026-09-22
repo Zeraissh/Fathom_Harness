@@ -544,7 +544,7 @@ describe("多主题：data-theme 切换不改变结构语义", () => {
     expect(top?.contains(theme)).toBe(true);
     expect(footer?.contains(bell)).toBe(false);
     expect(footer?.contains(theme)).toBe(false);
-    expect(document.getElementById("workspace-face-office")?.textContent).toBe("Work");
+    expect(document.getElementById("workspace-face-work")?.textContent).toBe("Work");
     expect(document.getElementById("workspace-face-code")?.textContent).toBe("Code");
     expect(document.getElementById("theme-toggle")?.getAttribute("aria-haspopup")).toBe("menu");
   });

@@ -436,6 +436,8 @@ import {
   readArchivedTrace,
   archiveOwnerLiveness,
   pidIsAlive,
+  normalizeWorkspaceFace,
+  type WorkspaceFace,
   type ArchivedApprovalGrant,
   type ArchivedCheckpoint,
   type ArchivedMeta,
@@ -760,8 +762,8 @@ interface StoredRun {
   host?: "cli" | "web";
   /** V-27：编排模式。plan = 走 runPlanned；design = 设计模式门面（单执行者） */
   mode?: "single" | "plan" | "design";
-  /** 侧栏办公/编码脸；旧档案缺省，列表按 packName=design 回退 */
-  workspace?: "office" | "code";
+  /** 侧栏 Work/Code 脸；旧档案缺省，列表按 packName=design 回退 */
+  workspace?: WorkspaceFace;
   /**
    * 设计门面。档案 mode 仍是 single|plan；直播可暂为 design。
    * 追问按合同改成 single 执行时必须留下这个字段，列表才不会像换了一种产品。
@@ -3875,9 +3877,8 @@ export function createUiServer(options: UiServerOptions = {}): UiServerHandle {
       mode: run.mode === "plan" ? "plan" : "single",
       ...(designFacadeOf(run) ? { facade: "design" as const } : {}),
       ...(designRoute ? { designRoute } : {}),
-      workspace: run.workspace === "office" || run.workspace === "code"
-        ? run.workspace
-        : (run.mode === "design" || run.packName === "design" || designFacadeOf(run) ? "office" : "code"),
+      workspace: normalizeWorkspaceFace(run.workspace)
+        ?? (run.mode === "design" || run.packName === "design" || designFacadeOf(run) ? "work" : "code"),
       effort: run.effort ?? null,
       rubric: run.rubric ?? null,
       workdir: run.workdir ?? workdir,
@@ -4054,10 +4055,11 @@ export function createUiServer(options: UiServerOptions = {}): UiServerHandle {
           ...(typeof a.meta.packName === "string" && a.meta.packName
             ? { packName: a.meta.packName }
             : {}),
-          ...(a.meta.workspace === "office" || a.meta.workspace === "code"
-            ? { workspace: a.meta.workspace }
+          // T16 迁移兼容：磁盘上的旧档案 workspace 仍是 "office"，归一成 "work"
+          ...(normalizeWorkspaceFace(a.meta.workspace)
+            ? { workspace: normalizeWorkspaceFace(a.meta.workspace)! }
             : a.meta.packName === "design" || a.meta.facade === "design"
-              ? { workspace: "office" as const }
+              ? { workspace: "work" as const }
               : {}),
           ...(a.meta.mode === "plan"
             ? { mode: "plan" as const }
@@ -4398,9 +4400,8 @@ export function createUiServer(options: UiServerOptions = {}): UiServerHandle {
       createdAt: r.createdAt,
       finishedAt: r.finishedAt ?? null,
       packName: r.packName ?? pack?.name ?? null,
-      workspace: r.workspace === "office" || r.workspace === "code"
-        ? r.workspace
-        : (r.mode === "design" || r.packName === "design" || designFacadeOf(r) ? "office" : "code"),
+      workspace: normalizeWorkspaceFace(r.workspace)
+        ?? (r.mode === "design" || r.packName === "design" || designFacadeOf(r) ? "work" : "code"),
       ...(r.packRoute ? { packRoute: r.packRoute } : {}),
       // 在飞一轮时上一轮 completed/finalPassed 不再描述当前 turn
       stopReason: r.status === "running" ? null : (r.mainStopReason ?? null),
@@ -7413,10 +7414,10 @@ export function createUiServer(options: UiServerOptions = {}): UiServerHandle {
       ...(parent.mode === "plan" ? { mode: "plan" as const } : parent.mode === "design" ? { mode: "design" as const } : {}),
       ...(designFacadeOf(parent) ? { facade: "design" as const } : {}),
       ...(parent.designRoute ? { designRoute: parent.designRoute } : {}),
-      ...(parent.workspace === "office" || parent.workspace === "code"
-        ? { workspace: parent.workspace }
+      ...(normalizeWorkspaceFace(parent.workspace)
+        ? { workspace: normalizeWorkspaceFace(parent.workspace)! }
         : parent.mode === "design" || parent.packName === "design" || designFacadeOf(parent)
-          ? { workspace: "office" as const }
+          ? { workspace: "work" as const }
           : { workspace: "code" as const }),
       ...(parent.contextTokenLimit !== undefined ? { contextTokenLimit: parent.contextTokenLimit } : {}),
       ...(parent.lastExecutorRoleId ? { lastExecutorRoleId: parent.lastExecutorRoleId } : {}),
@@ -7543,10 +7544,10 @@ export function createUiServer(options: UiServerOptions = {}): UiServerHandle {
       ...(parent.mode === "plan" ? { mode: "plan" as const } : parent.mode === "design" ? { mode: "design" as const } : {}),
       ...(designFacadeOf(parent) ? { facade: "design" as const } : {}),
       ...(parent.designRoute ? { designRoute: parent.designRoute } : {}),
-      ...(parent.workspace === "office" || parent.workspace === "code"
-        ? { workspace: parent.workspace }
+      ...(normalizeWorkspaceFace(parent.workspace)
+        ? { workspace: normalizeWorkspaceFace(parent.workspace)! }
         : parent.mode === "design" || parent.packName === "design" || designFacadeOf(parent)
-          ? { workspace: "office" as const }
+          ? { workspace: "work" as const }
           : { workspace: "code" as const }),
       ...(parent.contextTokenLimit !== undefined ? { contextTokenLimit: parent.contextTokenLimit } : {}),
       ...(parent.lastExecutorRoleId ? { lastExecutorRoleId: parent.lastExecutorRoleId } : {}),
@@ -9993,10 +9994,10 @@ export function createUiServer(options: UiServerOptions = {}): UiServerHandle {
     if (
       parsed.workspace !== undefined &&
       parsed.workspace !== "" &&
-      parsed.workspace !== "office" &&
+      normalizeWorkspaceFace(parsed.workspace) === null &&
       parsed.workspace !== "code"
     ) {
-      return { status: 400, payload: { error: `workspace "${parsed.workspace}" 无效。可选：office | code` } };
+      return { status: 400, payload: { error: `workspace "${parsed.workspace}" 无效。可选：work | code（旧值 office 仍接受，会归一成 work）` } };
     }
     let permissionMode: PermissionMode | undefined;
     if (parsed.permissionMode !== undefined && parsed.permissionMode !== "") {
@@ -10092,10 +10093,9 @@ export function createUiServer(options: UiServerOptions = {}): UiServerHandle {
     if (!admittedProject) {
       admittedProject = findProjectByWorkdir(projects, runWorkdir ?? workdir);
     }
-    const admittedWorkspace: "office" | "code" | undefined =
-      parsed.workspace === "office" || parsed.workspace === "code"
-        ? parsed.workspace
-        : undefined;
+    // T16：旧客户端可能还发 "office"，归一成 "work" 再落盘（只认不产）
+    const admittedWorkspace: WorkspaceFace | undefined =
+      normalizeWorkspaceFace(parsed.workspace) ?? undefined;
 
     let packRoute: { pack: string | null; reason: string } | undefined;
     let admittedDesignRoute: DesignRoute | undefined;
@@ -10251,7 +10251,7 @@ export function createUiServer(options: UiServerOptions = {}): UiServerHandle {
       ...(packRoute ? { packRoute } : {}),
       ...(parsed.effort ? { effort: parsed.effort as Effort } : {}),
       ...(parsed.rubric ? { rubric: parsed.rubric } : {}),
-      workspace: admittedWorkspace ?? (wantsDesign ? "office" : "code"),
+      workspace: admittedWorkspace ?? (wantsDesign ? "work" : "code"),
       ...(wantsOrchestrate
         ? { mode: "plan" as const }
         : wantsDesign

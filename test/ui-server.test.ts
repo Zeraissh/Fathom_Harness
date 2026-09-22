@@ -7533,16 +7533,59 @@ describe("B2 · 运行历史落盘", () => {
     });
     const bad = await post("/api/runs", { task: "x", workspace: "cowork" });
     expect(bad.status).toBe(400);
+    // T16 迁移锁：旧页面发的仍是 "office"，服务端要**接受**它并**归一成 "work"**
+    // 再落盘——只认不产，磁盘上从此只有一套名字。
     const { runId } = (await (await post("/api/runs", { task: "办公稿", workspace: "office", verify: false })).json()) as {
       runId: string;
     };
     await waitForDone(base, runId);
     const list = (await (await fetch(`${base}/api/runs`)).json()) as any[];
-    expect(list.find((r) => r.runId === runId)?.workspace).toBe("office");
+    expect(list.find((r) => r.runId === runId)?.workspace).toBe("work");
     await handle!.close();
     handle = undefined;
     const meta = JSON.parse(await readFile(join(dir, runId, "meta.json"), "utf8"));
-    expect(meta.workspace).toBe("office");
+    expect(meta.workspace).toBe("work");
+  });
+
+  it("T16：磁盘上的旧档案 workspace=office，列表里读回来是 work", async () => {
+    dir = await mkdtemp(join(tmpdir(), "history-workspace-legacy-"));
+    const runDir = join(dir, "legacy-face");
+    await mkdir(runDir, { recursive: true });
+    await writeFile(
+      join(runDir, "meta.json"),
+      JSON.stringify({
+        version: 1,
+        runId: "legacy-face",
+        task: "旧办公稿",
+        status: "done",
+        verify: false,
+        createdAt: 1_000,
+        finishedAt: 2_000,
+        // ★ 故意不是 design 包：否则 packName==="design" 的兜底会替 workspace
+        //   算出 "work"，这条就测不到迁移本身（变异验证当场抓到过）
+        packName: null,
+        mode: "single",
+        workspace: "office", // ← 改名前落的盘
+        effort: null,
+        rubric: null,
+        workdir: null,
+        conversationTurn: 1,
+        planGate: false,
+        planDecision: null,
+        mainStopReason: "completed",
+        outcome: null,
+      }),
+      "utf8",
+    );
+    await writeFile(join(runDir, "events.jsonl"), "", "utf8");
+    await boot({
+      modelClient: new FakeModelClient([]),
+      tools: [],
+      workdir: process.cwd(),
+      history: dir,
+    });
+    const list = (await (await fetch(`${base}/api/runs`)).json()) as any[];
+    expect(list.find((r) => r.runId === "legacy-face")?.workspace).toBe("work");
   });
 
   it("RUN-01：崩溃档案(meta=running)恢复后 phase=interrupted，不冒充可同 run 续跑", async () => {

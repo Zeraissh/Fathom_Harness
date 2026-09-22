@@ -592,15 +592,27 @@ describe("filterRunsByComposerWorkdir（侧栏当前项目）", () => {
     const fathom = "C:\\Users\\rk302\\Fathom";
     const pair = [
       { runId: "ags-1", workdir: ags, workspace: "code" },
+      // T16：历史档案里存的还是旧值 "office"——故意留着，这条同时是迁移锁
       { runId: "fathom-1", workdir: fathom, workspace: "office" },
     ];
     expect(inferWorkdirFace(ags, pair)).toBe("code");
-    expect(inferWorkdirFace(fathom, pair)).toBe("office");
+    expect(inferWorkdirFace(fathom, pair)).toBe("work");
     expect(inferWorkdirFace("D:\\empty", pair)).toBeNull();
-    expect(workdirVisibleOnFace(ags, "office", pair)).toBe(false);
+    expect(workdirVisibleOnFace(ags, "work", pair)).toBe(false);
     expect(workdirVisibleOnFace(fathom, "code", pair)).toBe(false);
     expect(workdirVisibleOnFace("D:\\empty", "code", pair)).toBe(true);
-    expect(workdirVisibleOnFace("D:\\empty", "office", pair)).toBe(true);
+    expect(workdirVisibleOnFace("D:\\empty", "work", pair)).toBe(true);
+  });
+
+  it("T16：新值 work 与旧值 office 走同一条路（改名后历史 run 不掉队）", () => {
+    const fathom = "C:\\Users\\rk302\\Fathom";
+    const legacy = [{ runId: "old", workdir: fathom, workspace: "office" }];
+    const renamed = [{ runId: "new", workdir: fathom, workspace: "work" }];
+    expect(inferWorkdirFace(fathom, legacy)).toBe("work");
+    expect(inferWorkdirFace(fathom, renamed)).toBe("work");
+    expect(filterRunsByWorkspaceFace([...legacy, ...renamed], "work").map((r) => r.runId))
+      .toEqual(["old", "new"]);
+    expect(filterRunsByWorkspaceFace([...legacy, ...renamed], "code")).toEqual([]);
   });
 
   it("AGS+Fathom 同一项目：脸切开，勾选 extras 不改变可见性", () => {
@@ -619,7 +631,7 @@ describe("filterRunsByComposerWorkdir（侧栏当前项目）", () => {
     const inProject = filterRunsByComposerWorkdir(pair, ags, false, project);
     expect(inProject.map((r) => r.runId)).toEqual(["ags-1", "fathom-1"]);
     expect(filterRunsByWorkspaceFace(inProject, "code").map((r) => r.runId)).toEqual(["ags-1"]);
-    expect(filterRunsByWorkspaceFace(inProject, "office").map((r) => r.runId)).toEqual(["fathom-1"]);
+    expect(filterRunsByWorkspaceFace(inProject, "work").map((r) => r.runId)).toEqual(["fathom-1"]);
     expect(composerListMembership(null, ags, [fathom])).toBeNull();
     expect(filterRunsByComposerWorkdir(pair, ags, false, composerListMembership(null, ags, [fathom])))
       .toEqual(filterRunsByComposerWorkdir(pair, ags));

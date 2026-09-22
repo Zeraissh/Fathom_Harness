@@ -132,9 +132,9 @@ import {
   ancestorRunIdsForChat,
   filterRunsByWorkspaceFace,
   filterRunsByComposerWorkdir,
-  runBelongsToOffice,
+  runBelongsToWorkFace,
   CODE_STARTER_JOBS,
-  OFFICE_STARTER_JOBS,
+  WORK_STARTER_JOBS,
   buildNewRunRequest,
   describeApprovalAction,
   runEndAnnouncement,
@@ -4292,7 +4292,7 @@ describe("空态给的是能点的例子", () => {
     expect(all).not.toContain("不要调用工具");
     expect(all).not.toMatch(/问|读|写/);
     expect(document.querySelector("[data-design-mode-enter]")).toBeNull();
-    expect(document.querySelector("[data-office-more]")).toBeNull();
+    expect(document.querySelector("[data-work-more]")).toBeNull();
   });
 
   it("示例文本进 data-example，点击由宿主填进输入框（不直接开跑）", () => {
@@ -4320,10 +4320,10 @@ describe("空态给的是能点的例子", () => {
   });
 
   it("办公空态是纪要 / 一页 / 出处加更多稿件，没有仓库作业", () => {
-    paintWelcome({ workspaceFace: "office" });
+    paintWelcome({ workspaceFace: "work" });
     const titles = [...document.querySelectorAll("#starter-gallery .starter-tile-title")].map((e) => e.textContent);
     expect(titles).toEqual(["做纪要", "做一页", "带出处问答", "更多稿件"]);
-    expect(document.querySelector("[data-office-more]")?.textContent).toContain("更多稿件");
+    expect(document.querySelector("[data-work-more]")?.textContent).toContain("更多稿件");
     expect(document.querySelector("[data-design-mode-enter]")).toBeNull();
     expect(document.querySelector("[data-design-mode-exit]")).toBeNull();
     expect(document.querySelector("[data-design-template]")).toBeNull();
@@ -4331,7 +4331,7 @@ describe("空态给的是能点的例子", () => {
     expect(gallery).not.toContain("从计划开始");
     expect(gallery).not.toContain("修一处并跑通测试");
     expect(gallery).not.toContain("看看这个仓库");
-    expect(OFFICE_STARTER_JOBS.map((j) => j.label)).toEqual(["做纪要", "做一页", "带出处问答"]);
+    expect(WORK_STARTER_JOBS.map((j) => j.label)).toEqual(["做纪要", "做一页", "带出处问答"]);
     const examples = [...document.querySelectorAll("[data-example]")];
     const byPrompt = (re) => examples.find((el) => re.test(el.getAttribute("data-example") || ""));
     expect(byPrompt(/短纪要/)?.hasAttribute("data-starter-design")).toBe(true);
@@ -4342,16 +4342,16 @@ describe("空态给的是能点的例子", () => {
     expect(document.querySelector(".empty-tagline")).toBeNull();
     expect(document.querySelector(".empty-window-note")).toBeNull();
     const html = readFileSync(join(UI_DIR, "index.html"), "utf-8");
-    expect(html).toMatch(/designModeActive:\s*officeCatalogOpen/);
+    expect(html).toMatch(/designModeActive:\s*workCatalogOpen/);
   });
 
   it("更多稿件打开六页签；返回只回到办公四行", () => {
-    paintWelcome({ workspaceFace: "office" });
-    expect(document.querySelector("[data-office-more]")).toBeTruthy();
+    paintWelcome({ workspaceFace: "work" });
+    expect(document.querySelector("[data-work-more]")).toBeTruthy();
     expect(document.querySelector("[data-design-tab]")).toBeNull();
     paintWelcome({
-      workspaceFace: "office",
-      officeCatalogOpen: true,
+      workspaceFace: "work",
+      workCatalogOpen: true,
       selectedDesignTab: "Prototype",
       catalog: [
         { id: "web-prototype", tab: "Prototype", title: "网页原型", description: "默认落地页" },
@@ -4361,10 +4361,10 @@ describe("空态给的是能点的例子", () => {
     });
     expect(document.querySelector("[data-design-mode-exit]")?.textContent).toMatch(/返回/);
     expect(document.querySelector("[data-design-tab]")).toBeTruthy();
-    paintWelcome({ workspaceFace: "office" });
+    paintWelcome({ workspaceFace: "work" });
     expect(document.querySelector("[data-design-mode-exit]")).toBeNull();
     expect(document.querySelector("[data-design-tab]")).toBeNull();
-    expect(document.querySelector("[data-office-more]")).toBeTruthy();
+    expect(document.querySelector("[data-work-more]")).toBeTruthy();
     expect(document.querySelector("[data-design-mode-enter]")).toBeNull();
   });
 
@@ -4422,16 +4422,16 @@ describe("空态给的是能点的例子", () => {
     paintWelcome({ designModeActive: true, selectedDesignTab: "Deck" });
     expect(document.querySelector("[data-design-mode-exit]")).toBeTruthy();
     expect(document.querySelector("[data-design-tab]")).toBeTruthy();
-    paintWelcome({ workspaceFace: "office" });
+    paintWelcome({ workspaceFace: "work" });
     expect(document.querySelector("[data-design-mode-exit]")).toBeNull();
     expect(document.querySelector("[data-design-tab]")).toBeNull();
-    expect(document.querySelector("[data-office-more]")).toBeTruthy();
+    expect(document.querySelector("[data-work-more]")).toBeTruthy();
     expect(document.querySelector("[data-design-mode-enter]")).toBeNull();
     const html = readFileSync(join(UI_DIR, "index.html"), "utf-8");
     expect(html).toMatch(/data-design-mode-exit/);
     expect(html).toMatch(/function exitDesignMode/);
-    expect(html).toMatch(/officeCatalogOpen = false/);
-    expect(html).toMatch(/designModeActive = workspaceFace === "office"/);
+    expect(html).toMatch(/workCatalogOpen = false/);
+    expect(html).toMatch(/designModeActive = workspaceFace === "work"/);
   });
 
   it("选 Deck 页签时画出带缩略图的样例卡，不是第二排文字钮", () => {
@@ -4696,17 +4696,17 @@ describe("空态给的是能点的例子", () => {
 describe("办公/编码脸与侧栏密度", () => {
   it("Work 只留办公对话，Code 只留编码；旧档 packName=design 算办公", () => {
     const runs = [
-      { runId: "o1", task: "幻灯", workspace: "office", packName: "design" },
+      { runId: "o1", task: "幻灯", workspace: "work", packName: "design" },
       { runId: "c1", task: "修 bug", workspace: "code", packName: "ts-coding" },
       { runId: "legacy", task: "旧稿", packName: "design" },
       { runId: "old-code", task: "板上 CRC", packName: "stm32-debug" },
     ];
-    expect(filterRunsByWorkspaceFace(runs, "office").map((r) => r.runId)).toEqual(["o1", "legacy"]);
+    expect(filterRunsByWorkspaceFace(runs, "work").map((r) => r.runId)).toEqual(["o1", "legacy"]);
     expect(filterRunsByWorkspaceFace(runs, "code").map((r) => r.runId)).toEqual(["c1", "old-code"]);
-    expect(runBelongsToOffice({ packName: "design" })).toBe(true);
-    expect(runBelongsToOffice({ facade: "design", mode: "single" })).toBe(true);
-    expect(runBelongsToOffice({ designRoute: { id: "pm-spec" }, mode: "single" })).toBe(true);
-    expect(runBelongsToOffice({ workspace: "code", packName: "design" })).toBe(false);
+    expect(runBelongsToWorkFace({ packName: "design" })).toBe(true);
+    expect(runBelongsToWorkFace({ facade: "design", mode: "single" })).toBe(true);
+    expect(runBelongsToWorkFace({ designRoute: { id: "pm-spec" }, mode: "single" })).toBe(true);
+    expect(runBelongsToWorkFace({ workspace: "code", packName: "design" })).toBe(false);
   });
 
   it("Work 脸只列 Fathom 对话，不列 AGS；勾选与 primary 无关", () => {
@@ -4720,11 +4720,11 @@ describe("办公/编码脸与侧栏密度", () => {
     };
     const pair = [
       { runId: "ags-1", task: "看看 AGS 源文件", workdir: ags, workspace: "code", packName: "ts-coding" },
-      { runId: "fathom-1", task: "杂志风幻灯", workdir: fathom, workspace: "office", packName: "design" },
+      { runId: "fathom-1", task: "杂志风幻灯", workdir: fathom, workspace: "office", packName: "design" }, // 旧值：兼容锁
     ];
     const visible = filterRunsByWorkspaceFace(
       filterRunsByComposerWorkdir(pair, fathom, false, project),
-      "office",
+      "work",
     );
     expect(visible.map((r) => r.runId)).toEqual(["fathom-1"]);
     document.body.innerHTML = '<div id="run-list" class="run-list"></div>';
@@ -4735,10 +4735,10 @@ describe("办公/编码脸与侧栏密度", () => {
     expect(tasks.some((t) => t?.includes("幻灯"))).toBe(true);
   });
 
-  it("办公新建载荷带 workspace=office", () => {
-    expect(buildNewRunRequest({ task: "做幻灯", mode: "design", workspace: "office" })).toMatchObject({
+  it("办公新建载荷带 workspace=work", () => {
+    expect(buildNewRunRequest({ task: "做幻灯", mode: "design", workspace: "work" })).toMatchObject({
       mode: "design",
-      workspace: "office",
+      workspace: "work",
     });
     expect(CODE_STARTER_JOBS.map((j) => j.label)).toEqual([
       "从计划开始",
@@ -4756,7 +4756,7 @@ describe("办公/编码脸与侧栏密度", () => {
     expect(chrome).toContain("sidebar-top-tools");
     expect(chrome).toContain('id="notifications-btn"');
     expect(chrome).toContain('id="theme-toggle"');
-    expect(chrome).toMatch(/id="workspace-face-office"[^>]*>Work</);
+    expect(chrome).toMatch(/id="workspace-face-work"[^>]*>Work</);
     expect(chrome).toMatch(/id="workspace-face-code"[^>]*>Code</);
     expect(chrome).toContain('id="new-chat-btn"');
     expect(chrome).not.toContain("<span>指挥中心</span>");

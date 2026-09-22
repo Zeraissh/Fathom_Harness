@@ -118,6 +118,27 @@ export function parseArchiveHost(raw: unknown): ArchiveHost | undefined {
   return raw === "cli" || raw === "web" ? raw : undefined;
 }
 
+/**
+ * 侧栏两张脸的内部枚举值。UI 上一直叫 Work / Code；代码里曾叫 office / code
+ * ——同一个概念两个名字，计划、代码、界面三处对不上（T16）。现在统一成 work。
+ */
+export const WORKSPACE_FACES = ["work", "code"] as const;
+export type WorkspaceFace = (typeof WORKSPACE_FACES)[number];
+
+/**
+ * 面值归一——T16 的**服务端迁移边界**（前端那一份在 ui/public/app.js，同名同义）。
+ *
+ * 旧值 `"office"` 会从两个地方回流：已经落盘的 meta.json，和还没刷新的旧页面
+ * 发来的 POST /api/runs。所以它**永远要认得**，只是不再产出。
+ * 认不出返回 null，由调用方决定回退，避免"没声明"和"声明了 code"被同一个
+ * falsy 吞掉。
+ */
+export function normalizeWorkspaceFace(raw: unknown): WorkspaceFace | null {
+  if (raw === "work" || raw === "office") return "work";
+  if (raw === "code") return "code";
+  return null;
+}
+
 /** meta.json 的形状。version 是将来格式演进的逃生口 */
 export interface ArchivedMeta {
   version: 1;
@@ -154,7 +175,7 @@ export interface ArchivedMeta {
     extraSeeds?: string[];
   };
   /** 侧栏办公/编码脸；旧档案缺省，前端按 packName=design 回退 */
-  workspace?: "office" | "code";
+  workspace?: WorkspaceFace;
   effort: string | null;
   rubric: string | null;
   workdir: string | null;

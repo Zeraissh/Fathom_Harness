@@ -687,11 +687,11 @@ describe("reduceEvent", () => {
     expect(html).toContain("fathom-plumb");
     expect(html).toContain("FATHOM<span class=\"fw-dot\">.</span>");
     expect(html).toContain('id="workspace-face"');
-    expect(html).toContain('data-workspace-face="office"');
+    expect(html).toContain('data-workspace-face="work"');
     expect(html).toContain('data-workspace-face="code"');
-    expect(html).toMatch(/id="workspace-face-office"[^>]*aria-checked="true"[^>]*>Work</);
+    expect(html).toMatch(/id="workspace-face-work"[^>]*aria-checked="true"[^>]*>Work</);
     expect(html).toMatch(/id="workspace-face-code"[^>]*aria-checked="false"[^>]*>Code</);
-    expect(html).not.toMatch(/id="workspace-face-office"[^>]*>办公</);
+    expect(html).not.toMatch(/id="workspace-face-work"[^>]*>办公</);
     expect(html).not.toMatch(/id="workspace-face-code"[^>]*>编码</);
     expect(html).not.toContain("项目与对话");
   });
@@ -2117,22 +2117,26 @@ describe("AC6 无障碍语义 (R-05)", () => {
     })).toMatchObject({
       task: "做个落地页",
       mode: "design",
-      workspace: "office",
+      workspace: "work",
       designId: "saas-landing",
       designTab: "Prototype",
       pack: "design",
     });
-    expect(buildNewRunRequest({ task: "修一处", workspace: "office" })).toMatchObject({
-      workspace: "office",
+    expect(buildNewRunRequest({ task: "修一处", workspace: "work" })).toMatchObject({
+      workspace: "work",
     });
-    expect(buildNewRunRequest({ task: "修一处", workspace: "office" })).not.toHaveProperty("mode");
+    // T16 迁移锁：旧页面还会发 "office"，载荷里必须归一成 "work"（只认不产）
+    expect(buildNewRunRequest({ task: "修一处", workspace: "office" })).toMatchObject({
+      workspace: "work",
+    });
+    expect(buildNewRunRequest({ task: "修一处", workspace: "work" })).not.toHaveProperty("mode");
     expect(wantsDesignPipeline({})).toBe(false);
-    expect(wantsDesignPipeline({ officeDesignChip: true })).toBe(true);
+    expect(wantsDesignPipeline({ workDesignChip: true })).toBe(true);
     expect(wantsDesignPipeline({ designId: "web-prototype" })).toBe(true);
     expect(wantsDesignPipeline({ designTemplate: "landing-basic" })).toBe(true);
     const html = readFileSync(join(__dirname, "..", "ui", "public", "index.html"), "utf-8");
     expect(html).toContain("wantsDesignPipeline");
-    expect(html).not.toMatch(/mode:\s*workspaceFace === ["']office["'] \? ["']design["']/);
+    expect(html).not.toMatch(/mode:\s*workspaceFace === ["']work["'] \? ["']design["']/);
     expect(buildNewRunRequest({ task: "修一处" })).toMatchObject({ workspace: "code" });
     expect(buildNewRunRequest({
       task: "做个落地页",
@@ -2168,9 +2172,9 @@ describe("AC6 无障碍语义 (R-05)", () => {
       designTemplate: "deck-basic",
       pack: "design",
     });
-    expect(nextPackForWorkspaceFace("office", "ts-coding", ["design", "ts-coding"])).toBe("design");
+    expect(nextPackForWorkspaceFace("work", "ts-coding", ["design", "ts-coding"])).toBe("design");
     expect(nextPackForWorkspaceFace("code", "design", ["design", "ts-coding"])).toBe("ts-coding");
-    expect(nextPackForWorkspaceFace("office", "brand-kit", ["design", "brand-kit"])).toBe("brand-kit");
+    expect(nextPackForWorkspaceFace("work", "brand-kit", ["design", "brand-kit"])).toBe("brand-kit");
   });
 
   // 29 已升级为真实 DOM 断言，见 test/ui-a11y.test.ts 的

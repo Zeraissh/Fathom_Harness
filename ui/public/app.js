@@ -2929,20 +2929,41 @@ export function deriveScopeSummary(parts = {}) {
  * 现在是哪张脸（方案 A · 计划 1）。
  *
  * **全应用只有这一个判据。** 落成 `body[data-face]`，所有差异（git 区显隐、
- * 左栏 tab、右栏 tab、起步卡）都读它——散落的 `if (office)` 是上一轮的病灶，
+ * 左栏 tab、右栏 tab、起步卡）都读它——散落的 `if (work)` 是上一轮的病灶，
  * 它们会各自漂移，而漂移那天没人知道该信谁。
  * 显式脸优先于会话推断：用户切了脸就听用户的。
  *
  * **现状注**：这是**目标态**，不是今天的全貌——第二脸表示还在两处：
  * `<aside#sidebar data-workspace-face>` 与两个脸按钮上的 `data-workspace-face`
  * （JS 态标记，CSS 已不挂它，test/ui-file-tree.test.ts 负向锁着）；
- * `designModeActive = workspaceFace === "office"` 两处（`index.html` 里 grep 即得）。
+ * `designModeActive = workspaceFace === "work"` 两处（`index.html` 里 grep 即得）。
  * **迁完之前，别把"唯一判据"当真引用。**
  */
 export function deriveFace(input) {
   const explicit = input?.face;
   if (explicit === "code" || explicit === "work") return explicit;
   return input?.workspace === "code" ? "code" : "work";
+}
+
+/**
+ * 面值归一——T16 的**唯一迁移边界**。
+ *
+ * 内部枚举值从 `"office"` 改名成 `"work"`（UI 上一直叫 Work，代码里叫 office，
+ * 计划/代码/界面三处两套名字）。但旧值会从两个地方回流，所以 `"office"` 要
+ * **永远认得**，只是不再产出：
+ *   · 浏览器 localStorage 里用户上一次存的偏好（`agent.ui.pref.workspaceFace`
+ *     与 `agent.ui.pref.workdirByFace` 的键）；
+ *   · 服务端归档 meta.json / run 列表里历史 run 的 `workspace` 字段。
+ * 认不出的值返回 null，由调用方决定默认——这样"没有偏好"和"偏好是 code"
+ * 不会被同一个 falsy 吞掉。
+ *
+ * @param {unknown} value
+ * @returns {"work"|"code"|null}
+ */
+export function normalizeWorkspaceFace(value) {
+  if (value === "work" || value === "office") return "work";
+  if (value === "code") return "code";
+  return null;
 }
 
 export function deriveComposerMode({ info, localStatus, submitting, error, stopping, workdir, draft, designMode, designTitle, planMode, delivery } = {}) {
@@ -3423,9 +3444,8 @@ export function buildNewRunRequest({
   const wantMulti = multiAgent === true;
   const orchestrate = mode === "plan" || wantPlanGate || wantMulti;
   const wantDesign = mode === "design" && !orchestrate;
-  const workspaceFace = workspace === "office" || workspace === "code"
-    ? workspace
-    : wantDesign ? "office" : "code";
+  const workspaceFace = normalizeWorkspaceFace(workspace)
+    ?? (wantDesign ? "work" : "code");
   const effectiveConcurrency =
     concurrency !== undefined && concurrency !== null && concurrency !== ""
       ? concurrency
@@ -3491,9 +3511,9 @@ export function wantsDesignPipeline({
   designTemplate,
   designSample,
   designFilePack,
-  officeDesignChip,
+  workDesignChip,
 } = {}) {
-  return Boolean(designId || designTemplate || designSample || designFilePack || officeDesignChip);
+  return Boolean(designId || designTemplate || designSample || designFilePack || workDesignChip);
 }
 
 /** 工程包：切到 Work 脸时不要带着走，否则设计模式会落到 ts-coding。 */
@@ -3510,7 +3530,7 @@ export const ENGINEERING_PACKS = new Set([
 export function nextPackForWorkspaceFace(face, current, available = []) {
   const names = new Set(available);
   const cur = current == null ? "" : String(current);
-  if (face === "office" || face === "work") {
+  if (face === "work") {
     if (!cur || ENGINEERING_PACKS.has(cur)) {
       return names.has("design") ? "design" : cur;
     }
@@ -4767,8 +4787,9 @@ export function findProjectForRun(run, projects) {
 }
 
 /** 办公脸：显式 workspace，或旧档案 packName=design。其余归编码。只给新建默认 pack，不藏列表。 */
-export function runBelongsToOffice(run) {
-  if (run?.workspace === "office") return true;
+export function runBelongsToWorkFace(run) {
+  // 迁移兼容：历史 run 的档案里存的还是旧值 "office"，永远要认（只是不再产出）
+  if (normalizeWorkspaceFace(run?.workspace) === "work") return true;
   if (run?.workspace === "code") return false;
   return run?.packName === "design"
     || run?.mode === "design"
@@ -4787,32 +4808,32 @@ export function composerListMembership(project, _workdir, _extras = []) {
   return null;
 }
 
-/** 目录落在哪张脸：该路径上的 run 全是办公→office，全是编码→code；空或混用→两边都可见。 */
+/** 目录落在哪张脸：该路径上的 run 全是办公→work，全是编码→code；空或混用→两边都可见。 */
 export function inferWorkdirFace(workdir, runs) {
-  let office = 0;
+  let work = 0;
   let code = 0;
   for (const run of Array.isArray(runs) ? runs : []) {
     if (!sameWorkdirPath(run?.workdir, workdir)) continue;
-    if (runBelongsToOffice(run)) office += 1;
+    if (runBelongsToWorkFace(run)) work += 1;
     else code += 1;
   }
-  if (office && !code) return "office";
-  if (code && !office) return "code";
+  if (work && !code) return "work";
+  if (code && !work) return "code";
   return null;
 }
 
 export function workdirVisibleOnFace(workdir, face, runs) {
   const inferred = inferWorkdirFace(workdir, runs);
   if (!inferred) return true;
-  const wantOffice = face === "office" || face === "work";
-  return wantOffice ? inferred === "office" : inferred === "code";
+  const wantWork = face === "work";
+  return wantWork ? inferred === "work" : inferred === "code";
 }
 
 /** Work 只留办公对话，Code 只留编码对话。 */
 export function filterRunsByWorkspaceFace(runs, face) {
   const list = Array.isArray(runs) ? runs : [];
-  const wantOffice = face === "office" || face === "work";
-  return list.filter((r) => (wantOffice ? runBelongsToOffice(r) : !runBelongsToOffice(r)));
+  const wantWork = face === "work";
+  return list.filter((r) => (wantWork ? runBelongsToWorkFace(r) : !runBelongsToWorkFace(r)));
 }
 
 // ---------------------------------------------------------------
@@ -11560,7 +11581,7 @@ export const CODE_STARTER_JOBS = [
 ];
 
 /** Work 脸第一屏：稿件 / 纪要 / 出处，不是仓库作业。 */
-export const OFFICE_STARTER_JOBS = [
+export const WORK_STARTER_JOBS = [
   {
     id: "minutes",
     label: "做纪要",
@@ -11611,7 +11632,7 @@ export const DESIGN_STARTER_TEMPLATES = [
   },
 ];
 
-export const OFFICE_MORE_DRAFTS = Object.freeze({
+export const WORK_MORE_DRAFTS = Object.freeze({
   id: "more",
   title: "更多稿件",
   hint: "原型、看板、邮件和其他样子",
@@ -12181,17 +12202,19 @@ function renderJobTile({ title, hint, attrs }) {
 export function renderStarterGallery(opts = {}) {
   const root = document.getElementById("starter-gallery");
   if (!root) return;
-  const catalogOpen = Boolean(opts.designModeActive || opts.officeCatalogOpen);
-  const face = opts.workspaceFace === "office" ? "office" : "code";
+  const catalogOpen = Boolean(opts.designModeActive || opts.workCatalogOpen);
+  // T16 改名是等价改写：只有**明确说了** Work 脸（新值 work / 旧值 office）才走
+  // Work 那一支；没说就照旧落 code——宿主总会显式传，这里的缺省只影响裸调用。
+  const face = normalizeWorkspaceFace(opts.workspaceFace) === "work" ? "work" : "code";
   root.classList.toggle("starter-gallery--design", catalogOpen);
   root.classList.toggle("starter-gallery--jobs", !catalogOpen);
   if (catalogOpen) {
     root.innerHTML = renderDesignModeGallery(opts);
     return;
   }
-  if (face === "office") {
+  if (face === "work") {
     const tiles = [
-      ...OFFICE_STARTER_JOBS.map((e) =>
+      ...WORK_STARTER_JOBS.map((e) =>
         renderJobTile({
           title: e.label,
           hint: e.hint,
@@ -12201,9 +12224,9 @@ export function renderStarterGallery(opts = {}) {
         }),
       ),
       renderJobTile({
-        title: OFFICE_MORE_DRAFTS.title,
-        hint: OFFICE_MORE_DRAFTS.hint,
-        attrs: `data-office-more="1"`,
+        title: WORK_MORE_DRAFTS.title,
+        hint: WORK_MORE_DRAFTS.hint,
+        attrs: `data-work-more="1"`,
       }),
     ];
     root.innerHTML = `<ul class="starter-tiles starter-tiles--jobs">${tiles.join("")}</ul>`;
