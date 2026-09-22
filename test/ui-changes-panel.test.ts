@@ -325,6 +325,41 @@ describe("initChangesPanel DOM 层", () => {
     expect(api.getState().status).toBe("error");
   });
 
+  /**
+   * T14：服务端给 /changes 加了 `?workdir=` 口径校验，这里是宿主这一侧的渲染锁。
+   * 「加字段必须同一个提交把宿主接上并补一条渲染锁」——不接的话，服务端那道
+   * 校验永远不会被触发，等于白加。
+   */
+  it("T14 setRun 带上这场运行自己的目录，拼进 ?workdir=", async () => {
+    const fetchFn = vi.fn(async () => mockJsonResponse(200, LIST_PAYLOAD));
+    const { api } = mountApi(fetchFn);
+    api.setRun("r1", "D:/Work/scratch/liquid demo");
+    await waitFor(() => document.querySelectorAll(".chg-row").length === 3);
+    expect(fetchFn).toHaveBeenCalledWith(
+      `/api/runs/r1/changes?workdir=${encodeURIComponent("D:/Work/scratch/liquid demo")}`,
+    );
+  });
+
+  it("T14 不给目录时 URL 不变（旧调用方与不知道目录的场景都照旧）", async () => {
+    const fetchFn = vi.fn(async () => mockJsonResponse(200, LIST_PAYLOAD));
+    const { api } = mountApi(fetchFn);
+    api.setRun("r1");
+    await waitFor(() => document.querySelectorAll(".chg-row").length === 3);
+    expect(fetchFn).toHaveBeenCalledWith("/api/runs/r1/changes");
+  });
+
+  it("T14 目录对不上时照抄服务端那句具体原因，不拿通用文案盖过去", async () => {
+    const serverSaid = '这次运行的工作目录是 "D:/a"，与请求里的 "D:/b" 不同';
+    const fetchFn = vi.fn(async () =>
+      mockJsonResponse(400, { error: serverSaid, runWorkdir: "D:/a" }));
+    const { api } = mountApi(fetchFn);
+    api.setRun("r1", "D:/b");
+    await waitFor(() => document.querySelector(".chg-error"));
+    expect(document.querySelector(".chg-error").textContent).toBe(serverSaid);
+    expect(document.querySelector(".chg-error").textContent)
+      .not.toBe(CHANGES_COPY.listError(400));
+  });
+
   it("setRun(null) 收起分区；换 run 清空旧数据并重新加载", async () => {
     const fetchFn = vi.fn(async (url) => {
       if (url === "/api/runs/r1/changes") return mockJsonResponse(200, LIST_PAYLOAD);

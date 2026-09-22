@@ -9241,7 +9241,7 @@ export function createUiServer(options: UiServerOptions = {}): UiServerHandle {
     | { type: "memoryList"; scope: "current" | "all"; workdir?: string }
     | { type: "memoryRead"; name: string }
     | { type: "searchRuns"; query: string; limit: string | null }
-    | { type: "runChanges"; runId: string }
+    | { type: "runChanges"; runId: string; workdir: string | null }
     | { type: "runsList" }
     | { type: "lifecycleStream" }
     | { type: "transcript"; runId: string }
@@ -9520,10 +9520,14 @@ export function createUiServer(options: UiServerOptions = {}): UiServerHandle {
     /**
      * T8 变更审查：聚合一个 run 的写盘工具触碰。路由层只管形状；
      * 圈禁（resolveInWorkdir）与 git 降级都在处理器里。
+     *
+     * T14：可选 ?workdir=——调用方声明"我按这个目录在看这场运行"。路由层照收，
+     * 是否与该 run 自己记下的目录一致由处理器判（形状与语义分开，同 /artifact）。
      */
-    const changesMatch = method === "GET" && url.match(/^\/api\/runs\/([^/]+)\/changes$/);
+    const changesMatch = method === "GET" && url.match(/^\/api\/runs\/([^/]+)\/changes(?:\?(.*))?$/);
     if (changesMatch) {
-      return { type: "runChanges", runId: changesMatch[1]! };
+      const params = new URLSearchParams(changesMatch[2] ?? "");
+      return { type: "runChanges", runId: changesMatch[1]!, workdir: params.get("workdir") };
     }
 
     if (method === "GET" && url === "/api/runs") {
@@ -12102,7 +12106,30 @@ export function createUiServer(options: UiServerOptions = {}): UiServerHandle {
         const run = runs.get(route.runId);
         if (!run) return notFound(res, `Run not found: ${route.runId}`);
         await hydrateArchive(run); // 归档 run 的事件在磁盘上，首次访问才读
-        const root = run.workdir ?? workdir;
+        const runRoot = run.workdir ?? workdir;
+        /**
+         * T14 ?workdir= 校验：调用方可以声明它以为的目录，但**不能拿它换根**。
+         * 只有两种目录被认：这场 run 自己记下的那个，或宿主白名单里的。
+         * 对不上就 400 把两边的值都摆出来——静默改根会让前端拿着另一个目录的
+         * 文件状态当这场运行的证据，正是 T14 要根治的"界面说假话"。
+         * 圈禁纪律不变：下面每条路径仍然过 resolveInWorkdir。
+         */
+        const claimed = typeof route.workdir === "string" ? route.workdir.trim() : "";
+        if (claimed) {
+          if (![...allowedWorkdirs].some((dir) => sameWorkdirPath(dir, claimed))) {
+            return json(res, 400, {
+              error: `工作目录不在白名单内：${claimed}`,
+              runWorkdir: runRoot,
+            });
+          }
+          if (!sameWorkdirPath(claimed, runRoot)) {
+            return json(res, 400, {
+              error: `这次运行的工作目录是 "${runRoot}"，与请求里的 "${claimed}" 不同`,
+              runWorkdir: runRoot,
+            });
+          }
+        }
+        const root = runRoot;
         const isRepo = await detectGitRepo(root);
         const resolvedRoot = resolve(root);
         const touched = collectTouchedPaths(run.events);

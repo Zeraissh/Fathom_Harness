@@ -11488,6 +11488,37 @@ body[data-face="code"] .right-rail-review-head {
 }
 body[data-face="code"] .right-rail-review-list { padding-top: 6px; }
 
+/* T14 空态的第二种形态：这场运行的工作目录不是宿主当前目录。
+ * 这时"没碰过文件"是假话——面板压根不在那个目录上看东西，所以报实情 + 给切换钮。
+ * 钮的外观跟卡头的「在右栏审阅 →」同款（同一族小动作），只用设计令牌。 */
+body[data-face="code"] .right-rail-review-elsewhere {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+body[data-face="code"] .right-rail-review-elsewhere code {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  word-break: break-all;
+  color: var(--text-1);
+}
+body[data-face="code"] .right-rail-review-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  border: 1px solid var(--border-1);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-2);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+body[data-face="code"] .right-rail-review-switch:hover { color: var(--text-1); border-color: var(--text-3); }
+body[data-face="code"] .right-rail-review-switch:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 1px; }
+
 /* 卡头的「在右栏审阅 →」：与 hunk 动作同款小按钮。
  * 绝对定位在头行右端——按钮是 details 的兄弟（不是 summary 的子级），
  * 嵌进 summary 会被 axe 判 nested-interactive。top:5px 对齐头行

@@ -225,6 +225,8 @@ export function initChangesPanel(host = {}, env = {}) {
   // ---- 状态 ----
   /** @type {string|null} */
   let runId = null;
+  /** @type {string|null} 本场运行自己记下的工作目录（T14：随请求发给服务端复核） */
+  let claimedWorkdir = null;
   /** @type {"idle"|"loading"|"ready"|"error"} */
   let status = "idle";
   let error = "";
@@ -418,8 +420,9 @@ export function initChangesPanel(host = {}, env = {}) {
     error = "";
     render();
     let response;
+    const query = claimedWorkdir ? `?workdir=${encodeURIComponent(claimedWorkdir)}` : "";
     try {
-      response = await fetchFn(`/api/runs/${encodeURIComponent(runId)}/changes`);
+      response = await fetchFn(`/api/runs/${encodeURIComponent(runId)}/changes${query}`);
     } catch {
       if (seq !== listSeq) return;
       status = "error";
@@ -430,7 +433,18 @@ export function initChangesPanel(host = {}, env = {}) {
     if (seq !== listSeq) return;
     if (!response.ok) {
       status = "error";
-      error = response.status === 404 ? CHANGES_COPY.runGone : CHANGES_COPY.listError(response.status);
+      if (response.status === 404) {
+        error = CHANGES_COPY.runGone;
+      } else if (response.status === 400) {
+        // T14：目录对不上时服务端说得比通用文案具体（它知道 run 自己的目录是哪个），
+        // 照抄它那句；拿不到就退回通用文案，不自己编一个原因
+        const body = await response.json().catch(() => null);
+        error = typeof body?.error === "string" && body.error
+          ? body.error
+          : CHANGES_COPY.listError(response.status);
+      } else {
+        error = CHANGES_COPY.listError(response.status);
+      }
       render();
       return;
     }
@@ -511,12 +525,21 @@ export function initChangesPanel(host = {}, env = {}) {
     },
     /**
      * 切换当前 run。runId 变化触发重载；null 收起分区。
+     *
+     * T14 第二个参数是**这场运行自己记下的工作目录**（不是宿主当前目录）。
+     * 它会作为 `?workdir=` 随请求发出，让服务端替我们核一次"我以为的目录
+     * 就是这场运行的目录"。对不上服务端 400，界面照实报错——而不是拿着
+     * 另一个目录的文件状态当这场运行的证据。
+     *
      * @param {string|null} nextRunId
+     * @param {string|null} [runWorkdir]
      */
-    setRun(nextRunId) {
+    setRun(nextRunId, runWorkdir) {
       const id = nextRunId || null;
-      if (id === runId) return;
+      const wd = String(runWorkdir ?? "").trim() || null;
+      if (id === runId && wd === claimedWorkdir) return;
       runId = id;
+      claimedWorkdir = wd;
       changes = [];
       knownWrites = [];
       expandedPath = null;

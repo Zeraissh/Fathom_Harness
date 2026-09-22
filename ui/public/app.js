@@ -8707,9 +8707,16 @@ export function deriveThreadChatItems(runs, runStates, tipId, live, opts = {}) {
       if (skipLead && it.kind === "recap") continue;
       // 编排计划 / 子代理是整场对话一份骨架，不能每个续跑 run 再贴一张。
       if (skipLead && (it.kind === "plan" || it.kind === "agents")) continue;
-      // 「本场改动」是本场（tip）的卡：祖先 run 早收官了，贴出来既错位
-      // （已阅集合/取 patch 都只认选中 run），也是噪音。
-      if (skipLead && it.kind === "changecard") continue;
+      // 「本场改动」一场对话只留一张，位置在整条谱系的末尾——逐 run 各贴一张
+      // 既错位（已阅集合/取 patch 都只认选中 run）也是噪音。这里先把各 run
+      // 自己那张一律丢掉，函数末尾再按**整条谱系**补一张（见下）。
+      //
+      // ★ T14：这里原本写的是 `if (skipLead && …)`，即**留下 i===0 那张、丢掉
+      //   其余（含 tip 那张）**——与上一行注释说的"本场（tip）的卡"正好相反。
+      //   后果就是审视报告问题 4 的"假空"：对话里挂着根 run 的「改文件 12 个」，
+      //   而右栏 review 面读的是 tip 自己的 state（那一轮限流秒挂、0 个文件）
+      //   ⇒ 一个说 12 一个说没有。两边现在同源，构造上不可能再打架。
+      if (it.kind === "changecard") continue;
       out.push({
         ...it,
         key: (it.kind === "live" || it.kind === "activity")
@@ -8718,7 +8725,59 @@ export function deriveThreadChatItems(runs, runStates, tipId, live, opts = {}) {
       });
     }
   }
+  const touched = deriveThreadTouchedFiles(runs, runStates, tipId);
+  if (touched.length > 0) {
+    out.push({
+      kind: "changecard",
+      key: "changecard",
+      files: touched,
+      runId: tipId ?? null,
+      seq: Number.MAX_SAFE_INTEGER,
+    });
+  }
   return collapseRepeatChatItems(out);
+}
+
+/** 谱系内合成 seq 的进位：远大于任何单个 run 的事件数 */
+export const THREAD_SEQ_STRIDE = 1_000_000_000;
+
+/**
+ * 整条对话谱系碰过的文件（T14）。
+ *
+ * 为什么要有它：`deriveTouchedFiles` 只看一个 run 的 timeline，而一场对话可以
+ * 由若干 run 续成（追问 / 回退 / fork）。对话流是拼起来看的，改动清单也必须
+ * 按同一个范围算——否则主区与右栏各说各话（审视报告问题 4 的原形）。
+ *
+ * `lastSeq` 合成成**谱系内单调**的数：`谱系下标 × STRIDE + 本 run 的 seq`。
+ *   · 单 run 对话（下标恒 0）时与 `deriveTouchedFiles` 逐字段相同，旧行为不变；
+ *   · 多 run 时，同一文件被后一轮又改过，lastSeq 必然变大 ⇒「已阅」自动失效、
+ *     patch 缓存键自动换新。用裸 seq 做不到这点（seq 每个 run 从头数，会撞）。
+ *
+ * @returns {{path:string, edits:number, lastSeq:number, runId:string|null}[]}
+ */
+export function deriveThreadTouchedFiles(runs, runStates, tipId) {
+  const ids = ancestorRunIdsForChat(runs, tipId);
+  const lineage = ids.length ? ids : (tipId ? [tipId] : []);
+  /** @type {Map<string, {path:string, edits:number, lastSeq:number, runId:string|null}>} */
+  const byPath = new Map();
+  lineage.forEach((id, idx) => {
+    const state = runStates instanceof Map ? runStates.get(id) : null;
+    if (!state) return;
+    for (const f of deriveTouchedFiles(state)) {
+      const lastSeq = idx * THREAD_SEQ_STRIDE + (typeof f.lastSeq === "number" ? f.lastSeq : 0);
+      const cur = byPath.get(f.path);
+      if (!cur) {
+        byPath.set(f.path, { path: f.path, edits: f.edits, lastSeq, runId: id });
+        continue;
+      }
+      cur.edits += f.edits;
+      if (lastSeq > cur.lastSeq) {
+        cur.lastSeq = lastSeq;
+        cur.runId = id;
+      }
+    }
+  });
+  return [...byPath.values()].sort((a, b) => a.lastSeq - b.lastSeq);
 }
 
 function applyDeliveryKeepingCurrentTurn(items, state, files, running) {
@@ -10936,12 +10995,29 @@ export function renderChangeCard(it, env = {}) {
  * 与卡同一份文件行（renderChangeFileRows）、同一份 hunk 画法（宿主填
  * renderPatchHunksHtml）、同一个已阅容器——只共享，不复制。
  *
+ * ★ T14：空态不再一律说"没碰过文件"。这场运行的工作目录与宿主当前目录不是
+ * 同一个时，"没碰过"是句假话——面板根本不在那个目录上看东西。这时改说实话：
+ * 报出该运行的目录，并给一只「切换」钮。判据用 run 自己记下的 workdir
+ * （run meta 里本来就有，列表接口与 run_config 都带），不是当前宿主目录。
+ *
  * @param {{path:string, edits:number, lastSeq:number}[]} files deriveTouchedFiles 形状
- * @param {{runId?: string|null, reviewed?: Map<string, number>|null}} [env]
+ * @param {{runId?: string|null, reviewed?: Map<string, number>|null,
+ *          runWorkdir?: string|null, hostWorkdir?: string|null}} [env]
  */
 export function renderReviewPanel(files, env = {}) {
   const list = Array.isArray(files) ? files : [];
   if (list.length === 0) {
+    const runWorkdir = String(env.runWorkdir ?? "").trim();
+    const hostWorkdir = String(env.hostWorkdir ?? "").trim();
+    if (runWorkdir && !sameWorkdirPath(runWorkdir, hostWorkdir)) {
+      return (
+        `<div class="right-rail-review-elsewhere">` +
+        `<p class="chat-change-note">该运行的工作目录是 <code>${esc(runWorkdir)}</code>，与当前不同。</p>` +
+        `<button type="button" class="right-rail-review-switch" data-change-action="switch-workdir" ` +
+        `data-workdir="${esc(runWorkdir)}">切换到这个目录</button>` +
+        `</div>`
+      );
+    }
     return `<p class="chat-change-note">本场还没碰过任何文件。</p>`;
   }
   return (

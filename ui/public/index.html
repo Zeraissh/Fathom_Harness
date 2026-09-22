@@ -636,6 +636,7 @@ import {
   buildRevertMessage,
   toRepoRootRelative,
   deriveTouchedFiles,
+  deriveThreadTouchedFiles,
   renderReviewPanel,
 } from "/app.js";
 import {
@@ -2349,7 +2350,8 @@ function renderDetailWithState(state) {
   if (changesApi) {
     const railBody = document.querySelector("#main-area .rail-body");
     if (railBody) changesApi.mount(railBody);
-    changesApi.setRun(runId);
+    // T14：带上**这场运行自己记下的**工作目录，让服务端核一次口径（不是宿主当前目录）
+    changesApi.setRun(runId, info?.workdir ?? state.runConfig?.workdir ?? null);
     changesApi.setKnownWrites?.(
       conversationArtifactFiles(runId).filter((f) => f && f.kind !== "upload"),
     );
@@ -2545,10 +2547,61 @@ function handleChangeCardClick(e) {
     e.preventDefault();
     showRailSurface({ surface: "review" });
     paintReviewPanel();
+    return;
+  }
+  if (action === "switch-workdir") {
+    e.preventDefault();
+    void switchToRunWorkdir(btn.dataset.workdir ?? "");
   }
 }
 
-/** 把选中 run 的触碰文件画进面板槽（deriveTouchedFiles 与卡同口径） */
+/**
+ * T14「切换到这个目录」：把宿主当前工作目录切到这场运行自己的目录。
+ *
+ * 目录不在白名单里时**先按既有纪律登记**（POST /api/workdirs，仅 loopback），
+ * 登记失败就照实说、不假装切过——界面刚因为"说假话"被点名，这里不能再造一句。
+ */
+async function switchToRunWorkdir(path) {
+  const target = String(path ?? "").trim();
+  if (!target || !workdirSelect) return;
+  let list = harnessSnapshot?.availableWorkdirs ?? [];
+  if (!list.some((d) => sameWorkdirPath(d, target))) {
+    try {
+      const res = await fetch("/api/workdirs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ path: target }),
+      });
+      const payload = await res.json().catch(() => null);
+      if (!res.ok) {
+        announceStatus(payload?.error || `切不过去：${target} 不在允许的工作目录里`);
+        return;
+      }
+      list = Array.isArray(payload?.workdirs) ? payload.workdirs : [...list, target];
+    } catch {
+      announceStatus("切不过去：连不上宿主");
+      return;
+    }
+  }
+  if (harnessSnapshot) harnessSnapshot.availableWorkdirs = list;
+  lastWorkdirFaceSig = "";
+  paintWorkdirsForFace(list);
+  // 这张脸的可见清单里若没有它（脸过滤），就把它补进本次选项——用户点的是
+  // 「切到这场运行的目录」，不该被脸的默认过滤挡住
+  const visible = workdirListForFace(list);
+  const options = visible.some((d) => sameWorkdirPath(d, target)) ? visible : [...visible, target];
+  applyWorkdirSelection(workdirSelect, options, { primary: target, extras: [] });
+  writePrefString(PREF_WORKDIR, target);
+  writePrefJson(PREF_WORKDIR_EXTRAS, []);
+  syncProjectSelectToWorkdir();
+  workdirComboboxApi?.paint();
+  void workspaceGitChipApi?.refresh();
+  refreshWorkdirDependents();
+  announceStatus(`工作目录已切到 ${target}`);
+  paintReviewPanel();
+}
+
+/** 把选中 run 的触碰文件画进面板槽（与对话里那张卡**同一份派生**，见下） */
 function paintReviewPanel() {
   const slot = document.getElementById("right-rail-review");
   if (!slot) return;
@@ -2558,18 +2611,26 @@ function paintReviewPanel() {
     slot.dataset.sig = "";
     return;
   }
-  const state = runStates.get(runId);
-  const files = deriveTouchedFiles(state ?? {});
+  // ★ T14：范围必须与对话流一致。对话是整条谱系拼起来的（追问/回退/fork 各是
+  // 一个 run），只读 tip 自己的 state 就会出现"卡说改了 12 个、面板说一个没碰"
+  // ——审视报告问题 4 的原形。deriveThreadChatItems 末尾那张卡用的就是这一份。
+  const files = deriveThreadTouchedFiles(runs, runStates, runId);
   const reviewed = reviewedAtSeq.get(runId);
+  // 空态的第二种形态要按 **run 自己记下的工作目录**判，不是当前宿主目录
+  const runWorkdir = runs.find((r) => r.runId === runId)?.workdir
+    ?? runStates.get(runId)?.runConfig?.workdir
+    ?? null;
+  const hostWorkdir = currentWorkdir();
   // sig = 内容签名：没变就不重画——重画会把用户展开着的文件塌回去
   const sig = files.map((f) => `${f.path}:${f.edits}:${f.lastSeq}`).join("|") +
-    "||" + (reviewed ? [...reviewed.entries()].map(([p, s]) => `${p}:${s}`).sort().join("|") : "");
+    "||" + (reviewed ? [...reviewed.entries()].map(([p, s]) => `${p}:${s}`).sort().join("|") : "") +
+    "||" + String(runWorkdir ?? "") + "→" + String(hostWorkdir ?? "");
   if (slot.dataset.sig === sig) return;
   const openPaths = new Set();
   for (const details of slot.querySelectorAll("details.chat-change-file[open]")) {
     openPaths.add(details.dataset.path);
   }
-  slot.innerHTML = renderReviewPanel(files, { runId, reviewed });
+  slot.innerHTML = renderReviewPanel(files, { runId, reviewed, runWorkdir, hostWorkdir });
   slot.dataset.sig = sig;
   // 保留用户在面板里展开着的文件（同一路径重开，patch 照旧）
   for (const details of slot.querySelectorAll("details.chat-change-file")) {

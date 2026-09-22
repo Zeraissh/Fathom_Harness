@@ -286,6 +286,78 @@ describe("T8 /api/runs/:id/changes 变更审查端点", () => {
     const body = (await res.json()) as ChangesResponseDto;
     expect(body.changes.map((c) => c.path)).toEqual(["last.txt", "mid.txt", "first.txt"]);
   });
+
+  /**
+   * T14 · ?workdir= 口径校验。
+   *
+   * 调用方（前端 changes-panel）声明"我按这个目录在看这场运行"，服务端负责
+   * 核一次。**声明不能换根**：对不上一律 400，把 run 自己的目录摆出来，
+   * 而不是静默换个目录返回——那正是"界面拿着别的目录的文件状态当证据"的来路。
+   */
+  describe("T14 ?workdir= 口径校验", () => {
+    async function seedOne(): Promise<void> {
+      await writeFile(join(workdir, "a.txt"), "v1\n", "utf8");
+      await seedRun(historyRoot, "run-wd", { workdir }, [
+        toolCall(0, "write_file", { path: "a.txt", content: "v1" }, 1_600),
+      ]);
+    }
+
+    it("不带 workdir：照旧 200（旧调用方不受影响）", async () => {
+      await seedOne();
+      const base = await boot();
+      const res = await fetch(`${base}/api/runs/run-wd/changes`);
+      expect(res.status).toBe(200);
+      expect(((await res.json()) as ChangesResponseDto).changes.map((c) => c.path)).toEqual(["a.txt"]);
+    });
+
+    it("workdir 就是这场运行的目录：200，结果与不带时一致", async () => {
+      await seedOne();
+      const base = await boot();
+      const res = await fetch(
+        `${base}/api/runs/run-wd/changes?workdir=${encodeURIComponent(workdir)}`,
+      );
+      expect(res.status).toBe(200);
+      const body = (await res.json()) as ChangesResponseDto;
+      expect(body.workdir).toBe(workdir);
+      expect(body.changes.map((c) => c.path)).toEqual(["a.txt"]);
+    });
+
+    it("workdir 不在白名单里 → 400，不返回任何文件状态", async () => {
+      await seedOne();
+      const base = await boot();
+      const outsider = join(baseDir, "not-allowed");
+      const res = await fetch(
+        `${base}/api/runs/run-wd/changes?workdir=${encodeURIComponent(outsider)}`,
+      );
+      expect(res.status).toBe(400);
+      const body = (await res.json()) as { error: string; runWorkdir: string; changes?: unknown };
+      expect(body.error).toContain("白名单");
+      expect(body.changes).toBeUndefined();
+    });
+
+    it("workdir 在白名单里但不是这场运行的目录 → 400，并报出这场运行真正的目录", async () => {
+      await seedOne();
+      const other = join(baseDir, "other-proj");
+      await mkdir(other, { recursive: true });
+      handle = createUiServer({
+        modelClient: new FakeModelClient([]),
+        tools: [],
+        workdir,
+        workdirs: [other], // 白名单里有它，但这场运行不在它上面跑
+        history: historyRoot,
+        historyKeep: 10_000,
+      });
+      const base = `http://127.0.0.1:${await startServer(handle)}`;
+      const res = await fetch(
+        `${base}/api/runs/run-wd/changes?workdir=${encodeURIComponent(other)}`,
+      );
+      expect(res.status).toBe(400);
+      const body = (await res.json()) as { error: string; runWorkdir: string };
+      expect(body.runWorkdir).toBe(workdir);
+      expect(body.error).toContain(workdir);
+      expect(body.error).toContain(other);
+    });
+  });
 });
 
 // ---------------------------------------------------------------
