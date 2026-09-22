@@ -223,6 +223,27 @@
 - **改法**：错误卡底部加按钮组——「重试」「查看事件日志」「复制错误详情」；限流类错误额外给「降低并发后重试」提示文案。
 - **验收**：错误状态下截图出现动作按钮；「复制错误详情」产出含 runId + 错误栈的文本。
 
+> **✅ 已完成（2026-09-23，提交哈希见第八节 P1 提交表）**
+>
+> - **真因与计划一致**（这项计划说对了）：`patchOutcomeCard` 画的错误卡只有一行文案 + 一颗「继续对话」箭头，现场（`14-audit-code-rail-collapsed-1440.png`）整屏两行红字「异常终止 · 限流：SDK 重试已耗尽，请稍后再试」，没有任何下一步。用户唯一能做的是自己在输入框里重打一遍任务。
+> - **落点**：
+>   - `ui/public/app.js`：导出 `isRateLimitError` / `deriveErrorActions` / `buildErrorCopyText`；内部 `renderErrorActions`；`patchOutcomeCard` 在错误态插动作行，点击派 `callbacks.onErrorAction`。
+>   - `ui/public/index.html`：import `buildErrorCopyText`；宿主 `onErrorAction` 三条分支——retry 用 `state.task` 走既有 `submitAppend` 续跑链、logs 发既有 `tab-switch` 到 loop、copy 走 `buildErrorCopyText`（必须含 runId）。
+>   - `ui/public/styles.css`：`.outcome-actions` / `.outcome-action` / `.outcome-action-hint`，零裸色值；提法走 `--status-warn`（是建议不是错误，别再涂红）。
+> - **三个动作固定给全，不按"猜得到用户想干什么"删减**：重试 / 查看事件日志 / 复制错误详情。限流类额外一行提法（不是第四个按钮——建议不冒充动作）；提法里说「并行度调小」。限流判据只认明说自己是限流的形状（中文「限流」、`rate limit`/`ratelimit`、HTTP 429、`too many requests`、`quota`），**刻意不认泛泛的 "overload"**——猜错了会给出在别的故障上帮不上忙的建议。
+> - **与计划原文的偏差（三处，都小）**：
+>   ① 验收写「含 runId + **错误栈**」——`state.error` 是一句消息（现场那句「限流：SDK 重试已耗尽」），没有 stack 字段可抄，抄了会编。复制文本是 `runId` / `stopReason` / `task` / `error` 消息，缺字段就不写那一行、不编占位符。
+>   ② 「降低并发后重试」没有做成第四颗钮，也**没有改并行度**——重试只是把同一个任务原文再丢进续跑链，提法是给人看的。
+>   ③ 验收写「错误状态下截图出现动作按钮」——本轮明确不做视觉截图（与 P1 前几项同一条纪律）。
+> - **测试**：`test/ui-error-actions.test.ts`（新增 **22 条**）。纯函数 12：限流判据正反例（2）/ 动作面（三颗固定给全、限流额外提法且不是第四颗钮、非限流不给提法、非错误返回 null、空正文兜底，5）/ 复制文本（必须含 runId、缺字段不编占位符、无错误如实说、超长任务截断、走真实 reducer，5）。DOM 4：`patchOutcomeCard` 渲染分支真接上 / 三颗钮挂钩并派到 `onErrorAction` / 可及语义 `role=group` / 限流态三颗钮 + 一行 `<p>` 提法（提法不是按钮）。接线 5：宿主注入 / retry 用任务原文 / logs 发既有 tab-switch / ★ copy 的 import 锁（裸标识符，排除注释）/ 三条都有 aria-live 播报。样式 1：零裸色值 + 提法走 `--status-warn`。
+> - **变异验证（5 次，第 5 处第一次假绿）**——上一任已跑完并还原，本轮核对工作树无 `MUTATION-` 残留、从 `D:\Work\scratch\t21m*.txt` 读到的数字：
+>   ① 限流判据认泛泛的 `"over"` → 红 1（「不认泛泛的故障」）；
+>   ② 复制文本丢掉 runId → 红 2；
+>   ③ 纯函数有了但渲染分支没接（`host-lags-harness` 同族）→ 红 1；
+>   ④ retry 不用任务原文、改丢回输入框 → 红 1；
+>   ⑤ 不 import `buildErrorCopyText` → **第一次全绿**：第一版把 import 段切出来做子串匹配，变异体注释「// MUTATION-5：不 import buildErrorCopyText」本身含这个词，**判据匹配到了注释**。改成逐行取裸标识符、排除注释行后 → 红 1。
+> - **判据守不住什么**：① 计划验收的「截图出现动作按钮」本轮没做，jsdom 只证明动作行写进了 innerHTML，量不出真实像素是否看得见（窄屏会不会把三颗钮挤出视口）；② 「复制含错误栈」守不住——仓库里没有 stack 可抄；③ `renderErrorActions` 未导出，限流态 DOM 那条是测试里按同一份 face 重铺的同形 HTML，不是调用内部函数本身（渲染分支接上靠的是源码锁）；④ import 锁仍抓不住 `buildErrorCopyText as foo` 或折行写法；⑤ 「重试」是否真把任务跑起来，单测只锁了宿主调用了 `submitAppend({ runId, text })`，没走真实 HTTP。
+
 ---
 
 ## 四、P2 —— 长出设计稿最终形态（按原计划推进 + 三项差异化）
@@ -331,4 +352,6 @@ P2:  T22 → T23 → T24              （按原计划顺序）
 | `d00f64c` | T17 对话流缺省切到「聚焦」（顺带修掉让「记住偏好」形同虚设的两处） |
 | `1e695d0` | T18 同类型重复折叠成组（新模块 `features/transcript-grouping.js`） |
 | `9e93a5f` | T19 命令面板：主题压到最后 + 补两条真缺的命令 + 关键词别名 |
+| `ec335d0` | T20 侧栏顶部「待你处理（N）」跨会话聚合条（复用 T4 账本，不建第二份） |
+| （本提交） | T21 错误卡动作入口（三颗钮 + 限流提法；第 5 处变异第一次假绿） |
 

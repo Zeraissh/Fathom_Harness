@@ -538,6 +538,7 @@ import {
 import {
   createBatcher,
   normalizeTab,
+  buildErrorCopyText,
   createInitialState,
   reduceEvent,
   reduceEvents,
@@ -2352,6 +2353,34 @@ function renderDetailWithState(state) {
     onContinue: () => {
       const text = taskInput.value.trim() || "继续";
       void submitAppend({ runId, text });
+    },
+    /**
+     * T21 错误卡的三个动作入口。
+     *
+     * 「重试」= 在这场对话里把**同一个任务原文**再跑一次（走既有的
+     * submitAppend 续跑链），不是"把光标放回输入框让你自己重打"。
+     * 「查看事件日志」= 用仓库既有的 tab-switch 事件跳 Loop 面
+     *   （normalizeTab 把历史别名 "log" 也映到 loop，日志就在那条线下钻）。
+     * 「复制错误详情」= buildErrorCopyText，**带 runId**（台账、归档目录、
+     *   事件流全按 runId 索引，只复制一句错误描述没人知道是哪一场）。
+     */
+    onErrorAction: (action, state) => {
+      if (action === "retry") {
+        const text = String(state?.task ?? "").trim() || taskInput.value.trim() || "重试上一次的任务";
+        announceStatus("已重新提交同一个任务");
+        void submitAppend({ runId, text });
+        return;
+      }
+      if (action === "logs") {
+        document.dispatchEvent(new CustomEvent("tab-switch", { detail: { tab: "loop" } }));
+        announceStatus("已跳到事件日志");
+        return;
+      }
+      if (action === "copy") {
+        void copyChatText(buildErrorCopyText(state)).then(() => {
+          announceStatus("错误详情已复制（含 runId）");
+        });
+      }
     },
     threadFiles: conversationArtifactFiles(runId),
     runs,

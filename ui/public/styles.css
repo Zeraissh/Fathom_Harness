@@ -10589,6 +10589,40 @@ button.cc-card:hover { border-color: var(--border-2); }
 .rm-hidden { display: none !important; }
 
 /* ===================================================================
+   错误卡的动作入口（T21）
+   「重试 / 查看事件日志 / 复制错误详情」三颗 + 限流提法一行。
+   只用语义令牌；限流提法用 --status-warn（是建议不是错误，别再涂红）。
+   =================================================================== */
+
+.outcome-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs);
+  margin-top: var(--space-sm);
+}
+.outcome-action {
+  padding: var(--space-xs) var(--space-sm);
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-sm);
+  background: var(--surface-0);
+  color: var(--text-1);
+  font-size: var(--font-sm);
+  font-family: var(--font-ui);
+  cursor: pointer;
+}
+.outcome-action:hover {
+  border-color: var(--status-warn);
+  color: var(--text-1);
+}
+.outcome-action-hint {
+  margin: var(--space-xs) 0 0;
+  color: var(--status-warn);
+  font-size: var(--font-xs);
+  line-height: 1.5;
+}
+
+/* ===================================================================
    features/attention-bar — 侧栏顶部「待你处理（N）」聚合条（T20）
    呼吸点用 --status-warn 语义令牌（计划写的是 --status-warning，仓库里
    实际叫 --status-warn，取实存的那个）；无彩色 emoji，图标走 Phosphor。

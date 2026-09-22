@@ -8323,11 +8323,13 @@ function patchOutcomeCard(parts, state, overview, faces, callbacks = {}) {
   }
 
   const reason = state.error || cls.hint || "";
+  const errorFace = deriveErrorActions(state);
   parts.outcome.className = `outcome-card outcome-card--slim outcome-card--${cls.tone}`;
   parts.outcome.innerHTML =
     `<div class="outcome-line outcome-line--${cls.tone}">${esc(cls.label)}${
       reason ? ` · ${esc(reason)}` : ""
     }${rework}</div>` +
+    (errorFace ? renderErrorActions(errorFace) : "") +
     `<button type="button" class="outcome-continue" data-outcome-continue aria-label="继续对话" title="继续对话">` +
     `<i class="ph ph-arrow-right" aria-hidden="true"></i></button>`;
   const btn = parts.outcome.querySelector("[data-outcome-continue]");
@@ -8338,6 +8340,112 @@ function patchOutcomeCard(parts, state, overview, faces, callbacks = {}) {
       callbacks.onContinue?.();
     });
   }
+  // T21：错误卡的动作入口。innerHTML 每次重建，所以按钮每次重新绑（不用 __bound）
+  for (const el of parts.outcome.querySelectorAll("[data-outcome-action]")) {
+    el.addEventListener("click", (e) => {
+      e.preventDefault();
+      callbacks.onErrorAction?.(el.getAttribute("data-outcome-action"), state);
+    });
+  }
+}
+
+/**
+ * 限流类错误（T21）。
+ *
+ * 判据只认**明说自己是限流**的形状：中文「限流」、`rate limit`/`ratelimit`、
+ * HTTP 429、`too many requests`、`quota`。**刻意不认泛泛的 "overload"**——
+ * 猜错了会给出"降低并发"这种在别的故障上完全帮不上忙的建议，
+ * 而"没给建议"只是少一句话，比给错建议便宜。
+ *
+ * @param {string|null|undefined} message
+ * @returns {boolean}
+ */
+export function isRateLimitError(message) {
+  const s = String(message ?? "").toLowerCase();
+  if (!s) return false;
+  return s.includes("限流")
+    || s.includes("rate limit")
+    || s.includes("rate_limit")
+    || s.includes("ratelimit")
+    || s.includes("too many requests")
+    || s.includes("429")
+    || s.includes("quota");
+}
+
+/**
+ * 错误卡的动作面（T21，同步纯函数）。
+ *
+ * 现场（`14-audit-code-rail-collapsed-1440.png`）：整屏就两行红字
+ * 「异常终止 · 限流：SDK 重试已耗尽，请稍后再试」，**没有任何下一步**。
+ * 用户唯一能做的是自己在输入框里重打一遍任务。
+ *
+ * 三个动作固定给全，**不按"猜得到用户想干什么"删减**：
+ *   retry 重试 / logs 查看事件日志 / copy 复制错误详情。
+ * 限流类额外给一句提法（不是第四个按钮——那会把"建议"伪装成"动作"）。
+ *
+ * 非错误收尾返回 null（撞轮数、被否决各有各的下一步，不在本项范围）。
+ *
+ * @param {RunState|null|undefined} state
+ * @returns {{ message:string, rateLimited:boolean, hint:string|null,
+ *             actions:{id:string,label:string,title:string}[] }|null}
+ */
+export function deriveErrorActions(state) {
+  const message = String(state?.error ?? "").trim();
+  const isError = Boolean(message) || state?.stopReason === "error";
+  if (!isError) return null;
+  const rateLimited = isRateLimitError(message);
+  return {
+    message: message || "运行异常终止",
+    rateLimited,
+    hint: rateLimited
+      ? "限流是并发太密撞出来的：把并行度调小（或等几分钟）再重试，成功率比原样重试高。"
+      : null,
+    actions: [
+      { id: "retry", label: "重试", title: "在这场对话里把同一个任务再跑一次" },
+      { id: "logs", label: "查看事件日志", title: "跳到 Loop 面，逐条看事件流" },
+      { id: "copy", label: "复制错误详情", title: "复制 runId 与错误详情，便于提单或排查" },
+    ],
+  };
+}
+
+/**
+ * 「复制错误详情」的文本（T21，同步纯函数）。
+ *
+ * **必须带 runId**——只复制一句错误描述，拿去排查时没人知道是哪一场；
+ * 台账、归档目录、事件流全按 runId 索引。
+ * 缺字段就不写那一行，**不编**（`—` 那种占位符会被当成真值）。
+ *
+ * @param {RunState|null|undefined} state
+ * @returns {string}
+ */
+export function buildErrorCopyText(state) {
+  const face = deriveErrorActions(state);
+  const lines = [];
+  const runId = String(state?.runId ?? "").trim();
+  if (runId) lines.push(`runId: ${runId}`);
+  const stop = String(state?.stopReason ?? "").trim();
+  if (stop) lines.push(`stopReason: ${stop}`);
+  const task = String(state?.task ?? "").trim();
+  if (task) lines.push(`task: ${truncate(task, 200)}`);
+  lines.push(`error: ${face ? face.message : "（没有记录到错误）"}`);
+  return lines.join("\n");
+}
+
+/** 错误卡动作行。限流提法是一行字，不是第四个按钮——建议不冒充动作。 */
+function renderErrorActions(face) {
+  const buttons = face.actions
+    .map(
+      (a) =>
+        `<button type="button" class="outcome-action" data-outcome-action="${esc(a.id)}" ` +
+        `title="${esc(a.title)}">${esc(a.label)}</button>`,
+    )
+    .join("");
+  return (
+    `<div class="outcome-actions" role="group" aria-label="这次失败的下一步">${buttons}</div>` +
+    (face.hint
+      ? `<p class="outcome-action-hint" data-outcome-hint="rate-limit">${esc(face.hint)}</p>`
+      : "")
+  );
 }
 
 function verdictBadgeLabel(badge) {
