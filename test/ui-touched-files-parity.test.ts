@@ -232,7 +232,8 @@ describe("T28 范围命名不含糊", () => {
   const here = dirname(fileURLToPath(import.meta.url));
   const panelSrc = readFileSync(join(here, "..", "ui", "public", "features", "changes-panel.js"), "utf8");
   const appSrc = readFileSync(join(here, "..", "ui", "public", "app.js"), "utf8");
-  const serverSrc = readFileSync(join(here, "..", "ui", "server.ts"), "utf8");
+  // 聚合实现随 server.ts 拆分迁到 ui/server/lib/run-changes.ts（拆分阶段 1）
+  const serverSrc = readFileSync(join(here, "..", "ui", "server", "lib", "run-changes.ts"), "utf8");
 
   it("★ 一个 run 的那个分区标签自带范围词「本轮」，不再是光秃秃的「变更」", () => {
     expect(panelSrc).toMatch(/summaryText\.textContent\s*=\s*"\s*本轮变更\s*"/);

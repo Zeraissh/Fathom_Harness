@@ -22,8 +22,18 @@ export function coverageInclude(file) {
    * 与 vitest 配置里 `ui/serve.ts` 的排除同性质：入口文件的覆盖记在它调用的模块上。
    */
   if (n === "src/cli.ts") return false;
+  /**
+   * `ui/serve.ts` 同理：vitest coverage 显式排除了这个 thin launcher，它从不进 lcov。
+   * 此前这里照收，于是凡改它的 PR 都落进 missingFiles 必红（与上面 cli.ts 是同一类缝）。
+   */
+  if (n === "ui/serve.ts") return false;
   if (n.startsWith("src/") && n.endsWith(".ts") && !n.endsWith(".d.ts")) return true;
-  if (/^ui\/[^/]+\.ts$/.test(n) && !n.endsWith(".d.ts")) return true;
+  /**
+   * ui/ 只收顶层与 ui/server/ 子树（server.ts 拆分的落点）。ui/public/ 是浏览器零构建
+   * 资产，不在 vitest 插桩范围内，收进来只会凭空多出永远 0 hit 的行。
+   * 与 vitest.config.ts 的 coverage.include 同口径（有测试锁）。
+   */
+  if (/^ui\/(?:server\/(?:[^/]+\/)*)?[^/]+\.ts$/.test(n) && !n.endsWith(".d.ts")) return true;
   return false;
 }
 
@@ -132,7 +142,13 @@ export function changedLineCoverage({ lcovText, diffText }) {
 }
 
 export function gitDiff(base, cwd = process.cwd()) {
-  const result = spawnSync("git", ["diff", "--unified=0", `${base}...HEAD`], {
+  /**
+   * 显式钉 histogram，不吃 git 默认（Myers）也不吃本机 diff.algorithm 配置。
+   * 大段搬家时 Myers 的省力启发式会把原样保留的旧行对歪成「删了又加」，门就对
+   * 没改过的代码报未覆盖（server.ts 拆分阶段 1：+ 行 193 vs 148）。换算法不放松门：
+   * 真正新写的行在任何对齐下都是 + 行，变的只是内容相同的行算不算改过。
+   */
+  const result = spawnSync("git", ["diff", "--diff-algorithm=histogram", "--unified=0", `${base}...HEAD`], {
     cwd,
     encoding: "utf8",
     shell: false,
