@@ -191,9 +191,10 @@ describe("CLI durable", () => {
     expect(cli).toMatch(/cliDurable\?\.noteEvent\(source, event\)/);
     expect(cli).toMatch(/case "model_call_start"/);
     expect(cli).toMatch(/case "model_call_end"/);
-    const server = readFileSync(path.join(root, "..", "ui", "server.ts"), "utf8");
+    // Web 宿主的存档序列化随 server.ts 拆分迁到 ui/server/lib/archive-parse.ts（拆分阶段 1）
+    const server = readFileSync(path.join(root, "..", "ui", "server", "lib", "archive-parse.ts"), "utf8");
     expect(server).toMatch(/serializeTurnEventForArchive/);
-    expect(server).toMatch(/from "\.\.\/src\/archive-event\.js"/);
+    expect(server).toMatch(/from "(?:\.\.\/)+src\/archive-event\.js"/);
     expect(server).toMatch(/return serializeTurnEventForArchive\(_source, event, segmentIndex\)/);
   });
 
