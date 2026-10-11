@@ -37,12 +37,16 @@ function readEnv(root: string): string {
   return readFileSync(join(root, ".env"), "utf8");
 }
 
-/** 用 Node 自己的 --env-file 解析器读回，确认落盘格式真的能被消费 */
+/**
+ * 用 Node 自己的 --env-file 解析器读回，确认落盘格式真的能被消费。
+ * 子进程环境同样只给 PATH：--env-file 不覆盖已存在的变量，宿主里设了
+ * ANTHROPIC_BASE_URL 之类同名变量时，读回的就是宿主值而不是 .env 里的值。
+ */
 function readBackViaNode(root: string, key: string): string {
   return execFileSync(
     process.execPath,
     [`--env-file=${join(root, ".env")}`, "-e", `process.stdout.write(process.env[process.argv[1]] ?? "<missing>")`, key],
-    { encoding: "utf8" },
+    { env: { PATH: process.env.PATH ?? "" }, encoding: "utf8" },
   );
 }
 
