@@ -79,8 +79,6 @@ import {
   deriveScrollNav,
   paceReveal,
   revealedWindow,
-  keepScrollAnchored,
-  renderRunList,
   buildLocalPathProbePlan,
   toolPathCandidates,
   classifySessionFile,

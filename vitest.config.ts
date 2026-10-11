@@ -11,7 +11,7 @@ export default defineConfig({
     include: ["test/**/*.test.ts"],
     coverage: {
       provider: "v8",
-      include: ["src/**", "ui/*.ts"],
+      include: ["src/**/*.ts", "ui/*.ts"],
       exclude: [
         "src/**/*.d.ts",
         "ui/**/*.d.ts",
@@ -20,13 +20,19 @@ export default defineConfig({
       ],
       reporter: ["text-summary", "lcov", "json-summary"],
       reportsDirectory: "coverage",
-      // 棘轮基线 2026-09-02 本机全量：
-      //   statements/lines 77.68% · branches 81.2% · functions 91.54%
+      // 棘轮基线 2026-10-11 全量（vitest 5 / coverage-v8 5）：
+      //   statements 77.68% · lines 80.35% · branches 70.11% · functions 84.54%
       // 锁在实测下方约 2–3pt，防偶然抖动误红，仍挡住真回退。
+      //
+      // 口径换过一次，数字不能跨口径比：vitest 4 起 v8 覆盖率按 AST 重映射——
+      // 注释 / 空行不再算行（lines 分母 38,620 → 17,049），`??` / `?.` / 默认参数
+      // 计作分支、每个箭头函数计作函数（分母变大）。同一批 3936 条用例、同一份源码，
+      // 旧口径（vitest 3）测得 lines 80.72 · branches 79.89 · functions 93.23，
+      // 阈值 75 / 78 / 88 / 75。branches / functions 的阈值数字下调是换尺，不是放松。
       thresholds: {
-        lines: 75,
-        branches: 78,
-        functions: 88,
+        lines: 78,
+        branches: 68,
+        functions: 82,
         statements: 75,
       },
     },
