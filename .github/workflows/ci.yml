@@ -25,8 +25,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci --ignore-scripts
-      # high 必须 0。余下 moderate 是 vitest 3.x 的 mocker 咨询（GHSA-82fw-gwwq-j7x9），
-      # 3.x 无补丁、--force 会装 vitest 5；本仓库 CI 跑 vitest run，不暴露 mocker WebSocket。
+      # high 必须 0。2026-10-11 升 vitest 5 后根目录 audit 为 0（含 moderate）。
       - run: npm audit --audit-level=high
       - run: npm run typecheck
       - run: npm run test:coverage
@@ -117,7 +116,8 @@ jobs:
           cache: npm
           cache-dependency-path: cross-app/package-lock.json
       - run: npm ci --ignore-scripts
-      # high 必须 0。余下 moderate 是 vitest 4.1.10 mocker（GHSA-82fw）；3.x/4.1.10 无补丁。
+      # high 必须 0。余下 moderate：vitest 4.1.10 mocker（GHSA-82fw，4.x 无补丁），以及
+      # electron-builder / @capacitor/cli 依赖链上只能靠跨大版本（实为降级）才"修"的几项。
       - run: npm audit --audit-level=high
       - run: npm test
       - run: npm run build
