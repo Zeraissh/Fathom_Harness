@@ -210,3 +210,56 @@ describe("changed-line-coverage · gitDiff 缓冲", () => {
     }
   }, 60_000);
 });
+
+/**
+ * gitDiff 的对齐算法（2026-10-11，server.ts 拆分阶段 1 实录）。
+ *
+ * 大段搬家的 PR 上，git 默认的 Myers 会触发省力启发式、把没动过的行对歪：
+ * 拆分阶段 1 相对 main，server.ts 的 + 行 Myers 报 193、histogram 报 148，
+ * 多出的 45 行是原样留着的旧代码（其中两行模块初始化的兜底分支测试够不着），
+ * 门因此对一段根本没改的代码报「改了且没覆盖」。这里造一份同形的改动：
+ * 大量含重复行（`}`、空行、return undefined…）的块被删掉，中间夹着原样保留的块，
+ * 文件头新加两行 import——真正新增的只有那两行。
+ */
+describe("changed-line-coverage · gitDiff 对齐", () => {
+  function moveRepo(): string {
+    const dir = mkdtempSync(join(tmpdir(), "clc-move-"));
+    const git = (...args: string[]) => execFileSync("git", args, { cwd: dir, stdio: "pipe" });
+    git("init", "-q");
+    git("config", "user.email", "clc@test");
+    git("config", "user.name", "clc");
+    // 固定种子的 LCG：每次生成同一份文件，结果可复现
+    let seed = 7;
+    const common = ["}", "", "  return undefined;", "  }", "];", ")", "    }", "  try {", "  } catch {", "    return null;"];
+    const pick = () => {
+      seed = (seed * 1103515245 + 12345) % 2 ** 31;
+      return common[seed % common.length]!;
+    };
+    const moved: string[] = [];
+    for (let i = 0; i < 120; i++) {
+      moved.push(`export function g${i}() {`);
+      for (let j = 1; j < 15; j++) moved.push(pick());
+    }
+    const kept = Array.from({ length: 60 }, (_, i) => (i % 7 === 0 ? `const KEEP${i} = [` : pick()));
+    const tail = Array.from({ length: 400 }, (_, i) => (i % 5 === 0 ? `const T${i} = ${i};` : pick()));
+    const before = ["// head", ...moved.slice(0, 900), ...kept, ...moved.slice(900), ...tail];
+    writeFileSync(join(dir, "f.ts"), before.join("\n") + "\n", "utf8");
+    git("add", ".");
+    git("commit", "-qm", "base");
+    git("tag", "base");
+    const after = ['import { a } from "./a.js";', 'import { b } from "./b.js";', "// head", ...kept, ...tail];
+    writeFileSync(join(dir, "f.ts"), after.join("\n") + "\n", "utf8");
+    git("commit", "-qam", "move");
+    return dir;
+  }
+
+  it("大段删除时不把原样保留的行算成新增（只有真正新写的两行 import）", () => {
+    const dir = moveRepo();
+    try {
+      const added = parseUnifiedDiff(gitDiff("base", dir)).get("f.ts");
+      expect([...(added ?? [])].sort((a, b) => a - b)).toEqual([1, 2]);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  }, 60_000);
+});

@@ -142,7 +142,13 @@ export function changedLineCoverage({ lcovText, diffText }) {
 }
 
 export function gitDiff(base, cwd = process.cwd()) {
-  const result = spawnSync("git", ["diff", "--unified=0", `${base}...HEAD`], {
+  /**
+   * 显式钉 histogram，不吃 git 默认（Myers）也不吃本机 diff.algorithm 配置。
+   * 大段搬家时 Myers 的省力启发式会把原样保留的旧行对歪成「删了又加」，门就对
+   * 没改过的代码报未覆盖（server.ts 拆分阶段 1：+ 行 193 vs 148）。换算法不放松门：
+   * 真正新写的行在任何对齐下都是 + 行，变的只是内容相同的行算不算改过。
+   */
+  const result = spawnSync("git", ["diff", "--diff-algorithm=histogram", "--unified=0", `${base}...HEAD`], {
     cwd,
     encoding: "utf8",
     shell: false,
