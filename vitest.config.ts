@@ -11,7 +11,10 @@ export default defineConfig({
     include: ["test/**/*.test.ts"],
     coverage: {
       provider: "v8",
-      include: ["src/**", "ui/*.ts"],
+      // ui/server/**：server.ts 拆分后的模块落在这里。只写 ui/*.ts 时子目录会被
+      // 静默漏统计——全仓棘轮少分母、changed-line 门对搬过去的行视而不见。
+      // 与 scripts/changed-line-coverage.mjs 的 coverageInclude 同口径（有测试锁）。
+      include: ["src/**", "ui/*.ts", "ui/server/**/*.ts"],
       exclude: [
         "src/**/*.d.ts",
         "ui/**/*.d.ts",

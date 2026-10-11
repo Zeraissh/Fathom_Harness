@@ -3,7 +3,8 @@ import { describe, expect, it } from "vitest";
 import { execFileSync } from "node:child_process";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, matchesGlob } from "node:path";
+import vitestConfig from "../vitest.config.ts";
 import {
   changedLineCoverage,
   coverageInclude,
@@ -41,6 +42,49 @@ describe("TEST-01 changed-line coverage", () => {
     expect(coverageInclude("src/cli-args.ts")).toBe(true);
     expect(coverageInclude("src/cli-durable.ts")).toBe(true);
     expect(coverageInclude("ui/cli.ts")).toBe(true); // 只排除 src/ 下那一个确切路径
+  });
+
+  it("ui/serve.ts 不入本门（vitest 排除了它，改它不该落 missingFiles 必红）", () => {
+    expect(coverageInclude("ui/serve.ts")).toBe(false);
+    const diff = "diff --git a/ui/serve.ts b/ui/serve.ts\n--- a/ui/serve.ts\n+++ b/ui/serve.ts\n@@ -10,0 +11,1 @@\n+const x = 1;\n";
+    expect(changedLineCoverage({ lcovText: lcov, diffText: diff })).toMatchObject({ ok: true, missingFiles: [] });
+  });
+
+  it("ui/server/ 子树入门（server.ts 拆分的落点），其余 ui 子目录不入", () => {
+    // 只认 ui 根时，从 server.ts 搬进子目录的行会被静默放过——门是绿的，但没在看。
+    expect(coverageInclude("ui/server/router.ts")).toBe(true);
+    expect(coverageInclude("ui/server/routes/ops.ts")).toBe(true);
+    expect(coverageInclude("ui/server/runtime/turns/fork.ts")).toBe(true);
+    expect(coverageInclude("ui/server/types.d.ts")).toBe(false);
+    expect(coverageInclude("ui/server/README.md")).toBe(false);
+    expect(coverageInclude("ui/public/features/review-mode.d.ts")).toBe(false);
+    expect(coverageInclude("ui/other/foo.ts")).toBe(false);
+    expect(coverageInclude("ui/serverx/foo.ts")).toBe(false);
+  });
+
+  it("收录口径与 vitest coverage.include/exclude 一致", () => {
+    // 两边各写一份：门收了 vitest 不插桩的文件 → 进不了 lcov，落 missingFiles 必红；
+    // vitest 插桩了门不收的文件 → 搬过去的行没人看。src/cli.ts 是门这边的刻意排除，不在此列。
+    const { include, exclude } = vitestConfig.test.coverage;
+    const instrumented = (file: string) =>
+      include.some((g) => matchesGlob(file, g)) && !exclude.some((g) => matchesGlob(file, g));
+    for (const file of [
+      "src/loop.ts",
+      "src/tools/bash.ts",
+      "src/types.d.ts",
+      "ui/server.ts",
+      "ui/serve.ts",
+      "ui/history.ts",
+      "ui/server/router.ts",
+      "ui/server/routes/ops.ts",
+      "ui/server/runtime/turns/fork.ts",
+      "ui/server/types.d.ts",
+      "ui/public/app.js",
+      "ui/public/features/humanize-error.d.ts",
+      "ui/other/foo.ts",
+    ]) {
+      expect([file, coverageInclude(file)]).toEqual([file, instrumented(file)]);
+    }
   });
 
   it("unified diff 只把 + 行记到新文件行号", () => {

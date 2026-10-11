@@ -22,8 +22,18 @@ export function coverageInclude(file) {
    * 与 vitest 配置里 `ui/serve.ts` 的排除同性质：入口文件的覆盖记在它调用的模块上。
    */
   if (n === "src/cli.ts") return false;
+  /**
+   * `ui/serve.ts` 同理：vitest coverage 显式排除了这个 thin launcher，它从不进 lcov。
+   * 此前这里照收，于是凡改它的 PR 都落进 missingFiles 必红（与上面 cli.ts 是同一类缝）。
+   */
+  if (n === "ui/serve.ts") return false;
   if (n.startsWith("src/") && n.endsWith(".ts") && !n.endsWith(".d.ts")) return true;
-  if (/^ui\/[^/]+\.ts$/.test(n) && !n.endsWith(".d.ts")) return true;
+  /**
+   * ui/ 只收顶层与 ui/server/ 子树（server.ts 拆分的落点）。ui/public/ 是浏览器零构建
+   * 资产，不在 vitest 插桩范围内，收进来只会凭空多出永远 0 hit 的行。
+   * 与 vitest.config.ts 的 coverage.include 同口径（有测试锁）。
+   */
+  if (/^ui\/(?:server\/(?:[^/]+\/)*)?[^/]+\.ts$/.test(n) && !n.endsWith(".d.ts")) return true;
   return false;
 }
 
