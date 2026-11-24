@@ -73,8 +73,8 @@ jobs:
           if-no-files-found: error
           retention-days: 90
       # EVAL-03c：质量/成本/延迟退化门——在**打标签的那次提交**上重跑真实
-      # provider 小子集，对照 eval/baselines/release.json（与 nightly 同口径、
-      # 不得更松）。不复用昨夜 artifact：要测的是候选本身。
+      # provider 小子集，对照 eval/baselines/release.json（与 nightly.json 同口径、
+      # 不得更松）。定时 Nightly eval 已撤，发版是这条矩阵还在自动跑的地方。
       - name: Require provider credentials for release quality gate
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
