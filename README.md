@@ -120,7 +120,7 @@ npm run test:coverage                                             # 覆盖率 + 
 npm run test:mutation-smoke                                       # 固定清单关键变异必须变红（TEST-01a）
 npm run eval:stats                                                # A/B + 台账统计报告（EVAL-02）
 npm run build && npm run eval:deterministic                        # 确定性场景门（EVAL-03a）
-npm run eval:compare-baseline                                     # nightly 基线比对（EVAL-03b）
+npm run eval:compare-baseline                                     # 对照 eval/baselines/nightly.json（发版门改传 release.json）
 ```
 
 `npm run eval:deterministic` 是 PR 级质量门：12 个场景跑在**编译产物** `dist/src/cli.js` 上，
@@ -132,15 +132,10 @@ npm run eval:compare-baseline                                     # nightly 基�
 `--filter <子串>` 只跑部分场景，`--keep` 保留临时工作目录便于排障。因为它测 dist，
 **必须先 `npm run build`**。
 
-Nightly（`.github/workflows/nightly.yml`）跑 **held-out** 真实 provider 小子集
-（`AB_SUITE=heldout`，6×`ho-*` × baseline × 1），凭据来自 `ANTHROPIC_API_KEY` secret 与
-`ANTHROPIC_BASE_URL`/`AGENT_MODEL` variables；`AB_TOKEN_CAP` 触顶即停（exit 2），再与
-`eval/baselines/nightly.json` 比对通过率/成本/延迟。阈值经首夜 research 6/6 证据收紧后沿用
-到 held-out（`minPassRate=1`、`maxTotalTokens=150k`、`maxTotalWallMs=300s`）。
-研究臂默认 `AB_SUITE=research`（`eval/cases.ts`）——**不是** held-out，禁止拿它当冻结评测面。
+定时的 Nightly eval（原 `.github/workflows/nightly.yml`，北京时间 0 点）已撤掉，不再自动打真实 provider，也不再因此发失败邮件。通过率/成本/延迟地板仍写在 `eval/baselines/nightly.json`（`minPassRate=1`、`maxTotalTokens=150k`、`maxTotalWallMs=300s`），`npm run eval:compare-baseline` 默认对照这份。研究臂默认 `AB_SUITE=research`（`eval/cases.ts`）——**不是** held-out，禁止拿它当冻结评测面。
 
 Release tag 门（`.github/workflows/release.yml` `gate`）在确定性场景门之后，**在打标签的提交上重跑**
-同一 held-out 子集，对照 `eval/baselines/release.json`（不得比 nightly 更松），报告落 artifact
+同一 held-out 子集（6×`ho-*` × baseline × 1，`AB_TOKEN_CAP` 触顶 exit 2），对照 `eval/baselines/release.json`（不得比 `nightly.json` 更松），报告落 artifact
 `release-quality-eval`。缺少 secret/vars 时 fail-closed，不静默跳过。发布流程本身：门禁全过 →
 镜像构建 + `/health` 烟测 + OCI canary → 推 GHCR → GitHub Release 记录 digest 并附 `CHANGELOG.md`
 对应小节；Windows 签名凭据（`WIN_CSC_LINK` / `WIN_CSC_KEY_PASSWORD`）缺失时 `desktop-windows` 跳过，

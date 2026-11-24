@@ -10,6 +10,10 @@
 
 ## [Unreleased]
 
+### 持续集成（CI）
+
+- **撤掉 Nightly eval 定时任务**。删除 `.github/workflows/nightly.yml`（UTC 16:00 / 北京时间 0 点的 held-out 真实 provider 小子集）。不再每晚自动跑，也不再因此发失败邮件。打 tag 时 `release.yml` 仍重跑同一子集。比对脚本与 `eval/baselines/nightly.json` 保留，作为发版地板。
+
 ### 工具面（Tools）
 
 - **`edit_file` 内置工具（A1）**：str_replace 局部编辑，唯一性由宿主执行（0/多命中均 `is_error`），
